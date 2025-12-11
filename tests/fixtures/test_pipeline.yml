@@ -1,0 +1,31 @@
+# Test pipeline fixture for unit tests
+name: fixture_pipeline
+description: Pipeline for testing
+engine: duckdb
+
+source:
+  type: file
+  path: ${INPUT_PATH}
+  format: parquet
+
+transforms:
+  - type: filter
+    predicate: amount > 0
+  - type: derive_column
+    name: doubled_amount
+    expr: amount * 2
+  - type: select
+    columns: [id, name, amount, doubled_amount]
+
+checks:
+  - type: not_null
+    columns: [id, name]
+  - type: unique
+    columns: [id]
+  - type: row_count
+    min: 1
+
+sink:
+  type: file
+  path: ${OUTPUT_PATH}
+  format: parquet
