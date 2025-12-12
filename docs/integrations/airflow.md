@@ -446,6 +446,5 @@ def process(**context):
 
 ## Related
 
-- [Integrations Overview](index.md) - Other integrations
 - [Python API](../api/index.md) - QuickETL API reference
 - [Production Best Practices](../best-practices/production.md)

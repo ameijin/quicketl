@@ -249,6 +249,6 @@ def etl_flow():
 
 ## Related
 
-- [CLI Reference](../cli/index.md) - Command-line interface
-- [Pipeline YAML](../user-guide/configuration/pipeline-yaml.md) - YAML configuration
+- [CLI Reference](../reference/cli.md) - Command-line interface
+- [Pipeline YAML](../guides/configuration/pipeline-yaml.md) - YAML configuration
 - [Airflow Integration](../integrations/airflow.md) - Airflow integration

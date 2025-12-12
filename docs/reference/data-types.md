@@ -383,6 +383,6 @@ transforms:
 
 ## Related
 
-- [Cast Transform](../user-guide/transforms/cast.md) - Type conversion
+- [Cast Transform](../guides/transforms/operations.md#cast) - Type conversion
 - [Expressions Reference](expressions.md) - Expression syntax
-- [Backend Documentation](../user-guide/backends/index.md) - Backend-specific types
+- [Backend Documentation](../guides/backends/index.md) - Backend-specific types

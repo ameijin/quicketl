@@ -62,4 +62,4 @@ By the end of this section, you'll know how to:
 
 If you're new to QuickETL, start with the [Installation](installation.md) guide, then follow the [Quick Start](quickstart.md) tutorial.
 
-If you're familiar with ETL concepts and want to dive deeper, check out the [User Guide](../user-guide/index.md) after completing this section.
+If you're familiar with ETL concepts and want to dive deeper, check out the [User Guide](../guides/index.md) after completing this section.

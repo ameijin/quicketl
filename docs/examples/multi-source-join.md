@@ -341,5 +341,5 @@ transforms:
 ## Next Steps
 
 - [Aggregation Example](aggregation.md) - Compute metrics from joined data
-- [Join Transform Reference](../user-guide/transforms/join.md) - Full documentation
+- [Join Transform Reference](../guides/transforms/operations.md#join) - Full documentation
 - [Performance Best Practices](../best-practices/performance.md)

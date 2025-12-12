@@ -329,5 +329,5 @@ transforms:
 ## Next Steps
 
 - [Cloud ETL Example](cloud-etl.md) - Production cloud pipelines
-- [Aggregate Transform Reference](../user-guide/transforms/aggregate.md)
+- [Aggregate Transform Reference](../guides/transforms/operations.md#aggregate)
 - [Performance Best Practices](../best-practices/performance.md)

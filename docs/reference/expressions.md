@@ -352,6 +352,6 @@ For complex expressions, use YAML multi-line syntax:
 
 ## Related
 
-- [Filter Transform](../user-guide/transforms/filter.md)
-- [Derive Column Transform](../user-guide/transforms/derive-column.md)
-- [Aggregate Transform](../user-guide/transforms/aggregate.md)
+- [Filter Transform](../guides/transforms/operations.md#filter)
+- [Derive Column Transform](../guides/transforms/operations.md#derive_column)
+- [Aggregate Transform](../guides/transforms/operations.md#aggregate)

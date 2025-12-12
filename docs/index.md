@@ -187,7 +187,7 @@ pip install quicketl[snowflake]
 
     Learn about transforms, quality checks, and configuration.
 
-    [:octicons-arrow-right-24: User Guide](user-guide/index.md)
+    [:octicons-arrow-right-24: User Guide](guides/index.md)
 
 -   :material-code-tags:{ .lg .middle } **API Reference**
 

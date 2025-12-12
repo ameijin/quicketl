@@ -309,6 +309,6 @@ print(f"Processed {result.rows_processed} rows in {result.duration_ms:.1f}ms")
 Now that you understand pipeline basics:
 
 - [Project Structure](project-structure.md) - Organize larger projects
-- [Transforms](../user-guide/transforms/index.md) - Learn all 12 transforms
-- [Quality Checks](../user-guide/quality/index.md) - Advanced validation
+- [Transforms](../guides/transforms/index.md) - Learn all 12 transforms
+- [Quality Checks](../guides/quality/index.md) - Advanced validation
 - [Examples](../examples/index.md) - Real-world patterns

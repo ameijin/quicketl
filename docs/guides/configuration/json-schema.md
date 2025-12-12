@@ -226,4 +226,4 @@ If you add custom transforms, they won't appear in the schema. The schema covers
 ## Related
 
 - [Pipeline YAML](pipeline-yaml.md) - Configuration reference
-- [CLI: schema](../../cli/schema.md) - Schema command details
+- [CLI: schema](../../reference/cli.md#schema) - Schema command details

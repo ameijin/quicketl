@@ -6,16 +6,16 @@ QuickETL supports multiple compute backends through Ibis. Choose the right backe
 
 | Backend | Type | Install | Best For |
 |---------|------|---------|----------|
-| [DuckDB](duckdb.md) | Local | Default | Analytics, small-medium data |
-| [Polars](polars.md) | Local | Default | Fast DataFrames |
-| [DataFusion](datafusion.md) | Local | `quicketl[datafusion]` | Arrow-native queries |
-| [Spark](spark.md) | Distributed | `quicketl[spark]` | Large-scale processing |
-| [pandas](pandas.md) | Local | `quicketl[pandas]` | Legacy compatibility |
-| [Snowflake](snowflake.md) | Cloud DW | `quicketl[snowflake]` | Enterprise analytics |
-| [BigQuery](bigquery.md) | Cloud DW | `quicketl[bigquery]` | Google Cloud |
-| [PostgreSQL](postgresql.md) | Database | `quicketl[postgres]` | Operational data |
-| [MySQL](mysql.md) | Database | `quicketl[mysql]` | Web applications |
-| [ClickHouse](clickhouse.md) | Database | `quicketl[clickhouse]` | Real-time analytics |
+| [DuckDB](local.md#duckdb) | Local | Default | Analytics, small-medium data |
+| [Polars](local.md#polars) | Local | Default | Fast DataFrames |
+| [DataFusion](local.md#datafusion) | Local | `quicketl[datafusion]` | Arrow-native queries |
+| [Spark](distributed.md) | Distributed | `quicketl[spark]` | Large-scale processing |
+| [pandas](local.md#pandas) | Local | `quicketl[pandas]` | Legacy compatibility |
+| [Snowflake](cloud-warehouses.md#snowflake) | Cloud DW | `quicketl[snowflake]` | Enterprise analytics |
+| [BigQuery](cloud-warehouses.md#bigquery) | Cloud DW | `quicketl[bigquery]` | Google Cloud |
+| [PostgreSQL](databases.md#postgresql) | Database | `quicketl[postgres]` | Operational data |
+| [MySQL](databases.md#mysql) | Database | `quicketl[mysql]` | Web applications |
+| [ClickHouse](databases.md#clickhouse) | Database | `quicketl[clickhouse]` | Real-time analytics |
 
 ## Selecting a Backend
 
@@ -166,6 +166,7 @@ DuckDB is the default because it:
 
 ## Next Steps
 
-- [DuckDB](duckdb.md) - Default backend details
-- [Spark](spark.md) - Distributed processing
-- [Snowflake](snowflake.md) - Cloud warehouse
+- [Local Backends](local.md) - DuckDB, Polars, DataFusion, pandas
+- [Distributed (Spark)](distributed.md) - Large-scale processing
+- [Cloud Warehouses](cloud-warehouses.md) - Snowflake, BigQuery
+- [Databases](databases.md) - PostgreSQL, MySQL, ClickHouse

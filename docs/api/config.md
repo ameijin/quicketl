@@ -470,6 +470,6 @@ config_yaml = yaml.dump(config_dict)
 
 ## Related
 
-- [Pipeline YAML](../user-guide/configuration/pipeline-yaml.md) - YAML format reference
-- [Transforms](../user-guide/transforms/index.md) - Transform documentation
-- [Quality Checks](../user-guide/quality/index.md) - Check documentation
+- [Pipeline YAML](../guides/configuration/pipeline-yaml.md) - YAML format reference
+- [Transforms](../guides/transforms/index.md) - Transform documentation
+- [Quality Checks](../guides/quality/index.md) - Check documentation

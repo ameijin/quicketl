@@ -27,38 +27,38 @@ transforms:
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
-| [`select`](select.md) | Choose columns | Keep only `id`, `name`, `amount` |
-| [`rename`](rename.md) | Rename columns | Change `cust_id` to `customer_id` |
-| [`limit`](limit.md) | Limit rows | Take first 1000 rows |
+| [`select`](operations.md#select) | Choose columns | Keep only `id`, `name`, `amount` |
+| [`rename`](operations.md#rename) | Rename columns | Change `cust_id` to `customer_id` |
+| [`limit`](operations.md#limit) | Limit rows | Take first 1000 rows |
 
 ### Data Filtering
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
-| [`filter`](filter.md) | Filter rows | Keep rows where `amount > 100` |
-| [`dedup`](dedup.md) | Remove duplicates | Keep unique `customer_id` |
+| [`filter`](operations.md#filter) | Filter rows | Keep rows where `amount > 100` |
+| [`dedup`](operations.md#dedup) | Remove duplicates | Keep unique `customer_id` |
 
 ### Data Modification
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
-| [`derive_column`](derive-column.md) | Add computed column | Calculate `total = qty * price` |
-| [`cast`](cast.md) | Convert types | Change `id` from int to string |
-| [`fill_null`](fill-null.md) | Replace nulls | Set null `status` to `"unknown"` |
+| [`derive_column`](operations.md#derive_column) | Add computed column | Calculate `total = qty * price` |
+| [`cast`](operations.md#cast) | Convert types | Change `id` from int to string |
+| [`fill_null`](operations.md#fill_null) | Replace nulls | Set null `status` to `"unknown"` |
 
 ### Data Organization
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
-| [`sort`](sort.md) | Order rows | Sort by `amount` descending |
-| [`aggregate`](aggregate.md) | Group and summarize | Sum `amount` by `region` |
+| [`sort`](operations.md#sort) | Order rows | Sort by `amount` descending |
+| [`aggregate`](operations.md#aggregate) | Group and summarize | Sum `amount` by `region` |
 
 ### Data Combination
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
-| [`join`](join.md) | Join datasets | Join orders with customers |
-| [`union`](union.md) | Stack datasets | Combine daily files |
+| [`join`](operations.md#join) | Join datasets | Join orders with customers |
+| [`union`](operations.md#union) | Stack datasets | Combine daily files |
 
 ## Quick Reference
 
@@ -221,8 +221,6 @@ pipeline = (
 
 ## Next Steps
 
-Explore each transform in detail:
+Explore all transforms in detail:
 
-- [select](select.md) - Choose and reorder columns
-- [filter](filter.md) - Filter rows with predicates
-- [aggregate](aggregate.md) - Group and summarize data
+- [All Transform Operations](operations.md) - Complete reference for all 12 transforms

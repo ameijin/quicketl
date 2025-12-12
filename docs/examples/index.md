@@ -145,10 +145,10 @@ Have a useful pattern? Contribute an example:
 3. Add sample input/output data
 4. Document each step
 
-See [Contributing Guide](../development/contributing.md) for details.
+See [Contributing Guide](https://github.com/ameijin/quicketl/blob/mahttps://github.com/ameijin/quicketl/blob/main/CONTRIBUTING.md) for details.
 
 ## Related
 
 - [Getting Started](../getting-started/quickstart.md) - First steps with QuickETL
-- [User Guide](../user-guide/configuration/pipeline-yaml.md) - Complete reference
+- [User Guide](../guides/configuration/pipeline-yaml.md) - Complete reference
 - [Best Practices](../best-practices/pipeline-design.md) - Design patterns

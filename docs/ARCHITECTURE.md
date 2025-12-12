@@ -295,5 +295,5 @@ src/quicketl/
 
 ## Related
 
-- [Contributing Guide](contributing.md) - How to contribute
-- [API Reference](../api/index.md) - API documentation
+- [Contributing Guide](https://github.com/ameijin/quicketl/blob/main/CONTRIBUTING.md) - How to contribute
+- [API Reference](api/index.md) - API documentation

@@ -296,4 +296,4 @@ quicketl run pipelines/basic.yml --dry-run
 
 - [Multi-Source Join](multi-source-join.md) - Combine multiple data sources
 - [Aggregation](aggregation.md) - Compute metrics and summaries
-- [Transforms Reference](../user-guide/transforms/index.md) - All available transforms
+- [Transforms Reference](../guides/transforms/index.md) - All available transforms

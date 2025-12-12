@@ -371,6 +371,6 @@ cProfile.run("pipeline.run()", sort="cumtime")
 
 ## Related
 
-- [Backend Selection](../user-guide/backends/index.md) - Choose the right backend
-- [DuckDB](../user-guide/backends/duckdb.md) - Optimize for DuckDB
-- [Polars](../user-guide/backends/polars.md) - Optimize for Polars
+- [Backend Selection](../guides/backends/index.md) - Choose the right backend
+- [DuckDB](../guides/backends/local.md#duckdb) - Optimize for DuckDB
+- [Polars](../guides/backends/local.md#polars) - Optimize for Polars

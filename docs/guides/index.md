@@ -112,38 +112,38 @@ result = pipeline.run()
 
 | Transform | Purpose |
 |-----------|---------|
-| [`select`](transforms/select.md) | Choose columns |
-| [`rename`](transforms/rename.md) | Rename columns |
-| [`filter`](transforms/filter.md) | Filter rows |
-| [`derive_column`](transforms/derive-column.md) | Add computed columns |
-| [`cast`](transforms/cast.md) | Convert types |
-| [`fill_null`](transforms/fill-null.md) | Replace nulls |
-| [`dedup`](transforms/dedup.md) | Remove duplicates |
-| [`sort`](transforms/sort.md) | Order rows |
-| [`join`](transforms/join.md) | Join datasets |
-| [`aggregate`](transforms/aggregate.md) | Group and aggregate |
-| [`union`](transforms/union.md) | Combine datasets |
-| [`limit`](transforms/limit.md) | Limit rows |
+| [`select`](transforms/operations.md#select) | Choose columns |
+| [`rename`](transforms/operations.md#rename) | Rename columns |
+| [`filter`](transforms/operations.md#filter) | Filter rows |
+| [`derive_column`](transforms/operations.md#derive_column) | Add computed columns |
+| [`cast`](transforms/operations.md#cast) | Convert types |
+| [`fill_null`](transforms/operations.md#fill_null) | Replace nulls |
+| [`dedup`](transforms/operations.md#dedup) | Remove duplicates |
+| [`sort`](transforms/operations.md#sort) | Order rows |
+| [`join`](transforms/operations.md#join) | Join datasets |
+| [`aggregate`](transforms/operations.md#aggregate) | Group and aggregate |
+| [`union`](transforms/operations.md#union) | Combine datasets |
+| [`limit`](transforms/operations.md#limit) | Limit rows |
 
 ### Quality Checks
 
 | Check | Purpose |
 |-------|---------|
-| [`not_null`](quality/not-null.md) | No null values |
-| [`unique`](quality/unique.md) | Uniqueness constraint |
-| [`row_count`](quality/row-count.md) | Row count bounds |
-| [`accepted_values`](quality/accepted-values.md) | Value whitelist |
-| [`expression`](quality/expression.md) | Custom validation |
+| [`not_null`](quality/checks.md#not_null) | No null values |
+| [`unique`](quality/checks.md#unique) | Uniqueness constraint |
+| [`row_count`](quality/checks.md#row_count) | Row count bounds |
+| [`accepted_values`](quality/checks.md#accepted_values) | Value whitelist |
+| [`expression`](quality/checks.md#expression) | Custom validation |
 
 ### Supported Backends
 
 | Backend | Type | Default |
 |---------|------|---------|
-| [DuckDB](backends/duckdb.md) | Local | Yes |
-| [Polars](backends/polars.md) | Local | Yes |
-| [Spark](backends/spark.md) | Distributed | No |
-| [Snowflake](backends/snowflake.md) | Cloud DW | No |
-| [BigQuery](backends/bigquery.md) | Cloud DW | No |
+| [DuckDB](backends/local.md#duckdb) | Local | Yes |
+| [Polars](backends/local.md#polars) | Local | Yes |
+| [Spark](backends/distributed.md) | Distributed | No |
+| [Snowflake](backends/cloud-warehouses.md#snowflake) | Cloud DW | No |
+| [BigQuery](backends/cloud-warehouses.md#bigquery) | Cloud DW | No |
 
 ## Next Steps
 

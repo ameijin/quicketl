@@ -349,6 +349,6 @@ pipelines/
 
 ## Next Steps
 
-- [Configuration Guide](../user-guide/configuration/index.md) - Deep dive into configuration
+- [Configuration Guide](../guides/configuration/index.md) - Deep dive into configuration
 - [Airflow Integration](../integrations/airflow.md) - Orchestrate with Airflow
-- [Best Practices](../best-practices/index.md) - Production patterns
+- [Best Practices](../best-practices/pipeline-design.md) - Production patterns

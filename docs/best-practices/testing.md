@@ -410,5 +410,5 @@ if __name__ == "__main__":
 ## Related
 
 - [Error Handling](error-handling.md) - Handle test failures
-- [CI/CD Integration](../integrations/index.md) - Automated testing
-- [Quality Checks](../user-guide/quality/index.md) - Data validation
+- [Airflow Integration](../integrations/airflow.md) - Orchestration and automation
+- [Quality Checks](../guides/quality/index.md) - Data validation

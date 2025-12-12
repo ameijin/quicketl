@@ -324,6 +324,6 @@ path: ${INPUT_PATH:-data/default.parquet}
 
 ## Related
 
-- [Pipeline YAML](../user-guide/configuration/pipeline-yaml.md) - YAML syntax
-- [Variables](../user-guide/configuration/variables.md) - Variable substitution
+- [Pipeline YAML](../guides/configuration/pipeline-yaml.md) - YAML syntax
+- [Variables](../guides/configuration/variables.md) - Variable substitution
 - [Production Best Practices](../best-practices/production.md) - Secrets management

@@ -399,4 +399,4 @@ else:
 
 - [Pipeline](pipeline.md) - High-level pipeline API
 - [Configuration Models](config.md) - Configuration types
-- [Backend Selection](../user-guide/backends/index.md) - Choosing backends
+- [Backend Selection](../guides/backends/index.md) - Choosing backends

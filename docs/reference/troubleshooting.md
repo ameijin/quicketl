@@ -446,4 +446,4 @@ If you've found a bug:
 
 - [Error Handling](../best-practices/error-handling.md) - Error handling strategies
 - [Performance](../best-practices/performance.md) - Optimization tips
-- [Backend Selection](../user-guide/backends/index.md) - Choose the right backend
+- [Backend Selection](../guides/backends/index.md) - Choose the right backend

@@ -368,6 +368,6 @@ sink:
 ## Next Steps
 
 - [Airflow DAG Example](airflow-dag.md) - Orchestrate cloud pipelines
-- [Spark Backend](../user-guide/backends/spark.md) - Spark configuration
-- [Snowflake Backend](../user-guide/backends/snowflake.md) - Snowflake setup
+- [Spark Backend](../guides/backends/distributed.md) - Spark configuration
+- [Snowflake Backend](../guides/backends/cloud-warehouses.md#snowflake) - Snowflake setup
 - [Production Best Practices](../best-practices/production.md)

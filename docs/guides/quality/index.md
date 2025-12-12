@@ -21,11 +21,11 @@ If any check fails, the pipeline can either:
 
 | Check | Purpose |
 |-------|---------|
-| [`not_null`](not-null.md) | Ensure no null values |
-| [`unique`](unique.md) | Verify uniqueness |
-| [`row_count`](row-count.md) | Validate row count bounds |
-| [`accepted_values`](accepted-values.md) | Check against whitelist |
-| [`expression`](expression.md) | Custom SQL validation |
+| [`not_null`](checks.md#not_null) | Ensure no null values |
+| [`unique`](checks.md#unique) | Verify uniqueness |
+| [`row_count`](checks.md#row_count) | Validate row count bounds |
+| [`accepted_values`](checks.md#accepted_values) | Check against whitelist |
+| [`expression`](checks.md#expression) | Custom SQL validation |
 
 ## Basic Usage
 
@@ -205,6 +205,4 @@ checks:
 
 ## Next Steps
 
-- [not_null](not-null.md) - Check for null values
-- [unique](unique.md) - Verify uniqueness
-- [expression](expression.md) - Custom validations
+- [All Quality Checks](checks.md) - Complete reference for all 5 check types

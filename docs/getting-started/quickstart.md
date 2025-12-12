@@ -201,7 +201,7 @@ quicketl run pipelines/sample.yml --dry-run
 
     Learn all the configuration options.
 
-    [:octicons-arrow-right-24: Configuration](../user-guide/configuration/index.md)
+    [:octicons-arrow-right-24: Configuration](../guides/configuration/index.md)
 
 -   :material-swap-horizontal:{ .lg .middle } **Transforms**
 
@@ -209,6 +209,6 @@ quicketl run pipelines/sample.yml --dry-run
 
     Explore all 12 transform operations.
 
-    [:octicons-arrow-right-24: Transforms](../user-guide/transforms/index.md)
+    [:octicons-arrow-right-24: Transforms](../guides/transforms/index.md)
 
 </div>

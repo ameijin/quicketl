@@ -349,4 +349,4 @@ except QualityCheckError as e:
 
 - [QuickETLEngine](engine.md) - Low-level engine API
 - [Configuration Models](config.md) - Type-safe configuration
-- [CLI run Command](../cli/run.md) - Command-line execution
+- [CLI run Command](../reference/cli.md#run) - Command-line execution

@@ -421,6 +421,6 @@ if not results.all_passed:
 
 ## Related
 
-- [Quality Checks Guide](../user-guide/quality/index.md) - YAML configuration
+- [Quality Checks Guide](../guides/quality/index.md) - YAML configuration
 - [Pipeline API](pipeline.md) - Running checks in pipelines
 - [Best Practices](../best-practices/testing.md) - Testing strategies

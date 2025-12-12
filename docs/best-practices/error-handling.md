@@ -397,6 +397,6 @@ quicketl run pipeline.yml --var INPUT=data/test_sample.csv
 
 ## Related
 
-- [Quality Checks](../user-guide/quality/index.md) - Check configuration
+- [Quality Checks](../guides/quality/index.md) - Check configuration
 - [Production](production.md) - Production deployment
 - [Troubleshooting](../reference/troubleshooting.md) - Common issues
