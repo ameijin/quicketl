@@ -1,10 +1,10 @@
 # Quick Start
 
-Get up and running with ETLX in 5 minutes.
+Get up and running with QuickETL in 5 minutes.
 
 ## Create a New Project
 
-Use the `etlx init` command to create a new project with sample data:
+Use the `quicketl init` command to create a new project with sample data:
 
 ```bash
 quicketl init my_project

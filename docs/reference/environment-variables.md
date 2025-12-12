@@ -1,6 +1,6 @@
 # Environment Variables Reference
 
-ETLX uses environment variables for configuration, database connections, and cloud credentials.
+QuickETL uses environment variables for configuration, database connections, and cloud credentials.
 
 ## Pipeline Variables
 
@@ -55,7 +55,7 @@ quicketl run pipeline.yml
 |----------|-------------|---------|
 | `POSTGRES_HOST` | Database host | `localhost` |
 | `POSTGRES_PORT` | Database port | `5432` |
-| `POSTGRES_USER` | Username | `etlx_user` |
+| `POSTGRES_USER` | Username | `quicketl_user` |
 | `POSTGRES_PASSWORD` | Password | `secret` |
 | `POSTGRES_DATABASE` | Database name | `analytics` |
 | `POSTGRES_SSLMODE` | SSL mode | `require` |
@@ -65,12 +65,12 @@ quicketl run pipeline.yml
 # Individual variables
 export POSTGRES_HOST=db.example.com
 export POSTGRES_PORT=5432
-export POSTGRES_USER=etlx_user
+export POSTGRES_USER=quicketl_user
 export POSTGRES_PASSWORD=secret
 export POSTGRES_DATABASE=analytics
 
 # Or connection URL
-export DATABASE_URL=postgresql://etlx_user:secret@db.example.com:5432/analytics
+export DATABASE_URL=postgresql://quicketl_user:secret@db.example.com:5432/analytics
 ```
 
 ### MySQL
@@ -79,7 +79,7 @@ export DATABASE_URL=postgresql://etlx_user:secret@db.example.com:5432/analytics
 |----------|-------------|---------|
 | `MYSQL_HOST` | Database host | `localhost` |
 | `MYSQL_PORT` | Database port | `3306` |
-| `MYSQL_USER` | Username | `etlx_user` |
+| `MYSQL_USER` | Username | `quicketl_user` |
 | `MYSQL_PASSWORD` | Password | `secret` |
 | `MYSQL_DATABASE` | Database name | `analytics` |
 
@@ -88,7 +88,7 @@ export DATABASE_URL=postgresql://etlx_user:secret@db.example.com:5432/analytics
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `SNOWFLAKE_ACCOUNT` | Account identifier | `xy12345.us-east-1` |
-| `SNOWFLAKE_USER` | Username | `etlx_user` |
+| `SNOWFLAKE_USER` | Username | `quicketl_user` |
 | `SNOWFLAKE_PASSWORD` | Password | `secret` |
 | `SNOWFLAKE_DATABASE` | Database | `analytics` |
 | `SNOWFLAKE_SCHEMA` | Schema | `public` |
@@ -98,7 +98,7 @@ export DATABASE_URL=postgresql://etlx_user:secret@db.example.com:5432/analytics
 
 ```bash
 export SNOWFLAKE_ACCOUNT=xy12345.us-east-1
-export SNOWFLAKE_USER=etlx_user
+export SNOWFLAKE_USER=quicketl_user
 export SNOWFLAKE_PASSWORD=secret
 export SNOWFLAKE_DATABASE=analytics
 export SNOWFLAKE_SCHEMA=public
@@ -200,16 +200,16 @@ export SPARK_EXECUTOR_MEMORY=8g
 export SPARK_EXECUTOR_CORES=4
 ```
 
-## ETLX Configuration
+## QuickETL Configuration
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ETLX_LOG_LEVEL` | Logging level | `INFO` |
-| `ETLX_CONFIG_DIR` | Config directory | `.` |
-| `ETLX_CACHE_DIR` | Cache directory | `~/.cache/etlx` |
+| `QuickETL_LOG_LEVEL` | Logging level | `INFO` |
+| `QuickETL_CONFIG_DIR` | Config directory | `.` |
+| `QuickETL_CACHE_DIR` | Cache directory | `~/.cache/quicketl` |
 
 ```bash
-export ETLX_LOG_LEVEL=DEBUG
+export QuickETL_LOG_LEVEL=DEBUG
 ```
 
 ## Using .env Files
@@ -221,11 +221,11 @@ Create a `.env` file in your project root:
 DATABASE_URL=postgresql://user:pass@localhost:5432/db
 AWS_REGION=us-east-1
 SNOWFLAKE_ACCOUNT=xy12345.us-east-1
-SNOWFLAKE_USER=etlx_user
+SNOWFLAKE_USER=quicketl_user
 SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}  # Reference secrets manager
 ```
 
-ETLX automatically loads `.env` files.
+QuickETL automatically loads `.env` files.
 
 ## Environment-Specific Configuration
 
@@ -296,8 +296,8 @@ export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
 ### View Current Environment
 
 ```bash
-# Show all ETLX-related variables
-env | grep -E '^(ETLX_|POSTGRES_|SNOWFLAKE_|AWS_|GOOGLE_)'
+# Show all QuickETL-related variables
+env | grep -E '^(QuickETL_|POSTGRES_|SNOWFLAKE_|AWS_|GOOGLE_)'
 
 # Test variable substitution
 quicketl validate pipeline.yml --verbose

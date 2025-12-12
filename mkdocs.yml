@@ -1,14 +1,14 @@
 # Project Information
-site_name: ETLX Documentation
-site_url: https://etlx.readthedocs.io
-site_description: "ETLX - Configuration-driven ETL framework for Python with 20+ backend support via Ibis"
-site_author: "ETLX Contributors"
-repo_name: quicketl/quicketl
-repo_url: https://github.com/etlx/etlx
+site_name: QuickETL Documentation
+site_url: https://quicketl.com
+site_description: "QuickETL - Fast & Flexible Python ETL Framework with 20+ backend support via Ibis"
+site_author: "QuickETL Contributors"
+repo_name: ameijin/quicketl
+repo_url: https://github.com/ameijin/quicketl
 edit_uri: edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2025 ETLX Contributors
+copyright: Copyright &copy; 2025 QuickETL Contributors
 
 # Theme Configuration
 theme:
@@ -121,7 +121,7 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: quicketl
+      user: ameijin
       repo: quicketl
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -202,7 +202,7 @@ nav:
   - Python API:
     - api/index.md
     - Pipeline: api/pipeline.md
-    - ETLXEngine: api/engine.md
+    - Engine: api/engine.md
     - Configuration Models: api/config.md
     - Quality Checks: api/quality.md
   - Integrations:
@@ -241,9 +241,9 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/etlx/etlx
+      link: https://github.com/ameijin/quicketl
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/etlx/
+      link: https://pypi.org/project/quicketl/
 
 extra_css:
   - stylesheets/extra.css

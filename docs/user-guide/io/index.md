@@ -1,6 +1,6 @@
 # Sources & Sinks
 
-ETLX reads data from **sources** and writes data to **sinks**. This section covers all supported source and sink types.
+QuickETL reads data from **sources** and writes data to **sinks**. This section covers all supported source and sink types.
 
 ## Overview
 

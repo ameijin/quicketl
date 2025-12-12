@@ -1,6 +1,6 @@
 # DataFusion Backend
 
-Apache DataFusion is a fast, extensible query engine written in Rust. ETLX uses DataFusion via Ibis for efficient in-memory analytics.
+Apache DataFusion is a fast, extensible query engine written in Rust. QuickETL uses DataFusion via Ibis for efficient in-memory analytics.
 
 ## Installation
 
@@ -88,7 +88,7 @@ quicketl run pipeline.yml --engine datafusion
 
 ### Data Types
 
-| ETLX Type | DataFusion Type |
+| QuickETL Type | DataFusion Type |
 |-----------|-----------------|
 | string | Utf8 |
 | int | Int64 |

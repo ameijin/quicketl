@@ -1,6 +1,6 @@
 # PostgreSQL Backend
 
-PostgreSQL is a powerful open-source relational database. ETLX can execute transformations directly in PostgreSQL or use it as a source/sink.
+PostgreSQL is a powerful open-source relational database. QuickETL can execute transformations directly in PostgreSQL or use it as a source/sink.
 
 ## Installation
 
@@ -34,7 +34,7 @@ Set environment variables:
 ```bash
 export POSTGRES_HOST=localhost
 export POSTGRES_PORT=5432
-export POSTGRES_USER=etlx_user
+export POSTGRES_USER=quicketl_user
 export POSTGRES_PASSWORD=your_password
 export POSTGRES_DATABASE=analytics
 ```
@@ -50,7 +50,7 @@ export DATABASE_URL=postgresql://user:password@localhost:5432/analytics
 ```
 POSTGRES_HOST=db.example.com
 POSTGRES_PORT=5432
-POSTGRES_USER=etlx_user
+POSTGRES_USER=quicketl_user
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 POSTGRES_DATABASE=analytics
 POSTGRES_SSLMODE=require
@@ -123,7 +123,7 @@ export POSTGRES_PORT=6432
 
 ### Data Types
 
-| ETLX Type | PostgreSQL Type |
+| QuickETL Type | PostgreSQL Type |
 |-----------|-----------------|
 | string | TEXT / VARCHAR |
 | int | INTEGER / BIGINT |
@@ -359,8 +359,8 @@ permission denied for table orders
 
 **Solution**:
 ```sql
-GRANT SELECT ON orders TO etlx_user;
-GRANT INSERT, UPDATE ON processed_orders TO etlx_user;
+GRANT SELECT ON orders TO quicketl_user;
+GRANT INSERT, UPDATE ON processed_orders TO quicketl_user;
 ```
 
 ### SSL Required

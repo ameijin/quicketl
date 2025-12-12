@@ -1,24 +1,24 @@
 # Troubleshooting Guide
 
-Common issues and solutions when working with ETLX.
+Common issues and solutions when working with QuickETL.
 
 ## Installation Issues
 
-### ModuleNotFoundError: No module named 'etlx'
+### ModuleNotFoundError: No module named 'quicketl'
 
-**Cause**: ETLX not installed or wrong Python environment.
+**Cause**: QuickETL not installed or wrong Python environment.
 
 **Solution**:
 
 ```bash
-# Install ETLX
+# Install QuickETL
 pip install quicketl
 
 # Or with specific backend
 pip install quicketl[duckdb]
 
 # Verify installation
-python -c "import etlx; print(etlx.__version__)"
+python -c "import quicketl; print(quicketl.__version__)"
 ```
 
 ### Backend Not Installed
@@ -39,7 +39,7 @@ pip install quicketl[snowflake]
 ### Python Version Error
 
 ```
-ERROR: Package 'etlx' requires a different Python: 3.8.0 not in '>=3.10'
+ERROR: Package 'quicketl' requires a different Python: 3.8.0 not in '>=3.10'
 ```
 
 **Solution**: Upgrade Python to 3.10 or later:
@@ -77,7 +77,7 @@ transforms:
     predicate: amount > 0
 ```
 
-Use a YAML validator or `etlx validate`:
+Use a YAML validator or `quicketl validate`:
 
 ```bash
 quicketl validate pipeline.yml
@@ -433,10 +433,10 @@ quicketl validate pipeline.yml --verbose
 
 If you've found a bug:
 
-1. Check existing issues: https://github.com/your-org/etlx/issues
+1. Check existing issues: https://github.com/your-org/quicketl/issues
 2. Create minimal reproduction
 3. Include:
-   - ETLX version
+   - QuickETL version
    - Python version
    - Operating system
    - Complete error message

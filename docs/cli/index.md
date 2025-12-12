@@ -1,6 +1,6 @@
 # CLI Reference
 
-ETLX provides a command-line interface for running and managing pipelines.
+QuickETL provides a command-line interface for running and managing pipelines.
 
 ## Commands
 

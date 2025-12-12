@@ -142,12 +142,12 @@ quicketl run pipeline.yml \
 
 | Database | Connection Prefix | Install Extra |
 |----------|-------------------|---------------|
-| PostgreSQL | `postgresql://` | `etlx[postgres]` |
-| MySQL | `mysql://` | `etlx[mysql]` |
+| PostgreSQL | `postgresql://` | `quicketl[postgres]` |
+| MySQL | `mysql://` | `quicketl[mysql]` |
 | SQLite | `sqlite:///` | Built-in |
-| ClickHouse | `clickhouse://` | `etlx[clickhouse]` |
-| Snowflake | See below | `etlx[snowflake]` |
-| BigQuery | See below | `etlx[bigquery]` |
+| ClickHouse | `clickhouse://` | `quicketl[clickhouse]` |
+| Snowflake | See below | `quicketl[snowflake]` |
+| BigQuery | See below | `quicketl[bigquery]` |
 
 ### Snowflake
 
@@ -187,7 +187,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 ## Python API
 
 ```python
-from etlx.config.models import DatabaseSource
+from quicketl.config.models import DatabaseSource
 
 # Using table
 source = DatabaseSource(

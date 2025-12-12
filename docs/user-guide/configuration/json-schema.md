@@ -1,6 +1,6 @@
 # JSON Schema for IDEs
 
-ETLX provides JSON Schema support for IDE autocompletion and validation.
+QuickETL provides JSON Schema support for IDE autocompletion and validation.
 
 ## Generate Schema
 
@@ -22,13 +22,13 @@ quicketl schema -o .quicketl-schema.json --indent 4
 ### Option 1: YAML Extension Settings
 
 1. Install the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-2. Generate the schema: `etlx schema -o .etlx-schema.json`
+2. Generate the schema: `quicketl schema -o .quicketl-schema.json`
 3. Add to `.vscode/settings.json`:
 
 ```json
 {
   "yaml.schemas": {
-    ".etlx-schema.json": ["pipelines/*.yml", "pipelines/**/*.yml"]
+    ".quicketl-schema.json": ["pipelines/*.yml", "pipelines/**/*.yml"]
   }
 }
 ```
@@ -38,7 +38,7 @@ quicketl schema -o .quicketl-schema.json --indent 4
 Add a schema reference at the top of your YAML file:
 
 ```yaml
-# yaml-language-server: $schema=.etlx-schema.json
+# yaml-language-server: $schema=.quicketl-schema.json
 name: my_pipeline
 engine: duckdb
 ...
@@ -51,7 +51,7 @@ Create `.vscode/settings.json` in your project:
 ```json
 {
   "yaml.schemas": {
-    "https://raw.githubusercontent.com/etlx/etlx/main/schema.json": [
+    "https://raw.githubusercontent.com/quicketl/quicketl/main/schema.json": [
       "pipelines/*.yml"
     ]
   },
@@ -63,11 +63,11 @@ Create `.vscode/settings.json` in your project:
 
 ## PyCharm / IntelliJ Setup
 
-1. Generate the schema: `etlx schema -o .etlx-schema.json`
+1. Generate the schema: `quicketl schema -o .quicketl-schema.json`
 2. Go to **Settings** → **Languages & Frameworks** → **Schemas and DTDs** → **JSON Schema Mappings**
 3. Click **+** to add a new mapping:
-   - **Name**: ETLX Pipeline
-   - **Schema file or URL**: Select `.etlx-schema.json`
+   - **Name**: QuickETL Pipeline
+   - **Schema file or URL**: Select `.quicketl-schema.json`
    - **File path pattern**: `pipelines/*.yml`
 
 ## Features
@@ -127,7 +127,7 @@ Example schema structure:
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ETLX Pipeline Configuration",
+  "title": "QuickETL Pipeline Configuration",
   "type": "object",
   "required": ["name", "source", "sink"],
   "properties": {
@@ -156,10 +156,10 @@ Example schema structure:
 
 ## Keeping Schema Updated
 
-Regenerate the schema when ETLX is updated:
+Regenerate the schema when QuickETL is updated:
 
 ```bash
-# After upgrading ETLX
+# After upgrading QuickETL
 pip install --upgrade quicketl
 quicketl schema -o .quicketl-schema.json
 ```
@@ -169,7 +169,7 @@ Add to your `Makefile` or scripts:
 ```makefile
 .PHONY: schema
 schema:
-	etlx schema -o .etlx-schema.json
+	quicketl schema -o .quicketl-schema.json
 ```
 
 ## CI/CD Validation
@@ -192,14 +192,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install ETLX
+      - name: Install QuickETL
         run: pip install quicketl
 
       - name: Validate all pipelines
         run: |
           for f in pipelines/*.yml; do
             echo "Validating $f"
-            etlx validate "$f"
+            quicketl validate "$f"
           done
 ```
 
@@ -213,7 +213,7 @@ jobs:
 
 ### Outdated Completions
 
-Regenerate the schema after updating ETLX:
+Regenerate the schema after updating QuickETL:
 
 ```bash
 quicketl schema -o .quicketl-schema.json

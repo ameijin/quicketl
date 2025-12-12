@@ -109,7 +109,7 @@ Group data and compute summary statistics.
 ## Python API
 
 ```python
-from etlx.config.transforms import AggregateTransform
+from quicketl.config.transforms import AggregateTransform
 
 transform = AggregateTransform(
     group_by=["region", "category"],

@@ -1,6 +1,6 @@
-# etlx info
+# quicketl info
 
-Display ETLX version and backend information.
+Display QuickETL version and backend information.
 
 ## Usage
 
@@ -26,7 +26,7 @@ quicketl info
 Output:
 
 ```
-ETLX v0.1.0
+QuickETL v0.1.0
 Python 3.12.0
 ```
 

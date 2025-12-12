@@ -90,3 +90,7 @@ logs/
 Thumbs.db
 
 /site
+
+.playwright-mcp/
+
+.claude

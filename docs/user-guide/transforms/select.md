@@ -83,7 +83,7 @@ transforms:
 ## Python API
 
 ```python
-from etlx.config.transforms import SelectTransform
+from quicketl.config.transforms import SelectTransform
 
 transform = SelectTransform(columns=["id", "name", "amount"])
 ```

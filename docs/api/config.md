@@ -1,11 +1,11 @@
 # Configuration Models
 
-ETLX uses Pydantic models for type-safe pipeline configuration. These models provide validation, IDE autocomplete, and documentation.
+QuickETL uses Pydantic models for type-safe pipeline configuration. These models provide validation, IDE autocomplete, and documentation.
 
 ## Import
 
 ```python
-from etlx.config import (
+from quicketl.config import (
     PipelineConfig,
     FileSource,
     DatabaseSource,
@@ -26,7 +26,7 @@ from etlx.config import (
 The root configuration model for a complete pipeline.
 
 ```python
-from etlx.config import PipelineConfig
+from quicketl.config import PipelineConfig
 
 class PipelineConfig(BaseModel):
     name: str
@@ -41,7 +41,7 @@ class PipelineConfig(BaseModel):
 ### Example
 
 ```python
-from etlx.config import (
+from quicketl.config import (
     PipelineConfig,
     FileSource,
     FileSink,
@@ -358,8 +358,8 @@ class ExpressionCheck(BaseModel):
 ## Complete Example
 
 ```python
-from etlx import Pipeline
-from etlx.config import (
+from quicketl import Pipeline
+from quicketl.config import (
     PipelineConfig,
     FileSource,
     FileSink,
@@ -431,7 +431,7 @@ Pydantic models provide automatic validation:
 
 ```python
 from pydantic import ValidationError
-from etlx.config import PipelineConfig
+from quicketl.config import PipelineConfig
 
 try:
     config = PipelineConfig(

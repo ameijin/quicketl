@@ -1,6 +1,6 @@
 # BigQuery Backend
 
-Google BigQuery is a serverless, highly scalable data warehouse. ETLX pushes transformations to BigQuery for efficient in-warehouse processing.
+Google BigQuery is a serverless, highly scalable data warehouse. QuickETL pushes transformations to BigQuery for efficient in-warehouse processing.
 
 ## Installation
 
@@ -101,7 +101,7 @@ All transforms are pushed to BigQuery SQL:
 
 ### Data Types
 
-| ETLX Type | BigQuery Type |
+| QuickETL Type | BigQuery Type |
 |-----------|---------------|
 | string | STRING |
 | int | INT64 |
@@ -354,7 +354,7 @@ The service account needs these IAM roles:
 
 ```bash
 gcloud projects add-iam-policy-binding PROJECT_ID \
-  --member="serviceAccount:etlx@PROJECT_ID.iam.gserviceaccount.com" \
+  --member="serviceAccount:quicketl@PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/bigquery.dataEditor"
 ```
 

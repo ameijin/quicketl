@@ -1,6 +1,6 @@
 # Error Handling Best Practices
 
-Strategies for handling errors gracefully in ETLX pipelines.
+Strategies for handling errors gracefully in QuickETL pipelines.
 
 ## Types of Errors
 
@@ -77,8 +77,8 @@ quicketl run pipeline.yml --no-fail-on-checks
 ### Programmatic Handling
 
 ```python
-from etlx import Pipeline
-from etlx.exceptions import QualityCheckError
+from quicketl import Pipeline
+from quicketl.exceptions import QualityCheckError
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 
@@ -148,8 +148,8 @@ exit 1
 
 ```python
 import time
-from etlx import Pipeline
-from etlx.exceptions import ExecutionError
+from quicketl import Pipeline
+from quicketl.exceptions import ExecutionError
 
 def run_with_retry(config_path, max_retries=3, base_delay=30):
     pipeline = Pipeline.from_yaml(config_path)
@@ -210,7 +210,7 @@ curl -X POST "https://api.datadoghq.com/api/v1/series" \
   -H "DD-API-KEY: $DD_API_KEY" \
   -d "{
     \"series\": [{
-      \"metric\": \"etlx.pipeline.duration\",
+      \"metric\": \"quicketl.pipeline.duration\",
       \"points\": [[$(date +%s), $DURATION]],
       \"tags\": [\"pipeline:daily_sales\", \"status:$STATUS\"]
     }]
@@ -276,7 +276,7 @@ sink:
 Capture failed records:
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 
@@ -313,7 +313,7 @@ fi
 
 ```python
 import requests
-from etlx import Pipeline
+from quicketl import Pipeline
 
 SLACK_WEBHOOK = "https://hooks.slack.com/services/..."
 

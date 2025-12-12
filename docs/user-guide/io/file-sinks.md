@@ -202,7 +202,7 @@ sink:
 ## Python API
 
 ```python
-from etlx.config.models import FileSink
+from quicketl.config.models import FileSink
 
 # Basic
 sink = FileSink(path="output/sales.parquet")
@@ -284,7 +284,7 @@ Error: Permission denied
 Error: Directory not found
 ```
 
-ETLX creates directories automatically. If this error occurs:
+QuickETL creates directories automatically. If this error occurs:
 
 - Check the parent path is valid
 - Verify cloud bucket exists

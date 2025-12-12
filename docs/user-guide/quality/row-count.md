@@ -62,7 +62,7 @@ Check failed: row_count
 ## Python API
 
 ```python
-from etlx.config.checks import RowCountCheck
+from quicketl.config.checks import RowCountCheck
 
 # At least 1 row
 check = RowCountCheck(min=1)

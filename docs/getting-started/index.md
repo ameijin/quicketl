@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to ETLX! This section will help you get up and running quickly.
+Welcome to QuickETL! This section will help you get up and running quickly.
 
 ## Learning Path
 
@@ -10,9 +10,9 @@ Welcome to ETLX! This section will help you get up and running quickly.
 
     ---
 
-    Install ETLX and optional dependencies for your use case.
+    Install QuickETL and optional dependencies for your use case.
 
-    [:octicons-arrow-right-24: Install ETLX](installation.md)
+    [:octicons-arrow-right-24: Install QuickETL](installation.md)
 
 -   :material-rocket-launch:{ .lg .middle } **Quick Start**
 
@@ -34,7 +34,7 @@ Welcome to ETLX! This section will help you get up and running quickly.
 
     ---
 
-    Learn the recommended layout for ETLX projects.
+    Learn the recommended layout for QuickETL projects.
 
     [:octicons-arrow-right-24: Project Structure](project-structure.md)
 
@@ -44,7 +44,7 @@ Welcome to ETLX! This section will help you get up and running quickly.
 
 Before you begin, ensure you have:
 
-- **Python 3.12 or later** - ETLX uses modern Python features
+- **Python 3.12 or later** - QuickETL uses modern Python features
 - **pip or uv** - For package installation
 - **Basic Python knowledge** - Familiarity with Python basics helps
 
@@ -52,14 +52,14 @@ Before you begin, ensure you have:
 
 By the end of this section, you'll know how to:
 
-1. Install ETLX with the backends you need
-2. Create a new ETLX project with sample data
+1. Install QuickETL with the backends you need
+2. Create a new QuickETL project with sample data
 3. Write pipeline configurations in YAML
 4. Run pipelines from the command line
 5. Organize your pipelines for maintainability
 
 ## Next Steps
 
-If you're new to ETLX, start with the [Installation](installation.md) guide, then follow the [Quick Start](quickstart.md) tutorial.
+If you're new to QuickETL, start with the [Installation](installation.md) guide, then follow the [Quick Start](quickstart.md) tutorial.
 
 If you're familiar with ETL concepts and want to dive deeper, check out the [User Guide](../user-guide/index.md) after completing this section.

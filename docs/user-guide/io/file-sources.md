@@ -111,7 +111,7 @@ source:
 ```
 
 !!! note "JSON Lines Format"
-    ETLX expects JSON Lines format where each line is a valid JSON object:
+    QuickETL expects JSON Lines format where each line is a valid JSON object:
     ```json
     {"id": 1, "name": "Alice"}
     {"id": 2, "name": "Bob"}
@@ -178,7 +178,7 @@ quicketl run pipeline.yml --var DATE=2025-01-15
 ## Python API
 
 ```python
-from etlx.config.models import FileSource
+from quicketl.config.models import FileSource
 
 # Parquet
 source = FileSource(path="data/sales.parquet")

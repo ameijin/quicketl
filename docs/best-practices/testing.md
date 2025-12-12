@@ -1,6 +1,6 @@
 # Testing Best Practices
 
-Strategies for testing ETLX pipelines to ensure data quality and reliability.
+Strategies for testing QuickETL pipelines to ensure data quality and reliability.
 
 ## Testing Pyramid
 
@@ -48,14 +48,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install ETLX
+      - name: Install QuickETL
         run: pip install quicketl[duckdb]
 
       - name: Validate all pipelines
         run: |
           for f in pipelines/*.yml; do
             echo "Validating $f..."
-            etlx validate "$f"
+            quicketl validate "$f"
           done
 ```
 
@@ -161,7 +161,7 @@ def sample_orders(test_data_dir):
 ```python
 # tests/test_pipelines.py
 import pytest
-from etlx import Pipeline
+from quicketl import Pipeline
 
 def test_basic_pipeline_runs(sample_orders, temp_output_dir):
     """Test that pipeline executes successfully."""
@@ -208,8 +208,8 @@ def test_quality_checks_pass(sample_orders, temp_output_dir):
 ```python
 # tests/test_edge_cases.py
 import pytest
-from etlx import Pipeline
-from etlx.exceptions import QualityCheckError
+from quicketl import Pipeline
+from quicketl.exceptions import QualityCheckError
 
 def test_empty_input_file(test_data_dir, temp_output_dir):
     """Test handling of empty input file."""
@@ -262,7 +262,7 @@ def test_duplicate_handling(test_data_dir, temp_output_dir):
 ```python
 # tests/test_integration.py
 import pytest
-from etlx import Pipeline
+from quicketl import Pipeline
 
 @pytest.mark.integration
 def test_full_etl_pipeline(test_data_dir, temp_output_dir):
@@ -360,7 +360,7 @@ repos:
   - repo: local
     hooks:
       - id: validate-pipelines
-        name: Validate ETLX Pipelines
+        name: Validate QuickETL Pipelines
         entry: bash -c 'for f in pipelines/*.yml; do quicketl validate "$f" || exit 1; done'
         language: system
         files: \.yml$

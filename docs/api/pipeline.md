@@ -1,11 +1,11 @@
 # Pipeline Class
 
-The `Pipeline` class is the main entry point for working with ETLX pipelines programmatically.
+The `Pipeline` class is the main entry point for working with QuickETL pipelines programmatically.
 
 ## Import
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 ```
 
 ## Class Methods
@@ -94,7 +94,7 @@ Pipeline.from_model(config: PipelineConfig) -> Pipeline
 **Example:**
 
 ```python
-from etlx.config import PipelineConfig, FileSource, FileSink
+from quicketl.config import PipelineConfig, FileSource, FileSink
 
 config = PipelineConfig(
     name="sales_etl",
@@ -314,8 +314,8 @@ print(df.head())
 ## Complete Example
 
 ```python
-from etlx import Pipeline
-from etlx.exceptions import QualityCheckError
+from quicketl import Pipeline
+from quicketl.exceptions import QualityCheckError
 
 # Load pipeline
 pipeline = Pipeline.from_yaml("pipelines/daily_sales.yml")
@@ -347,6 +347,6 @@ except QualityCheckError as e:
 
 ## Related
 
-- [ETLXEngine](engine.md) - Low-level engine API
+- [QuickETLEngine](engine.md) - Low-level engine API
 - [Configuration Models](config.md) - Type-safe configuration
 - [CLI run Command](../cli/run.md) - Command-line execution

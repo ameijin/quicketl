@@ -189,7 +189,7 @@ Create a new computed column from an expression.
 ## Python API
 
 ```python
-from etlx.config.transforms import DeriveColumnTransform
+from quicketl.config.transforms import DeriveColumnTransform
 
 transform = DeriveColumnTransform(
     name="total_with_tax",

@@ -1,6 +1,6 @@
-# Contributing to ETLX
+# Contributing to QuickETL
 
-Thank you for your interest in contributing to ETLX! This guide will help you get started.
+Thank you for your interest in contributing to QuickETL! This guide will help you get started.
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ Thank you for your interest in contributing to ETLX! This guide will help you ge
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/etlx.git
+git clone https://github.com/your-org/quicketl.git
 cd quicketl
 
 # Create virtual environment and install dependencies
@@ -124,7 +124,7 @@ tests/
 
 ```python
 import pytest
-from etlx.transforms import FilterTransform
+from quicketl.transforms import FilterTransform
 
 def test_filter_basic():
     """Test basic filter functionality."""
@@ -186,7 +186,7 @@ refactor: Simplify engine initialization
 
 Include:
 
-- ETLX version
+- QuickETL version
 - Python version
 - Operating system
 - Steps to reproduce

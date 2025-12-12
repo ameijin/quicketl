@@ -1,6 +1,6 @@
 # Project Structure
 
-Learn how to organize ETLX projects for maintainability and scalability.
+Learn how to organize QuickETL projects for maintainability and scalability.
 
 ## Recommended Layout
 
@@ -22,7 +22,7 @@ my_project/
 │   ├── custom_transforms.py
 │   └── utils.py
 ├── dags/                  # Airflow DAGs (if using Airflow)
-│   └── etlx_dag.py
+│   └── quicketl_dag.py
 ├── tests/                 # Pipeline tests
 │   ├── test_sales_etl.py
 │   └── fixtures/
@@ -200,7 +200,7 @@ quicketl run pipelines/base/sales.yml \
 For complex transform sequences, use Python:
 
 ```python title="scripts/transforms.py"
-from etlx.config.transforms import (
+from quicketl.config.transforms import (
     FilterTransform,
     DeriveColumnTransform,
     AggregateTransform,
@@ -240,7 +240,7 @@ tests/
 ```python title="tests/test_sales_etl.py"
 import pytest
 from pathlib import Path
-from etlx import Pipeline
+from quicketl import Pipeline
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -271,11 +271,11 @@ def test_sales_pipeline_checks_pass():
 
 ### DAG Structure
 
-```python title="dags/etlx_dag.py"
+```python title="dags/quicketl_dag.py"
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
 default_args = {
     "owner": "data-team",
@@ -283,14 +283,14 @@ default_args = {
 }
 
 with DAG(
-    "etlx_sales_pipeline",
+    "quicketl_sales_pipeline",
     default_args=default_args,
     schedule_interval="@daily",
     start_date=datetime(2025, 1, 1),
     catchup=False,
 ) as dag:
 
-    @etlx_task(config_path="pipelines/daily/sales_etl.yml")
+    @quicketl_task(config_path="pipelines/daily/sales_etl.yml")
     def run_sales_etl(**context):
         return {"DATE": context["ds"]}
 

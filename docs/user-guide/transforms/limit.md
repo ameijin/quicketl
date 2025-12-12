@@ -73,7 +73,7 @@ transforms:
 ## Python API
 
 ```python
-from etlx.config.transforms import LimitTransform
+from quicketl.config.transforms import LimitTransform
 
 transform = LimitTransform(n=1000)
 ```

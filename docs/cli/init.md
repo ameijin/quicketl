@@ -1,6 +1,6 @@
-# etlx init
+# quicketl init
 
-Initialize a new ETLX project or pipeline file.
+Initialize a new QuickETL project or pipeline file.
 
 ## Usage
 

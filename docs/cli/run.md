@@ -1,4 +1,4 @@
-# etlx run
+# quicketl run
 
 Execute a pipeline from a YAML configuration file.
 

@@ -159,7 +159,7 @@ sink:
 
 ### Table Must Exist
 
-ETLX does not create tables automatically. Create the table first:
+QuickETL does not create tables automatically. Create the table first:
 
 ```sql
 CREATE TABLE sales_summary (
@@ -184,7 +184,7 @@ transforms:
 
 ### Data Types
 
-ETLX attempts to convert types automatically. For best results:
+QuickETL attempts to convert types automatically. For best results:
 
 - Use compatible types
 - Cast explicitly if needed:
@@ -200,7 +200,7 @@ transforms:
 ## Python API
 
 ```python
-from etlx.config.models import DatabaseSink
+from quicketl.config.models import DatabaseSink
 
 # Basic
 sink = DatabaseSink(
@@ -304,7 +304,7 @@ Upsert/merge operations are planned for a future release. Currently, use:
 
 ### No Schema Management
 
-ETLX does not create or modify table schemas. Manage schemas separately.
+QuickETL does not create or modify table schemas. Manage schemas separately.
 
 ## Related
 

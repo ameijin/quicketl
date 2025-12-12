@@ -1,6 +1,6 @@
 # Configuration
 
-ETLX pipelines can be configured using YAML files or the Python API. This section covers configuration in detail.
+QuickETL pipelines can be configured using YAML files or the Python API. This section covers configuration in detail.
 
 ## Overview
 
@@ -60,7 +60,7 @@ sink:                         # Required: Where to write data
 
 ## Configuration Validation
 
-ETLX validates configurations using Pydantic:
+QuickETL validates configurations using Pydantic:
 
 - **Type checking** - Correct types for all fields
 - **Required fields** - Missing fields are reported

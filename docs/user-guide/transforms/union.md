@@ -66,9 +66,9 @@ Vertically combine multiple datasets.
 ## Python API
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Read datasets
 north = engine.read_file("north_sales.parquet", "parquet")
@@ -83,7 +83,7 @@ combined = engine.union([north, south])
 ### Combine Daily Files
 
 ```python
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Read daily files
 files = [

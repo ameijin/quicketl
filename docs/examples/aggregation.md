@@ -1,6 +1,6 @@
 # Aggregation Pipeline Example
 
-This example demonstrates how to compute metrics, summaries, and roll-ups from transactional data using ETLX aggregations.
+This example demonstrates how to compute metrics, summaries, and roll-ups from transactional data using QuickETL aggregations.
 
 ## Overview
 

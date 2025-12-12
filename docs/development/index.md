@@ -1,6 +1,6 @@
 # Development
 
-Resources for contributing to ETLX development.
+Resources for contributing to QuickETL development.
 
 ## Getting Started
 
@@ -21,7 +21,7 @@ Want to contribute? Start here:
 
 ### Architecture
 
-Understand how ETLX works:
+Understand how QuickETL works:
 
 - Core abstractions
 - Backend system

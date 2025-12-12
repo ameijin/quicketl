@@ -1,6 +1,6 @@
 # User Guide
 
-This guide covers all aspects of building pipelines with ETLX.
+This guide covers all aspects of building pipelines with QuickETL.
 
 ## Core Concepts
 
@@ -48,9 +48,9 @@ This guide covers all aspects of building pipelines with ETLX.
 
 </div>
 
-## How ETLX Works
+## How QuickETL Works
 
-ETLX pipelines follow a simple flow:
+QuickETL pipelines follow a simple flow:
 
 ```mermaid
 graph LR
@@ -92,9 +92,9 @@ sink:
 Build pipelines programmatically:
 
 ```python
-from etlx import Pipeline
-from etlx.config.models import FileSource, FileSink
-from etlx.config.transforms import FilterTransform
+from quicketl import Pipeline
+from quicketl.config.models import FileSource, FileSink
+from quicketl.config.transforms import FilterTransform
 
 pipeline = (
     Pipeline("my_pipeline", engine="duckdb")

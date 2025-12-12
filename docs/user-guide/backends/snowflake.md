@@ -1,6 +1,6 @@
 # Snowflake Backend
 
-Snowflake is a cloud-native data warehouse. ETLX can push transformations directly to Snowflake for efficient in-warehouse processing.
+Snowflake is a cloud-native data warehouse. QuickETL can push transformations directly to Snowflake for efficient in-warehouse processing.
 
 ## Installation
 
@@ -33,7 +33,7 @@ Set environment variables:
 
 ```bash
 export SNOWFLAKE_ACCOUNT=xy12345.us-east-1
-export SNOWFLAKE_USER=etlx_user
+export SNOWFLAKE_USER=quicketl_user
 export SNOWFLAKE_PASSWORD=your_password
 export SNOWFLAKE_DATABASE=analytics
 export SNOWFLAKE_SCHEMA=public
@@ -44,7 +44,7 @@ Or use `.env`:
 
 ```
 SNOWFLAKE_ACCOUNT=xy12345.us-east-1
-SNOWFLAKE_USER=etlx_user
+SNOWFLAKE_USER=quicketl_user
 SNOWFLAKE_PASSWORD=${SNOWFLAKE_PASSWORD}
 SNOWFLAKE_DATABASE=analytics
 SNOWFLAKE_SCHEMA=public
@@ -138,7 +138,7 @@ All transforms are pushed to Snowflake SQL:
 
 ### Data Types
 
-| ETLX Type | Snowflake Type |
+| QuickETL Type | Snowflake Type |
 |-----------|----------------|
 | string | VARCHAR |
 | int | INTEGER |
@@ -321,9 +321,9 @@ SQL access control error
 
 **Solution**: Grant necessary permissions:
 ```sql
-GRANT USAGE ON WAREHOUSE compute_wh TO ROLE etlx_role;
-GRANT SELECT ON TABLE raw.sales TO ROLE etlx_role;
-GRANT INSERT ON TABLE analytics.summary TO ROLE etlx_role;
+GRANT USAGE ON WAREHOUSE compute_wh TO ROLE quicketl_role;
+GRANT SELECT ON TABLE raw.sales TO ROLE quicketl_role;
+GRANT INSERT ON TABLE analytics.summary TO ROLE quicketl_role;
 ```
 
 ## Related

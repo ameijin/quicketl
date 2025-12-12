@@ -1,6 +1,6 @@
 # Expression Language Reference
 
-ETLX uses SQL expressions for filters, derived columns, and quality checks. This reference covers the supported expression syntax.
+QuickETL uses SQL expressions for filters, derived columns, and quality checks. This reference covers the supported expression syntax.
 
 ## Basic Syntax
 

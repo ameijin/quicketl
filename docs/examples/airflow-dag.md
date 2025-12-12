@@ -1,6 +1,6 @@
 # Airflow DAG Example
 
-This example demonstrates a complete Airflow DAG that orchestrates multiple ETLX pipelines with proper error handling, alerting, and monitoring.
+This example demonstrates a complete Airflow DAG that orchestrates multiple QuickETL pipelines with proper error handling, alerting, and monitoring.
 
 ## Overview
 
@@ -27,7 +27,7 @@ Create `dags/daily_etl_dag.py`:
 """
 Daily ETL Pipeline DAG
 
-This DAG orchestrates the daily ETL process using ETLX pipelines.
+This DAG orchestrates the daily ETL process using QuickETL pipelines.
 Runs daily at 6 AM UTC.
 """
 
@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from airflow.decorators import dag, task
 from airflow.operators.email import EmailOperator
 from airflow.utils.trigger_rule import TriggerRule
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
 
 # Default arguments for all tasks
@@ -54,7 +54,7 @@ default_args = {
 
 @dag(
     dag_id="daily_etl_pipeline",
-    description="Daily ETL pipeline using ETLX",
+    description="Daily ETL pipeline using QuickETL",
     schedule="0 6 * * *",  # 6 AM UTC daily
     start_date=datetime(2025, 1, 1),
     catchup=False,
@@ -73,8 +73,8 @@ def daily_etl_pipeline():
     4. Notify: Send completion status
 
     ## Variables Required
-    - `etlx_database_url`: Connection string for warehouse
-    - `etlx_s3_bucket`: S3 bucket for raw data
+    - `quicketl_database_url`: Connection string for warehouse
+    - `quicketl_s3_bucket`: S3 bucket for raw data
 
     ## Connections Required
     - `snowflake_default`: Snowflake warehouse connection
@@ -84,7 +84,7 @@ def daily_etl_pipeline():
     # EXTRACT PHASE
     # =========================================================================
 
-    @etlx_task(config="pipelines/extract/orders.yml")
+    @quicketl_task(config="pipelines/extract/orders.yml")
     def extract_orders(**context):
         """Extract orders from source system."""
         return {
@@ -92,12 +92,12 @@ def daily_etl_pipeline():
             "EXECUTION_DATE": context["execution_date"].isoformat(),
         }
 
-    @etlx_task(config="pipelines/extract/products.yml")
+    @quicketl_task(config="pipelines/extract/products.yml")
     def extract_products(**context):
         """Extract product catalog."""
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/extract/customers.yml")
+    @quicketl_task(config="pipelines/extract/customers.yml")
     def extract_customers(**context):
         """Extract customer data."""
         return {"DATE": context["ds"]}
@@ -106,7 +106,7 @@ def daily_etl_pipeline():
     # TRANSFORM PHASE
     # =========================================================================
 
-    @etlx_task(config="pipelines/transform/daily_metrics.yml")
+    @quicketl_task(config="pipelines/transform/daily_metrics.yml")
     def transform_data(**context):
         """Transform and aggregate extracted data."""
         return {
@@ -118,7 +118,7 @@ def daily_etl_pipeline():
     # LOAD PHASE
     # =========================================================================
 
-    @etlx_task(
+    @quicketl_task(
         config="pipelines/load/warehouse.yml",
         fail_on_checks=True,
     )
@@ -128,7 +128,7 @@ def daily_etl_pipeline():
 
         return {
             "DATE": context["ds"],
-            "WAREHOUSE": Variable.get("etlx_warehouse", default_var="ETL_WH"),
+            "WAREHOUSE": Variable.get("quicketl_warehouse", default_var="ETL_WH"),
         }
 
     # =========================================================================
@@ -367,7 +367,7 @@ def dynamic_pipeline():
         # Could come from database or API
         return ["us-east", "us-west", "eu-west", "ap-south"]
 
-    @etlx_task(config="pipelines/regional.yml")
+    @quicketl_task(config="pipelines/regional.yml")
     def process_region(region, **context):
         return {
             "DATE": context["ds"],
@@ -396,11 +396,11 @@ def conditional_pipeline():
         python_callable=choose_pipeline,
     )
 
-    @etlx_task(config="pipelines/full_refresh.yml")
+    @quicketl_task(config="pipelines/full_refresh.yml")
     def full_refresh(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/incremental.yml")
+    @quicketl_task(config="pipelines/incremental.yml")
     def incremental(**context):
         return {"DATE": context["ds"]}
 
@@ -417,7 +417,7 @@ def conditional_pipeline():
     },
 )
 def sla_monitored_pipeline():
-    @etlx_task(
+    @quicketl_task(
         config="pipelines/critical.yml",
         sla=timedelta(hours=1),  # Stricter SLA for this task
     )
@@ -451,7 +451,7 @@ airflow/
 ```
 # requirements.txt
 apache-airflow>=2.8.0
-etlx[airflow,duckdb,snowflake]
+quicketl[airflow,duckdb,snowflake]
 ```
 
 ### Airflow Variables
@@ -459,8 +459,8 @@ etlx[airflow,duckdb,snowflake]
 Set in Airflow UI or via CLI:
 
 ```bash
-airflow variables set etlx_warehouse "ETL_WH"
-airflow variables set etlx_s3_bucket "data-lake-prod"
+airflow variables set quicketl_warehouse "ETL_WH"
+airflow variables set quicketl_s3_bucket "data-lake-prod"
 ```
 
 ### Airflow Connections

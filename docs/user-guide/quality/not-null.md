@@ -47,7 +47,7 @@ Check failed: not_null
 ## Python API
 
 ```python
-from etlx.config.checks import NotNullCheck
+from quicketl.config.checks import NotNullCheck
 
 check = NotNullCheck(columns=["id", "name", "amount"])
 ```

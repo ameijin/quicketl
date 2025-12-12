@@ -79,7 +79,7 @@ Replace null values with specified defaults.
 ## Python API
 
 ```python
-from etlx.config.transforms import FillNullTransform
+from quicketl.config.transforms import FillNullTransform
 
 transform = FillNullTransform(
     columns={

@@ -74,7 +74,7 @@ Rename columns using a mapping.
 ## Python API
 
 ```python
-from etlx.config.transforms import RenameTransform
+from quicketl.config.transforms import RenameTransform
 
 transform = RenameTransform(
     mapping={

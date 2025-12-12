@@ -1,21 +1,21 @@
-# ETLX
+# QuickETL
 
 <div class="hero" markdown>
 
-**Configuration-driven ETL for Python**
+**Fast & Flexible Python ETL Framework**
 
 Build data pipelines in YAML or Python with support for 20+ compute backends.
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/etlx/etlx){ .md-button }
+[View on GitHub](https://github.com/ameijin/quicketl){ .md-button }
 
 </div>
 
 ---
 
-## Why ETLX?
+## Why QuickETL?
 
-ETLX provides a **unified API** for data transformation across multiple compute engines. Write your pipeline once, run it anywhere - from local DuckDB to distributed Spark to cloud warehouses like Snowflake and BigQuery.
+QuickETL provides a **unified API** for data transformation across multiple compute engines. Write your pipeline once, run it anywhere - from local DuckDB to distributed Spark to cloud warehouses like Snowflake and BigQuery.
 
 <div class="grid cards" markdown>
 
@@ -41,7 +41,7 @@ ETLX provides a **unified API** for data transformation across multiple compute 
 
     ---
 
-    Use the `etlx` CLI for quick runs or the Python API for programmatic control.
+    Use the `quicketl` CLI for quick runs or the Python API for programmatic control.
 
 </div>
 
@@ -80,15 +80,15 @@ ETLX provides a **unified API** for data transformation across multiple compute 
     ```
 
     ```bash
-    etlx run pipeline.yml
+    quicketl run pipeline.yml
     ```
 
 === "Python"
 
     ```python
-    from etlx import Pipeline
-    from etlx.config.models import FileSource, FileSink
-    from etlx.config.transforms import FilterTransform, AggregateTransform
+    from quicketl import Pipeline
+    from quicketl.config.models import FileSource, FileSink
+    from quicketl.config.transforms import FilterTransform, AggregateTransform
 
     pipeline = (
         Pipeline("sales_summary", engine="duckdb")
@@ -177,7 +177,7 @@ pip install quicketl[snowflake]
 
     ---
 
-    Install ETLX and run your first pipeline in 5 minutes.
+    Install QuickETL and run your first pipeline in 5 minutes.
 
     [:octicons-arrow-right-24: Quick Start](getting-started/quickstart.md)
 

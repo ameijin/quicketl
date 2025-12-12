@@ -1,6 +1,6 @@
 # Examples
 
-This section contains complete, runnable examples demonstrating common ETLX patterns and use cases. Each example includes:
+This section contains complete, runnable examples demonstrating common QuickETL patterns and use cases. Each example includes:
 
 - Complete YAML configuration
 - Sample data
@@ -11,7 +11,7 @@ This section contains complete, runnable examples demonstrating common ETLX patt
 
 ### [Basic Pipeline](basic-pipeline.md)
 
-A minimal pipeline that reads a CSV, applies filters, and writes to Parquet. Perfect for understanding ETLX fundamentals.
+A minimal pipeline that reads a CSV, applies filters, and writes to Parquet. Perfect for understanding QuickETL fundamentals.
 
 ```yaml
 name: basic_example
@@ -79,10 +79,10 @@ sink:
 
 ### [Airflow DAG](airflow-dag.md)
 
-Complete Airflow DAG with ETLX tasks, error handling, and monitoring.
+Complete Airflow DAG with QuickETL tasks, error handling, and monitoring.
 
 ```python
-@etlx_task(config="pipelines/daily.yml")
+@quicketl_task(config="pipelines/daily.yml")
 def process_daily(**context):
     return {"DATE": context["ds"]}
 ```
@@ -149,6 +149,6 @@ See [Contributing Guide](../development/contributing.md) for details.
 
 ## Related
 
-- [Getting Started](../getting-started/quickstart.md) - First steps with ETLX
+- [Getting Started](../getting-started/quickstart.md) - First steps with QuickETL
 - [User Guide](../user-guide/configuration/pipeline-yaml.md) - Complete reference
 - [Best Practices](../best-practices/pipeline-design.md) - Design patterns

@@ -1,6 +1,6 @@
 # Performance Best Practices
 
-Optimize ETLX pipeline execution for speed and efficiency.
+Optimize QuickETL pipeline execution for speed and efficiency.
 
 ## Backend Selection
 
@@ -317,7 +317,7 @@ quicketl run pipeline.yml --json | jq '.duration_ms'
 
 ```python
 import time
-from etlx import Pipeline
+from quicketl import Pipeline
 
 backends = ["duckdb", "polars", "pandas"]
 
@@ -343,7 +343,7 @@ Shows timing for each step.
 
 ```python
 import cProfile
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 cProfile.run("pipeline.run()", sort="cumtime")

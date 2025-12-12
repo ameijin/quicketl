@@ -148,7 +148,7 @@ Filter rows based on a SQL-like predicate.
 ## Python API
 
 ```python
-from etlx.config.transforms import FilterTransform
+from quicketl.config.transforms import FilterTransform
 
 # Simple
 transform = FilterTransform(predicate="amount > 100")

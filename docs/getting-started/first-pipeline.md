@@ -268,15 +268,15 @@ quicketl run pipelines/sales_report.yml --verbose
 The same pipeline in Python:
 
 ```python
-from etlx import Pipeline
-from etlx.config.models import FileSource, FileSink
-from etlx.config.transforms import (
+from quicketl import Pipeline
+from quicketl.config.models import FileSource, FileSink
+from quicketl.config.transforms import (
     FilterTransform,
     DeriveColumnTransform,
     AggregateTransform,
     SortTransform,
 )
-from etlx.config.checks import NotNullCheck, RowCountCheck, ExpressionCheck
+from quicketl.config.checks import NotNullCheck, RowCountCheck, ExpressionCheck
 
 pipeline = (
     Pipeline("sales_report", description="Generate sales summary", engine="duckdb")

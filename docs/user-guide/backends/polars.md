@@ -1,6 +1,6 @@
 # Polars Backend
 
-Polars is a blazing fast DataFrame library written in Rust. ETLX uses Polars via Ibis for excellent single-machine performance.
+Polars is a blazing fast DataFrame library written in Rust. QuickETL uses Polars via Ibis for excellent single-machine performance.
 
 ## Installation
 
@@ -88,7 +88,7 @@ quicketl run pipeline.yml --engine polars
 
 ### Data Types
 
-| ETLX Type | Polars Type |
+| QuickETL Type | Polars Type |
 |-----------|-------------|
 | string | Utf8 |
 | int | Int64 |

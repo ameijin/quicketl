@@ -1,6 +1,6 @@
 # Python API Reference
 
-ETLX provides a Python API for programmatic pipeline creation and execution. Use the API when you need:
+QuickETL provides a Python API for programmatic pipeline creation and execution. Use the API when you need:
 
 - Dynamic pipeline generation
 - Integration with Python applications
@@ -10,7 +10,7 @@ ETLX provides a Python API for programmatic pipeline creation and execution. Use
 ## Quick Start
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 # Load and run a pipeline
 pipeline = Pipeline.from_yaml("pipeline.yml")
@@ -23,10 +23,10 @@ print(f"Processed {result.rows_processed} rows")
 
 ### Pipeline
 
-The main entry point for working with ETLX pipelines.
+The main entry point for working with QuickETL pipelines.
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 # From YAML file
 pipeline = Pipeline.from_yaml("pipeline.yml")
@@ -42,25 +42,25 @@ pipeline = Pipeline.from_config({
 
 [Learn more about Pipeline →](pipeline.md)
 
-### ETLXEngine
+### QuickETLEngine
 
 Direct access to the execution engine for advanced use cases.
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 result = engine.execute(config)
 ```
 
-[Learn more about ETLXEngine →](engine.md)
+[Learn more about QuickETLEngine →](engine.md)
 
 ### Configuration Models
 
 Pydantic models for type-safe pipeline configuration.
 
 ```python
-from etlx.config import PipelineConfig, FileSource, FileSink
+from quicketl.config import PipelineConfig, FileSource, FileSink
 
 config = PipelineConfig(
     name="typed_pipeline",
@@ -77,7 +77,7 @@ config = PipelineConfig(
 Programmatic data quality validation.
 
 ```python
-from etlx.quality import NotNullCheck, UniqueCheck
+from quicketl.quality import NotNullCheck, UniqueCheck
 
 checks = [
     NotNullCheck(columns=["id", "name"]),
@@ -92,7 +92,7 @@ checks = [
 ### Run Pipeline with Variables
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 result = pipeline.run(variables={
@@ -104,7 +104,7 @@ result = pipeline.run(variables={
 ### Validate Before Running
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 
@@ -120,7 +120,7 @@ else:
 ### Dry Run
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 result = pipeline.run(dry_run=True)
@@ -131,7 +131,7 @@ print(f"Would process {result.rows_processed} rows")
 ### Access Results
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 result = pipeline.run()
@@ -148,7 +148,7 @@ print(f"Checks failed: {result.checks_failed}")
 ### Get Result DataFrame
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 result = pipeline.run()
@@ -161,9 +161,9 @@ print(df.head())
 ## Error Handling
 
 ```python
-from etlx import Pipeline
-from etlx.exceptions import (
-    ETLXError,
+from quicketl import Pipeline
+from quicketl.exceptions import (
+    QuickETLError,
     ConfigurationError,
     ExecutionError,
     QualityCheckError
@@ -179,8 +179,8 @@ except QualityCheckError as e:
     print(f"Failed checks: {e.failed_checks}")
 except ExecutionError as e:
     print(f"Execution error: {e}")
-except ETLXError as e:
-    print(f"ETLX error: {e}")
+except QuickETLError as e:
+    print(f"QuickETL error: {e}")
 ```
 
 ## Integration Examples
@@ -191,8 +191,8 @@ except ETLXError as e:
 from airflow.decorators import task
 
 @task
-def run_etlx_pipeline(config_path: str, **kwargs):
-    from etlx import Pipeline
+def run_quicketl_pipeline(config_path: str, **kwargs):
+    from quicketl import Pipeline
 
     pipeline = Pipeline.from_yaml(config_path)
     result = pipeline.run(variables=kwargs)
@@ -207,7 +207,7 @@ def run_etlx_pipeline(config_path: str, **kwargs):
 
 ```python
 from fastapi import FastAPI, BackgroundTasks
-from etlx import Pipeline
+from quicketl import Pipeline
 
 app = FastAPI()
 
@@ -225,7 +225,7 @@ async def run_pipeline(name: str, background_tasks: BackgroundTasks):
 
 ```python
 from prefect import flow, task
-from etlx import Pipeline
+from quicketl import Pipeline
 
 @task
 def run_etl(config_path: str):
@@ -243,7 +243,7 @@ def etl_flow():
 | Module | Description |
 |--------|-------------|
 | [Pipeline](pipeline.md) | Main pipeline class |
-| [ETLXEngine](engine.md) | Execution engine |
+| [QuickETLEngine](engine.md) | Execution engine |
 | [Config](config.md) | Configuration models |
 | [Quality](quality.md) | Quality check classes |
 

@@ -1,6 +1,6 @@
 # Backends
 
-ETLX supports multiple compute backends through Ibis. Choose the right backend for your workload.
+QuickETL supports multiple compute backends through Ibis. Choose the right backend for your workload.
 
 ## Available Backends
 
@@ -8,14 +8,14 @@ ETLX supports multiple compute backends through Ibis. Choose the right backend f
 |---------|------|---------|----------|
 | [DuckDB](duckdb.md) | Local | Default | Analytics, small-medium data |
 | [Polars](polars.md) | Local | Default | Fast DataFrames |
-| [DataFusion](datafusion.md) | Local | `etlx[datafusion]` | Arrow-native queries |
-| [Spark](spark.md) | Distributed | `etlx[spark]` | Large-scale processing |
-| [pandas](pandas.md) | Local | `etlx[pandas]` | Legacy compatibility |
-| [Snowflake](snowflake.md) | Cloud DW | `etlx[snowflake]` | Enterprise analytics |
-| [BigQuery](bigquery.md) | Cloud DW | `etlx[bigquery]` | Google Cloud |
-| [PostgreSQL](postgresql.md) | Database | `etlx[postgres]` | Operational data |
-| [MySQL](mysql.md) | Database | `etlx[mysql]` | Web applications |
-| [ClickHouse](clickhouse.md) | Database | `etlx[clickhouse]` | Real-time analytics |
+| [DataFusion](datafusion.md) | Local | `quicketl[datafusion]` | Arrow-native queries |
+| [Spark](spark.md) | Distributed | `quicketl[spark]` | Large-scale processing |
+| [pandas](pandas.md) | Local | `quicketl[pandas]` | Legacy compatibility |
+| [Snowflake](snowflake.md) | Cloud DW | `quicketl[snowflake]` | Enterprise analytics |
+| [BigQuery](bigquery.md) | Cloud DW | `quicketl[bigquery]` | Google Cloud |
+| [PostgreSQL](postgresql.md) | Database | `quicketl[postgres]` | Operational data |
+| [MySQL](mysql.md) | Database | `quicketl[mysql]` | Web applications |
+| [ClickHouse](clickhouse.md) | Database | `quicketl[clickhouse]` | Real-time analytics |
 
 ## Selecting a Backend
 
@@ -109,7 +109,7 @@ pip install quicketl[all]
 
 ## Backend Parity
 
-ETLX aims for consistent behavior across backends. The same pipeline should produce identical results regardless of backend:
+QuickETL aims for consistent behavior across backends. The same pipeline should produce identical results regardless of backend:
 
 ```yaml
 # Works on any backend
@@ -128,16 +128,16 @@ transforms:
 ## Python API
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
 # DuckDB (default)
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Polars
-engine = ETLXEngine(backend="polars")
+engine = QuickETLEngine(backend="polars")
 
 # Snowflake
-engine = ETLXEngine(
+engine = QuickETLEngine(
     backend="snowflake",
     connection_string="snowflake://user:pass@account/db/schema"
 )

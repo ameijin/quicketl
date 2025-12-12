@@ -68,7 +68,7 @@ Remove duplicate rows.
 ## Python API
 
 ```python
-from etlx.config.transforms import DedupTransform
+from quicketl.config.transforms import DedupTransform
 
 # All columns
 transform = DedupTransform()

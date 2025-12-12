@@ -1,10 +1,10 @@
 # Data Types Reference
 
-ETLX supports standard data types that map to backend-specific types. This reference covers type handling across backends.
+QuickETL supports standard data types that map to backend-specific types. This reference covers type handling across backends.
 
 ## Standard Types
 
-| ETLX Type | Description | Example Values |
+| QuickETL Type | Description | Example Values |
 |-----------|-------------|----------------|
 | `string` | Text data | `"hello"`, `"John Doe"` |
 | `int` | Integer numbers | `42`, `-100`, `1000000` |
@@ -18,7 +18,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### DuckDB
 
-| ETLX Type | DuckDB Type |
+| QuickETL Type | DuckDB Type |
 |-----------|-------------|
 | `string` | `VARCHAR` |
 | `int` | `BIGINT` |
@@ -30,7 +30,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### Polars
 
-| ETLX Type | Polars Type |
+| QuickETL Type | Polars Type |
 |-----------|-------------|
 | `string` | `Utf8` |
 | `int` | `Int64` |
@@ -42,7 +42,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### PostgreSQL
 
-| ETLX Type | PostgreSQL Type |
+| QuickETL Type | PostgreSQL Type |
 |-----------|-----------------|
 | `string` | `TEXT` / `VARCHAR` |
 | `int` | `BIGINT` |
@@ -54,7 +54,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### Snowflake
 
-| ETLX Type | Snowflake Type |
+| QuickETL Type | Snowflake Type |
 |-----------|----------------|
 | `string` | `VARCHAR` |
 | `int` | `INTEGER` |
@@ -66,7 +66,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### BigQuery
 
-| ETLX Type | BigQuery Type |
+| QuickETL Type | BigQuery Type |
 |-----------|---------------|
 | `string` | `STRING` |
 | `int` | `INT64` |
@@ -78,7 +78,7 @@ ETLX supports standard data types that map to backend-specific types. This refer
 
 ### Pandas
 
-| ETLX Type | Pandas Type |
+| QuickETL Type | Pandas Type |
 |-----------|-------------|
 | `string` | `object` / `string` |
 | `int` | `int64` |
@@ -149,7 +149,7 @@ transforms:
 
 ### CSV Files
 
-CSV files don't have type information. ETLX infers types:
+CSV files don't have type information. QuickETL infers types:
 
 ```yaml
 source:
@@ -189,7 +189,7 @@ source:
 
 JSON types map naturally:
 
-| JSON Type | ETLX Type |
+| JSON Type | QuickETL Type |
 |-----------|-----------|
 | `string` | `string` |
 | `number` (integer) | `int` |

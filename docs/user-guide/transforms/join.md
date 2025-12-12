@@ -94,7 +94,7 @@ Join two datasets on one or more columns.
 ## Python API
 
 ```python
-from etlx.config.transforms import JoinTransform
+from quicketl.config.transforms import JoinTransform
 
 transform = JoinTransform(
     right="customers",
@@ -108,10 +108,10 @@ transform = JoinTransform(
 For joins, you need multiple sources. Use Python API:
 
 ```python
-from etlx import Pipeline, ETLXEngine
-from etlx.config.models import FileSource
+from quicketl import Pipeline, QuickETLEngine
+from quicketl.config.models import FileSource
 
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Read both datasets
 orders = engine.read_file("orders.parquet", "parquet")

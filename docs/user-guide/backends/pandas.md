@@ -1,10 +1,10 @@
 # Pandas Backend
 
-Pandas is the most widely-used Python data analysis library. ETLX supports Pandas via Ibis for compatibility with existing workflows.
+Pandas is the most widely-used Python data analysis library. QuickETL supports Pandas via Ibis for compatibility with existing workflows.
 
 ## Installation
 
-Pandas is included with the base ETLX installation:
+Pandas is included with the base QuickETL installation:
 
 ```bash
 pip install quicketl
@@ -92,7 +92,7 @@ quicketl run pipeline.yml --engine pandas
 
 ### Data Types
 
-| ETLX Type | Pandas Type |
+| QuickETL Type | Pandas Type |
 |-----------|-------------|
 | string | object / string |
 | int | int64 |
@@ -244,11 +244,11 @@ sink:
 
 ## Chunked Processing
 
-For files larger than memory, Pandas can read in chunks. However, this is handled automatically by ETLX when possible. For very large files, consider using DuckDB or Polars instead.
+For files larger than memory, Pandas can read in chunks. However, this is handled automatically by QuickETL when possible. For very large files, consider using DuckDB or Polars instead.
 
 ## Pandas-Specific Features
 
-While ETLX provides a backend-agnostic API, you can leverage Pandas features:
+While QuickETL provides a backend-agnostic API, you can leverage Pandas features:
 
 ### DateTime Operations
 

@@ -86,7 +86,7 @@ Order rows by one or more columns.
 ## Python API
 
 ```python
-from etlx.config.transforms import SortTransform
+from quicketl.config.transforms import SortTransform
 
 # Ascending
 transform = SortTransform(by=["amount"])

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to ETLX will be documented in this file.
+All notable changes to QuickETL will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -45,15 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All sources supported as sinks
 
 #### CLI
-- `etlx run` - Execute pipelines
-- `etlx validate` - Configuration validation
-- `etlx init` - Project scaffolding
-- `etlx info` - Version and backend information
-- `etlx schema` - JSON schema generation
+- `quicketl run` - Execute pipelines
+- `quicketl validate` - Configuration validation
+- `quicketl init` - Project scaffolding
+- `quicketl info` - Version and backend information
+- `quicketl schema` - JSON schema generation
 
 #### Python API
 - `Pipeline` class for programmatic execution
-- `ETLXEngine` for low-level control
+- `QuickETLEngine` for low-level control
 - Pydantic configuration models
 - Quality check classes
 
@@ -83,5 +83,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] Lineage tracking
 - [ ] Metric collection
 
-[Unreleased]: https://github.com/your-org/etlx/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/your-org/etlx/releases/tag/v0.1.0
+[Unreleased]: https://github.com/your-org/quicketl/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/your-org/quicketl/releases/tag/v0.1.0

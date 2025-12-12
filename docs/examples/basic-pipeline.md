@@ -1,6 +1,6 @@
 # Basic Pipeline Example
 
-This example demonstrates ETLX fundamentals: reading a CSV file, applying transforms, running quality checks, and writing output.
+This example demonstrates QuickETL fundamentals: reading a CSV file, applying transforms, running quality checks, and writing output.
 
 ## Overview
 

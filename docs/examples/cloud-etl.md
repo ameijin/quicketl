@@ -326,14 +326,14 @@ STATUS=$(echo $RESULT | jq -r '.status')
 
 # Send to CloudWatch
 aws cloudwatch put-metric-data \
-  --namespace "ETLX/Pipelines" \
+  --namespace "QuickETL/Pipelines" \
   --metric-name "Duration" \
   --value $DURATION \
   --unit Milliseconds \
   --dimensions Pipeline=daily_cloud_etl
 
 aws cloudwatch put-metric-data \
-  --namespace "ETLX/Pipelines" \
+  --namespace "QuickETL/Pipelines" \
   --metric-name "RowsWritten" \
   --value $ROWS \
   --dimensions Pipeline=daily_cloud_etl

@@ -59,7 +59,7 @@ Check failed: accepted_values
 ## Python API
 
 ```python
-from etlx.config.checks import AcceptedValuesCheck
+from quicketl.config.checks import AcceptedValuesCheck
 
 check = AcceptedValuesCheck(
     column="status",

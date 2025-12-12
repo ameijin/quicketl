@@ -1,6 +1,6 @@
 # DuckDB
 
-DuckDB is the default backend in ETLX. It's a fast, embedded analytical database that requires no setup.
+DuckDB is the default backend in QuickETL. It's a fast, embedded analytical database that requires no setup.
 
 ## Overview
 
@@ -96,7 +96,7 @@ DuckDB is memory-efficient but for very large files:
 
 ```python
 # Configure memory limit
-engine = ETLXEngine(
+engine = QuickETLEngine(
     backend="duckdb",
     memory_limit="4GB"
 )
@@ -105,9 +105,9 @@ engine = ETLXEngine(
 ## Python API
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Read and process
 table = engine.read_file("data.parquet", "parquet")

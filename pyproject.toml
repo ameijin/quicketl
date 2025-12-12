@@ -87,7 +87,7 @@ quicketl = "quicketl.cli.main:cli"
 
 [project.urls]
 Homepage = "https://quicketl.com"
-Documentation = "https://quicketl.readthedocs.io"
+Documentation = "https://quicketl.com"
 Repository = "https://github.com/ameijin/quicketl"
 Issues = "https://github.com/ameijin/quicketl/issues"
 

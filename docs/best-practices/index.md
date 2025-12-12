@@ -1,6 +1,6 @@
 # Best Practices
 
-This section covers best practices for building reliable, maintainable, and performant ETLX pipelines.
+This section covers best practices for building reliable, maintainable, and performant QuickETL pipelines.
 
 ## Overview
 

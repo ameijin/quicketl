@@ -1,29 +1,29 @@
 # Integrations
 
-ETLX integrates with popular data orchestration and workflow tools. This section covers how to use ETLX within larger data ecosystems.
+QuickETL integrates with popular data orchestration and workflow tools. This section covers how to use QuickETL within larger data ecosystems.
 
 ## Orchestration Platforms
 
 ### Apache Airflow
 
-Run ETLX pipelines as Airflow tasks with proper dependency management, retries, and monitoring.
+Run QuickETL pipelines as Airflow tasks with proper dependency management, retries, and monitoring.
 
 [Airflow Integration →](airflow.md)
 
 **Features:**
 
-- `@etlx_task` decorator for simple integration
+- `@quicketl_task` decorator for simple integration
 - Pass Airflow variables to pipelines
 - Automatic retry handling
 - XCom integration for result passing
 
 ```python
 from airflow.decorators import dag
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
 @dag(schedule="@daily")
 def etl_pipeline():
-    @etlx_task(config="pipelines/sales.yml")
+    @quicketl_task(config="pipelines/sales.yml")
     def process_sales(**context):
         return {"date": context["ds"]}
 
@@ -42,16 +42,16 @@ Integration with Dagster for software-defined assets.
 
 ### dbt
 
-Use ETLX alongside dbt for transformation workflows.
+Use QuickETL alongside dbt for transformation workflows.
 
-**Pattern: ETLX for Ingestion, dbt for Transformation**
+**Pattern: QuickETL for Ingestion, dbt for Transformation**
 
 ```
-Raw Sources → ETLX → Staging Tables → dbt → Marts
+Raw Sources → QuickETL → Staging Tables → dbt → Marts
 ```
 
 ```yaml
-# ETLX: Load raw data
+# QuickETL: Load raw data
 name: load_raw_orders
 source:
   type: file
@@ -80,10 +80,10 @@ WHERE order_date >= CURRENT_DATE - INTERVAL '30 days'
 Use Great Expectations for additional data validation.
 
 ```python
-from etlx import Pipeline
+from quicketl import Pipeline
 import great_expectations as gx
 
-# Run ETLX pipeline
+# Run QuickETL pipeline
 pipeline = Pipeline.from_yaml("pipeline.yml")
 result = pipeline.run()
 
@@ -171,7 +171,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install ETLX
+      - name: Install QuickETL
         run: pip install quicketl[duckdb]
 
       - name: Validate Pipeline
@@ -214,7 +214,7 @@ run:
 
 ```python
 from fastapi import FastAPI, BackgroundTasks
-from etlx import Pipeline
+from quicketl import Pipeline
 
 app = FastAPI()
 
@@ -236,7 +236,7 @@ async def run_pipeline(
 
 ```python
 from flask import Flask, request, jsonify
-from etlx import Pipeline
+from quicketl import Pipeline
 
 app = Flask(__name__)
 
@@ -254,9 +254,9 @@ def run_pipeline(pipeline_name):
 
 ```python
 import streamlit as st
-from etlx import Pipeline
+from quicketl import Pipeline
 
-st.title("ETLX Dashboard")
+st.title("QuickETL Dashboard")
 
 config_file = st.selectbox("Pipeline", ["sales.yml", "inventory.yml"])
 variables = st.text_input("Variables (JSON)", "{}")
@@ -279,18 +279,18 @@ if st.button("Run Pipeline"):
 
 ```python
 from celery import Celery
-from etlx import Pipeline
+from quicketl import Pipeline
 
-app = Celery('etlx_tasks', broker='redis://localhost:6379')
+app = Celery('quicketl_tasks', broker='redis://localhost:6379')
 
 @app.task
-def run_etlx_pipeline(config_path: str, variables: dict = None):
+def run_quicketl_pipeline(config_path: str, variables: dict = None):
     pipeline = Pipeline.from_yaml(config_path)
     result = pipeline.run(variables=variables)
     return result.to_dict()
 
 # Trigger
-run_etlx_pipeline.delay("pipelines/sales.yml", {"date": "2025-01-15"})
+run_quicketl_pipeline.delay("pipelines/sales.yml", {"date": "2025-01-15"})
 ```
 
 ## Related

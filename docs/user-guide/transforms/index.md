@@ -1,6 +1,6 @@
 # Transforms
 
-Transforms modify data as it flows through your pipeline. ETLX provides 12 built-in transform operations.
+Transforms modify data as it flows through your pipeline. QuickETL provides 12 built-in transform operations.
 
 ## Overview
 
@@ -199,7 +199,7 @@ See [Expression Language](../../reference/expressions.md) for full reference.
 ## Python API
 
 ```python
-from etlx.config.transforms import (
+from quicketl.config.transforms import (
     SelectTransform,
     FilterTransform,
     DeriveColumnTransform,

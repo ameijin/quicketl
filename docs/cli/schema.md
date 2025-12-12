@@ -1,4 +1,4 @@
-# etlx schema
+# quicketl schema
 
 Output JSON schema for pipeline configuration.
 
@@ -48,7 +48,7 @@ Then in `.vscode/settings.json`:
 ```json
 {
   "yaml.schemas": {
-    ".etlx-schema.json": ["pipelines/*.yml"]
+    ".quicketl-schema.json": ["pipelines/*.yml"]
   }
 }
 ```
@@ -66,7 +66,7 @@ The schema follows JSON Schema draft-07:
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ETLX Pipeline Configuration",
+  "title": "QuickETL Pipeline Configuration",
   "type": "object",
   "required": ["name", "source", "sink"],
   "properties": {

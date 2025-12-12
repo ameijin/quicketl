@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes the internal architecture of ETLX.
+This document describes the internal architecture of QuickETL.
 
 ## Overview
 
-ETLX follows a layered architecture:
+QuickETL follows a layered architecture:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -55,7 +55,7 @@ The engine orchestrates pipeline execution:
 
 ```python
 # quicketl/engine/engine.py
-class ETLXEngine:
+class QuickETLEngine:
     def __init__(self, backend: str = "duckdb"):
         self.backend = backend
         self.connection = self._create_connection()
@@ -97,7 +97,7 @@ Quality checks follow the same pattern:
 # quicketl/quality/base.py
 class BaseCheck(ABC):
     @abstractmethod
-    def run(self, table: Table, engine: ETLXEngine) -> CheckResult:
+    def run(self, table: Table, engine: QuickETLEngine) -> CheckResult:
         """Execute quality check."""
         pass
 
@@ -106,7 +106,7 @@ class NotNullCheck(BaseCheck):
     def __init__(self, columns: list[str]):
         self.columns = columns
 
-    def run(self, table: Table, engine: ETLXEngine) -> CheckResult:
+    def run(self, table: Table, engine: QuickETLEngine) -> CheckResult:
         null_counts = {}
         for col in self.columns:
             null_count = table.filter(f"{col} IS NULL").count().execute()
@@ -245,7 +245,7 @@ BACKENDS["my_backend"] = create_my_backend_connection
 class MyCheck(BaseCheck):
     check: Literal["my_check"] = "my_check"
 
-    def run(self, table: Table, engine: ETLXEngine) -> CheckResult:
+    def run(self, table: Table, engine: QuickETLEngine) -> CheckResult:
         # Implementation
         return CheckResult(...)
 ```
@@ -255,7 +255,7 @@ class MyCheck(BaseCheck):
 ## Directory Structure
 
 ```
-src/etlx/
+src/quicketl/
 ├── __init__.py
 ├── cli/                 # Command-line interface
 │   ├── __init__.py

@@ -1,4 +1,4 @@
-# etlx validate
+# quicketl validate
 
 Validate a pipeline configuration without executing it.
 
@@ -69,7 +69,7 @@ Errors:
 - name: Validate pipelines
   run: |
     for f in pipelines/*.yml; do
-      etlx validate "$f"
+      quicketl validate "$f"
     done
 ```
 

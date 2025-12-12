@@ -1,6 +1,6 @@
 # ClickHouse Backend
 
-ClickHouse is a column-oriented OLAP database designed for real-time analytics. ETLX supports ClickHouse for high-performance analytical workloads.
+ClickHouse is a column-oriented OLAP database designed for real-time analytics. QuickETL supports ClickHouse for high-performance analytical workloads.
 
 ## Installation
 
@@ -43,7 +43,7 @@ export CLICKHOUSE_DATABASE=analytics
 ```
 CLICKHOUSE_HOST=clickhouse.example.com
 CLICKHOUSE_PORT=8123
-CLICKHOUSE_USER=etlx_user
+CLICKHOUSE_USER=quicketl_user
 CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
 CLICKHOUSE_DATABASE=analytics
 ```
@@ -96,7 +96,7 @@ sink:
 
 ### Data Types
 
-| ETLX Type | ClickHouse Type |
+| QuickETL Type | ClickHouse Type |
 |-----------|-----------------|
 | string | String |
 | int | Int64 |
@@ -254,7 +254,7 @@ sink:
 
 ## ClickHouse-Specific Functions
 
-ETLX supports ClickHouse-specific functions in expressions:
+QuickETL supports ClickHouse-specific functions in expressions:
 
 ```yaml
 transforms:

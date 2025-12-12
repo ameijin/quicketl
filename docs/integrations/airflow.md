@@ -1,6 +1,6 @@
 # Airflow Integration
 
-ETLX provides first-class integration with Apache Airflow for orchestrating data pipelines. Run ETLX pipelines as Airflow tasks with proper dependency management, retries, and monitoring.
+QuickETL provides first-class integration with Apache Airflow for orchestrating data pipelines. Run QuickETL pipelines as Airflow tasks with proper dependency management, retries, and monitoring.
 
 ## Installation
 
@@ -14,12 +14,12 @@ uv add quicketl[airflow]
 
 ### Using the Decorator
 
-The simplest way to run ETLX in Airflow:
+The simplest way to run QuickETL in Airflow:
 
 ```python
 from airflow.decorators import dag
 from datetime import datetime
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
 @dag(
     schedule="@daily",
@@ -28,7 +28,7 @@ from etlx.integrations.airflow import etlx_task
 )
 def sales_pipeline():
 
-    @etlx_task(config="pipelines/daily_sales.yml")
+    @quicketl_task(config="pipelines/daily_sales.yml")
     def process_sales(**context):
         # Return variables to pass to pipeline
         return {
@@ -48,7 +48,7 @@ For more control, use the operator directly:
 ```python
 from airflow import DAG
 from datetime import datetime
-from etlx.integrations.airflow import ETLXOperator
+from quicketl.integrations.airflow import QuickETLOperator
 
 with DAG(
     "sales_etl",
@@ -57,7 +57,7 @@ with DAG(
     catchup=False
 ) as dag:
 
-    process_sales = ETLXOperator(
+    process_sales = QuickETLOperator(
         task_id="process_sales",
         config_path="pipelines/daily_sales.yml",
         variables={
@@ -69,7 +69,7 @@ with DAG(
     )
 ```
 
-## ETLXOperator Reference
+## QuickETLOperator Reference
 
 ### Parameters
 
@@ -86,7 +86,7 @@ with DAG(
 Variables support Airflow's Jinja templating:
 
 ```python
-ETLXOperator(
+QuickETLOperator(
     task_id="process",
     config_path="pipelines/sales.yml",
     variables={
@@ -102,7 +102,7 @@ ETLXOperator(
 )
 ```
 
-## @etlx_task Decorator
+## @quicketl_task Decorator
 
 ### Parameters
 
@@ -117,7 +117,7 @@ ETLXOperator(
 The decorated function should return a dictionary of variables:
 
 ```python
-@etlx_task(config="pipelines/sales.yml")
+@quicketl_task(config="pipelines/sales.yml")
 def process_sales(**context):
     return {
         "DATE": context["ds"],
@@ -133,7 +133,7 @@ Results are automatically pushed to XCom:
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def pipeline():
 
-    @etlx_task(config="pipelines/extract.yml")
+    @quicketl_task(config="pipelines/extract.yml")
     def extract(**context):
         return {"DATE": context["ds"]}
 
@@ -152,20 +152,20 @@ def pipeline():
 
 ```python
 from airflow.decorators import dag, task
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def sequential_pipeline():
 
-    @etlx_task(config="pipelines/extract.yml")
+    @quicketl_task(config="pipelines/extract.yml")
     def extract(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/transform.yml")
+    @quicketl_task(config="pipelines/transform.yml")
     def transform(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/load.yml")
+    @quicketl_task(config="pipelines/load.yml")
     def load(**context):
         return {"DATE": context["ds"]}
 
@@ -178,15 +178,15 @@ def sequential_pipeline():
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def parallel_pipeline():
 
-    @etlx_task(config="pipelines/sales.yml")
+    @quicketl_task(config="pipelines/sales.yml")
     def process_sales(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/inventory.yml")
+    @quicketl_task(config="pipelines/inventory.yml")
     def process_inventory(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/aggregate.yml")
+    @quicketl_task(config="pipelines/aggregate.yml")
     def aggregate(**context):
         return {"DATE": context["ds"]}
 
@@ -204,7 +204,7 @@ def dynamic_pipeline():
     def get_regions():
         return ["north", "south", "east", "west"]
 
-    @etlx_task(config="pipelines/regional_sales.yml")
+    @quicketl_task(config="pipelines/regional_sales.yml")
     def process_region(region, **context):
         return {
             "DATE": context["ds"],
@@ -234,11 +234,11 @@ def conditional_pipeline():
         python_callable=choose_path
     )
 
-    @etlx_task(config="pipelines/full_refresh.yml")
+    @quicketl_task(config="pipelines/full_refresh.yml")
     def full_refresh(**context):
         return {"DATE": context["ds"]}
 
-    @etlx_task(config="pipelines/incremental.yml")
+    @quicketl_task(config="pipelines/incremental.yml")
     def incremental(**context):
         return {"DATE": context["ds"]}
 
@@ -264,7 +264,7 @@ from datetime import timedelta
     }
 )
 def pipeline_with_retries():
-    @etlx_task(config="pipelines/sales.yml")
+    @quicketl_task(config="pipelines/sales.yml")
     def process(**context):
         return {"DATE": context["ds"]}
 
@@ -275,8 +275,8 @@ def pipeline_with_retries():
 
 ```python
 from airflow.decorators import dag, task
-from etlx import Pipeline
-from etlx.exceptions import QualityCheckError
+from quicketl import Pipeline
+from quicketl.exceptions import QualityCheckError
 
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def pipeline_with_error_handling():
@@ -309,7 +309,7 @@ from airflow.operators.email import EmailOperator
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def pipeline_with_alerts():
 
-    @etlx_task(config="pipelines/sales.yml")
+    @quicketl_task(config="pipelines/sales.yml")
     def process(**context):
         return {"DATE": context["ds"]}
 
@@ -330,15 +330,15 @@ def pipeline_with_alerts():
 
 ```python
 # airflow variables
-# etlx_database_url = postgresql://...
-# etlx_s3_bucket = my-bucket
+# quicketl_database_url = postgresql://...
+# quicketl_s3_bucket = my-bucket
 
-@etlx_task(config="pipelines/sales.yml")
+@quicketl_task(config="pipelines/sales.yml")
 def process(**context):
     from airflow.models import Variable
     return {
-        "DATABASE_URL": Variable.get("etlx_database_url"),
-        "S3_BUCKET": Variable.get("etlx_s3_bucket"),
+        "DATABASE_URL": Variable.get("quicketl_database_url"),
+        "S3_BUCKET": Variable.get("quicketl_s3_bucket"),
         "DATE": context["ds"]
     }
 ```
@@ -349,7 +349,7 @@ def process(**context):
 @task
 def run_with_connection(**context):
     from airflow.hooks.base import BaseHook
-    from etlx import Pipeline
+    from quicketl import Pipeline
 
     conn = BaseHook.get_connection("my_database")
 
@@ -389,7 +389,7 @@ dags/
 )
 def pipeline_with_sla():
 
-    @etlx_task(
+    @quicketl_task(
         config="pipelines/sales.yml",
         sla=timedelta(hours=2)
     )
@@ -407,7 +407,7 @@ Access metrics from XCom:
 @dag(schedule="@daily", start_date=datetime(2025, 1, 1))
 def monitored_pipeline():
 
-    @etlx_task(config="pipelines/sales.yml")
+    @quicketl_task(config="pipelines/sales.yml")
     def process(**context):
         return {"DATE": context["ds"]}
 
@@ -435,7 +435,7 @@ def on_failure(context):
     # Send alert
     print(f"Failed: {context['exception']}")
 
-@etlx_task(
+@quicketl_task(
     config="pipelines/sales.yml",
     on_success_callback=on_success,
     on_failure_callback=on_failure
@@ -447,5 +447,5 @@ def process(**context):
 ## Related
 
 - [Integrations Overview](index.md) - Other integrations
-- [Python API](../api/index.md) - ETLX API reference
+- [Python API](../api/index.md) - QuickETL API reference
 - [Production Best Practices](../best-practices/production.md)

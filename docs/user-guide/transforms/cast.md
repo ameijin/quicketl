@@ -100,7 +100,7 @@ Convert column data types.
 ## Python API
 
 ```python
-from etlx.config.transforms import CastTransform
+from quicketl.config.transforms import CastTransform
 
 transform = CastTransform(
     columns={

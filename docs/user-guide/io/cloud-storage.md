@@ -4,7 +4,7 @@ Read and write files from AWS S3, Google Cloud Storage, and Azure ADLS.
 
 ## Overview
 
-ETLX supports cloud storage through [fsspec](https://filesystem-spec.readthedocs.io/), providing a unified interface for all cloud providers.
+QuickETL supports cloud storage through [fsspec](https://filesystem-spec.readthedocs.io/), providing a unified interface for all cloud providers.
 
 ## AWS S3
 

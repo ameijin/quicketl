@@ -1,6 +1,6 @@
 # MySQL Backend
 
-MySQL is a widely-used open-source relational database. ETLX supports MySQL as both a data source and sink.
+MySQL is a widely-used open-source relational database. QuickETL supports MySQL as both a data source and sink.
 
 ## Installation
 
@@ -32,7 +32,7 @@ uv add quicketl[mysql]
 ```bash
 export MYSQL_HOST=localhost
 export MYSQL_PORT=3306
-export MYSQL_USER=etlx_user
+export MYSQL_USER=quicketl_user
 export MYSQL_PASSWORD=your_password
 export MYSQL_DATABASE=analytics
 ```
@@ -42,7 +42,7 @@ export MYSQL_DATABASE=analytics
 ```
 MYSQL_HOST=db.example.com
 MYSQL_PORT=3306
-MYSQL_USER=etlx_user
+MYSQL_USER=quicketl_user
 MYSQL_PASSWORD=${MYSQL_PASSWORD}
 MYSQL_DATABASE=analytics
 ```
@@ -94,7 +94,7 @@ sink:
 
 ### Data Types
 
-| ETLX Type | MySQL Type |
+| QuickETL Type | MySQL Type |
 |-----------|------------|
 | string | VARCHAR / TEXT |
 | int | INT / BIGINT |
@@ -261,12 +261,12 @@ mysql.connector.errors.InterfaceError: 2003: Can't connect to MySQL server
 ### Access Denied
 
 ```
-Access denied for user 'etlx_user'@'host'
+Access denied for user 'quicketl_user'@'host'
 ```
 
 **Solution**:
 ```sql
-GRANT SELECT, INSERT, UPDATE, DELETE ON database.* TO 'etlx_user'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE ON database.* TO 'quicketl_user'@'%';
 FLUSH PRIVILEGES;
 ```
 

@@ -1,6 +1,6 @@
 # Quality Checks
 
-Quality checks validate your data after transforms are applied. ETLX provides 5 built-in check types.
+Quality checks validate your data after transforms are applied. QuickETL provides 5 built-in check types.
 
 ## Overview
 
@@ -146,7 +146,7 @@ checks:
 ## Python API
 
 ```python
-from etlx.config.checks import (
+from quicketl.config.checks import (
     NotNullCheck,
     UniqueCheck,
     RowCountCheck,

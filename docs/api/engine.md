@@ -1,20 +1,20 @@
-# ETLXEngine Class
+# QuickETLEngine Class
 
-The `ETLXEngine` class provides low-level access to the ETLX execution engine. Use this for advanced use cases where you need direct control over execution.
+The `QuickETLEngine` class provides low-level access to the QuickETL execution engine. Use this for advanced use cases where you need direct control over execution.
 
 !!! tip "Use Pipeline Instead"
-    For most use cases, the [Pipeline](pipeline.md) class is recommended. Use `ETLXEngine` only when you need low-level control.
+    For most use cases, the [Pipeline](pipeline.md) class is recommended. Use `QuickETLEngine` only when you need low-level control.
 
 ## Import
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 ```
 
 ## Constructor
 
 ```python
-ETLXEngine(
+QuickETLEngine(
     backend: str = "duckdb",
     **options
 )
@@ -44,13 +44,13 @@ ETLXEngine(
 
 ```python
 # Default (DuckDB)
-engine = ETLXEngine()
+engine = QuickETLEngine()
 
 # Specific backend
-engine = ETLXEngine(backend="polars")
+engine = QuickETLEngine(backend="polars")
 
 # With backend options
-engine = ETLXEngine(
+engine = QuickETLEngine(
     backend="spark",
     master="local[*]",
     executor_memory="4g"
@@ -64,7 +64,7 @@ engine = ETLXEngine(
 Execute a pipeline configuration.
 
 ```python
-ETLXEngine.execute(
+QuickETLEngine.execute(
     config: PipelineConfig | dict,
     variables: dict[str, str] | None = None,
     dry_run: bool = False
@@ -84,10 +84,10 @@ ETLXEngine.execute(
 **Example:**
 
 ```python
-from etlx import ETLXEngine
-from etlx.config import PipelineConfig
+from quicketl import QuickETLEngine
+from quicketl.config import PipelineConfig
 
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 config = {
     "name": "test",
@@ -105,7 +105,7 @@ result = engine.execute(config)
 Read data from a source configuration.
 
 ```python
-ETLXEngine.read_source(
+QuickETLEngine.read_source(
     source_config: SourceConfig | dict
 ) -> Table
 ```
@@ -121,7 +121,7 @@ ETLXEngine.read_source(
 **Example:**
 
 ```python
-engine = ETLXEngine()
+engine = QuickETLEngine()
 
 table = engine.read_source({
     "type": "file",
@@ -141,7 +141,7 @@ result = filtered.execute()
 Write data to a sink configuration.
 
 ```python
-ETLXEngine.write_sink(
+QuickETLEngine.write_sink(
     table: Table,
     sink_config: SinkConfig | dict,
     mode: str = "replace"
@@ -159,7 +159,7 @@ ETLXEngine.write_sink(
 **Example:**
 
 ```python
-engine = ETLXEngine()
+engine = QuickETLEngine()
 
 # Read and transform
 table = engine.read_source({"type": "file", "path": "in.csv", "format": "csv"})
@@ -180,7 +180,7 @@ engine.write_sink(
 Apply a single transform to a table.
 
 ```python
-ETLXEngine.apply_transform(
+QuickETLEngine.apply_transform(
     table: Table,
     transform: TransformConfig | dict
 ) -> Table
@@ -198,7 +198,7 @@ ETLXEngine.apply_transform(
 **Example:**
 
 ```python
-engine = ETLXEngine()
+engine = QuickETLEngine()
 
 table = engine.read_source(source_config)
 
@@ -214,7 +214,7 @@ table = engine.apply_transform(table, {"op": "select", "columns": ["id", "amount
 Apply multiple transforms to a table.
 
 ```python
-ETLXEngine.apply_transforms(
+QuickETLEngine.apply_transforms(
     table: Table,
     transforms: list[TransformConfig | dict]
 ) -> Table
@@ -232,7 +232,7 @@ ETLXEngine.apply_transforms(
 **Example:**
 
 ```python
-engine = ETLXEngine()
+engine = QuickETLEngine()
 
 table = engine.read_source(source_config)
 
@@ -252,7 +252,7 @@ result = engine.apply_transforms(table, transforms)
 Execute quality checks on a table.
 
 ```python
-ETLXEngine.run_checks(
+QuickETLEngine.run_checks(
     table: Table,
     checks: list[CheckConfig | dict]
 ) -> CheckResults
@@ -270,7 +270,7 @@ ETLXEngine.run_checks(
 **Example:**
 
 ```python
-engine = ETLXEngine()
+engine = QuickETLEngine()
 table = engine.read_source(source_config)
 
 checks = [
@@ -293,7 +293,7 @@ for check in results.details:
 Get the underlying Ibis connection.
 
 ```python
-ETLXEngine.get_connection() -> Connection
+QuickETLEngine.get_connection() -> Connection
 ```
 
 **Returns:** Ibis backend connection
@@ -301,7 +301,7 @@ ETLXEngine.get_connection() -> Connection
 **Example:**
 
 ```python
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 conn = engine.get_connection()
 
 # Execute raw SQL
@@ -354,10 +354,10 @@ Result returned by `run_checks()`.
 ## Complete Example
 
 ```python
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
 # Initialize engine
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 
 # Read source
 table = engine.read_source({

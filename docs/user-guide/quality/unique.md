@@ -47,7 +47,7 @@ Check failed: unique
 ## Python API
 
 ```python
-from etlx.config.checks import UniqueCheck
+from quicketl.config.checks import UniqueCheck
 
 check = UniqueCheck(columns=["id"])
 check = UniqueCheck(columns=["customer_id", "order_date"])

@@ -1,11 +1,11 @@
 # Quality Check Classes
 
-ETLX provides data quality check classes for programmatic validation. These classes can be used directly or via configuration models.
+QuickETL provides data quality check classes for programmatic validation. These classes can be used directly or via configuration models.
 
 ## Import
 
 ```python
-from etlx.quality import (
+from quicketl.quality import (
     NotNullCheck,
     UniqueCheck,
     RowCountCheck,
@@ -37,7 +37,7 @@ class NotNullCheck:
 **Example:**
 
 ```python
-from etlx.quality import NotNullCheck
+from quicketl.quality import NotNullCheck
 
 check = NotNullCheck(columns=["id", "email", "created_at"])
 ```
@@ -62,7 +62,7 @@ class UniqueCheck:
 **Example:**
 
 ```python
-from etlx.quality import UniqueCheck
+from quicketl.quality import UniqueCheck
 
 # Single column uniqueness
 check = UniqueCheck(columns=["id"])
@@ -98,7 +98,7 @@ class RowCountCheck:
 **Example:**
 
 ```python
-from etlx.quality import RowCountCheck
+from quicketl.quality import RowCountCheck
 
 # At least 1 row
 check = RowCountCheck(min=1)
@@ -135,7 +135,7 @@ class AcceptedValuesCheck:
 **Example:**
 
 ```python
-from etlx.quality import AcceptedValuesCheck
+from quicketl.quality import AcceptedValuesCheck
 
 # Validate status values
 check = AcceptedValuesCheck(
@@ -175,7 +175,7 @@ class ExpressionCheck:
 **Example:**
 
 ```python
-from etlx.quality import ExpressionCheck
+from quicketl.quality import ExpressionCheck
 
 # All rows must pass
 check = ExpressionCheck(expr="amount > 0")
@@ -198,7 +198,7 @@ Execute checks against a table.
 
 ```python
 class CheckRunner:
-    def __init__(self, engine: ETLXEngine)
+    def __init__(self, engine: QuickETLEngine)
 
     def run(
         self,
@@ -210,8 +210,8 @@ class CheckRunner:
 **Example:**
 
 ```python
-from etlx import ETLXEngine
-from etlx.quality import (
+from quicketl import QuickETLEngine
+from quicketl.quality import (
     CheckRunner,
     NotNullCheck,
     UniqueCheck,
@@ -219,7 +219,7 @@ from etlx.quality import (
 )
 
 # Setup
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 runner = CheckRunner(engine)
 
 # Read data
@@ -304,7 +304,7 @@ json_str = results.to_json()
 Create custom checks by extending the base class:
 
 ```python
-from etlx.quality import BaseCheck, CheckResult
+from quicketl.quality import BaseCheck, CheckResult
 
 class CustomRangeCheck(BaseCheck):
     """Check that numeric values are within a range."""
@@ -347,8 +347,8 @@ check = CustomRangeCheck(column="age", min_val=0, max_val=150)
 ## Complete Example
 
 ```python
-from etlx import ETLXEngine
-from etlx.quality import (
+from quicketl import QuickETLEngine
+from quicketl.quality import (
     CheckRunner,
     NotNullCheck,
     UniqueCheck,
@@ -358,7 +358,7 @@ from etlx.quality import (
 )
 
 # Initialize
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 runner = CheckRunner(engine)
 
 # Load data

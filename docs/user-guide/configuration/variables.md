@@ -1,6 +1,6 @@
 # Variable Substitution
 
-ETLX supports variable substitution in YAML configurations, allowing dynamic values at runtime.
+QuickETL supports variable substitution in YAML configurations, allowing dynamic values at runtime.
 
 ## Basic Syntax
 
@@ -150,12 +150,12 @@ transforms:
 
 ## Airflow Integration
 
-When using the `@etlx_task` decorator, return variables from your task:
+When using the `@quicketl_task` decorator, return variables from your task:
 
 ```python
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
-@etlx_task(config_path="pipelines/daily.yml")
+@quicketl_task(config_path="pipelines/daily.yml")
 def run_daily_pipeline(**context):
     return {
         "DATE": context["ds"],                    # Airflow execution date
@@ -202,7 +202,7 @@ $ quicketl run pipeline.yml
 Error: Variable 'DATABASE_URL' is not set and has no default value
 ```
 
-Use `etlx validate` to check variables:
+Use `quicketl validate` to check variables:
 
 ```bash
 quicketl validate pipeline.yml --var DATE=2025-01-15

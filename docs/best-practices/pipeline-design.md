@@ -1,6 +1,6 @@
 # Pipeline Design Best Practices
 
-Guidelines for designing clean, maintainable, and efficient ETLX pipelines.
+Guidelines for designing clean, maintainable, and efficient QuickETL pipelines.
 
 ## Naming Conventions
 

@@ -1,6 +1,6 @@
 # Reference
 
-Technical reference documentation for ETLX.
+Technical reference documentation for QuickETL.
 
 ## Reference Guides
 
@@ -13,7 +13,7 @@ Technical reference documentation for ETLX.
 
 ## Expression Language
 
-ETLX uses SQL-compatible expressions for filters, derived columns, and checks:
+QuickETL uses SQL-compatible expressions for filters, derived columns, and checks:
 
 ```yaml
 transforms:

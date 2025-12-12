@@ -68,7 +68,7 @@ Check failed: expression
 ## Python API
 
 ```python
-from etlx.config.checks import ExpressionCheck
+from quicketl.config.checks import ExpressionCheck
 
 check = ExpressionCheck(expr="amount >= 0")
 ```

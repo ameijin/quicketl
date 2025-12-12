@@ -1,6 +1,6 @@
 # Production Best Practices
 
-Guidelines for running ETLX pipelines reliably in production environments.
+Guidelines for running QuickETL pipelines reliably in production environments.
 
 ## Environment Configuration
 
@@ -88,16 +88,16 @@ CHECKS_PASSED=$(echo $RESULT | jq -r '.checks_passed')
 CHECKS_FAILED=$(echo $RESULT | jq -r '.checks_failed')
 
 # Send to monitoring system
-send_metrics "etlx.pipeline.duration" $DURATION
-send_metrics "etlx.pipeline.rows" $ROWS
-send_metrics "etlx.pipeline.status" $([ "$STATUS" = "SUCCESS" ] && echo 1 || echo 0)
+send_metrics "quicketl.pipeline.duration" $DURATION
+send_metrics "quicketl.pipeline.rows" $ROWS
+send_metrics "quicketl.pipeline.status" $([ "$STATUS" = "SUCCESS" ] && echo 1 || echo 0)
 ```
 
 ### DataDog Integration
 
 ```python
 from datadog import statsd
-from etlx import Pipeline
+from quicketl import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 
@@ -114,7 +114,7 @@ statsd.gauge("quicketl.pipeline.checks_passed", result.checks_passed,
 
 ```python
 # health_check.py
-from etlx import ETLXEngine
+from quicketl import QuickETLEngine
 
 def check_backends():
     """Verify backend availability."""
@@ -123,7 +123,7 @@ def check_backends():
 
     for backend in backends:
         try:
-            engine = ETLXEngine(backend=backend)
+            engine = QuickETLEngine(backend=backend)
             results[backend] = "healthy"
         except Exception as e:
             results[backend] = f"unhealthy: {e}"
@@ -153,13 +153,13 @@ if __name__ == "__main__":
 ```ini
 # /etc/systemd/system/quicketl-daily.service
 [Unit]
-Description=ETLX Daily Pipeline
+Description=QuickETL Daily Pipeline
 After=network.target
 
 [Service]
 Type=oneshot
-User=etlx
-ExecStart=/opt/etlx/run_pipeline.sh daily_sales
+User=quicketl
+ExecStart=/opt/quicketl/run_pipeline.sh daily_sales
 StandardOutput=journal
 StandardError=journal
 
@@ -170,7 +170,7 @@ WantedBy=multi-user.target
 ```ini
 # /etc/systemd/system/quicketl-daily.timer
 [Unit]
-Description=Run ETLX Daily Pipeline
+Description=Run QuickETL Daily Pipeline
 
 [Timer]
 OnCalendar=*-*-* 06:00:00
@@ -259,7 +259,7 @@ if ! quicketl run critical_pipeline.yml; then
             \"payload\": {
                 \"summary\": \"Critical ETL Pipeline Failed\",
                 \"severity\": \"critical\",
-                \"source\": \"etlx-prod\"
+                \"source\": \"quicketl-prod\"
             }
         }"
 fi
@@ -275,17 +275,17 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install ETLX with required backends
-RUN pip install etlx[duckdb,postgres,snowflake]
+# Install QuickETL with required backends
+RUN pip install quicketl[duckdb,postgres,snowflake]
 
 # Copy pipelines
 COPY pipelines/ /app/pipelines/
 
 # Run as non-root user
-RUN useradd -m etlx
-USER etlx
+RUN useradd -m quicketl
+USER quicketl
 
-ENTRYPOINT ["etlx"]
+ENTRYPOINT ["quicketl"]
 CMD ["--help"]
 ```
 
@@ -444,7 +444,7 @@ psql -c "DROP TABLE IF EXISTS ${TABLE}_backup_$(date -d '7 days ago' +%Y%m%d);"
 
 Before deploying to production:
 
-- [ ] All pipelines validated (`etlx validate`)
+- [ ] All pipelines validated (`quicketl validate`)
 - [ ] Environment variables documented
 - [ ] Secrets stored in secret manager
 - [ ] Monitoring and alerting configured

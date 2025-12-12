@@ -330,7 +330,7 @@ DURATION=$(echo $RESULT | jq -r '.duration_ms')
 
 # Log to CloudWatch
 aws cloudwatch put-metric-data \
-  --namespace "ETLX/DataLake" \
+  --namespace "QuickETL/DataLake" \
   --metric-name "RowsExtracted" \
   --value $ROWS \
   --dimensions Table=orders,Date=$DATE

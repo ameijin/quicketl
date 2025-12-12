@@ -1,39 +1,39 @@
 # Installation
 
-This guide covers how to install ETLX and its optional dependencies.
+This guide covers how to install QuickETL and its optional dependencies.
 
 ## Basic Installation
 
-Install ETLX with the default backends (DuckDB and Polars):
+Install QuickETL with the default backends (DuckDB and Polars):
 
 === "pip"
 
     ```bash
-    pip install etlx
+    pip install quicketl
     ```
 
 === "uv"
 
     ```bash
-    uv pip install etlx
+    uv pip install quicketl
     ```
 
 === "pipx (CLI only)"
 
     ```bash
-    pipx install etlx
+    pipx install quicketl
     ```
 
 This gives you:
 
 - DuckDB backend (default)
 - Polars backend
-- CLI tools (`etlx run`, `etlx init`, etc.)
+- CLI tools (`quicketl run`, `quicketl init`, etc.)
 - Python API
 
 ## Verify Installation
 
-Check that ETLX is installed correctly:
+Check that QuickETL is installed correctly:
 
 ```bash
 quicketl --version
@@ -42,7 +42,7 @@ quicketl --version
 You should see output like:
 
 ```
-etlx version 0.1.0
+quicketl version 0.1.0
 ```
 
 Check available backends:
@@ -53,7 +53,7 @@ quicketl info --backends --check
 
 ## Optional Dependencies
 
-ETLX uses optional dependencies to keep the base installation lightweight. Install only what you need.
+QuickETL uses optional dependencies to keep the base installation lightweight. Install only what you need.
 
 ### Cloud Storage
 
@@ -62,7 +62,7 @@ For reading/writing to cloud storage:
 === "AWS S3"
 
     ```bash
-    pip install etlx[aws]
+    pip install quicketl[aws]
     ```
 
     Includes `s3fs` and `boto3` for S3 access.
@@ -70,7 +70,7 @@ For reading/writing to cloud storage:
 === "Google Cloud Storage"
 
     ```bash
-    pip install etlx[gcp]
+    pip install quicketl[gcp]
     ```
 
     Includes `gcsfs` and `google-cloud-storage`.
@@ -78,7 +78,7 @@ For reading/writing to cloud storage:
 === "Azure ADLS"
 
     ```bash
-    pip install etlx[azure]
+    pip install quicketl[azure]
     ```
 
     Includes `adlfs` and `azure-storage-blob`.
@@ -90,7 +90,7 @@ For distributed or alternative compute engines:
 === "Apache Spark"
 
     ```bash
-    pip install etlx[spark]
+    pip install quicketl[spark]
     ```
 
     Requires Java 8+ to be installed.
@@ -98,7 +98,7 @@ For distributed or alternative compute engines:
 === "DataFusion"
 
     ```bash
-    pip install etlx[datafusion]
+    pip install quicketl[datafusion]
     ```
 
     Apache Arrow-native query engine.
@@ -106,7 +106,7 @@ For distributed or alternative compute engines:
 === "pandas"
 
     ```bash
-    pip install etlx[pandas]
+    pip install quicketl[pandas]
     ```
 
     For pandas-based processing.
@@ -162,11 +162,11 @@ pip install quicketl[all]
 
 ## Development Installation
 
-For contributing to ETLX:
+For contributing to QuickETL:
 
 ```bash
 # Clone the repository
-git clone https://github.com/etlx/etlx.git
+git clone https://github.com/quicketl/quicketl.git
 cd quicketl
 
 # Create virtual environment
@@ -217,4 +217,4 @@ export JAVA_HOME=/path/to/java
 
 ## Next Steps
 
-Now that ETLX is installed, continue to the [Quick Start](quickstart.md) to create your first pipeline.
+Now that QuickETL is installed, continue to the [Quick Start](quickstart.md) to create your first pipeline.
