@@ -1,0 +1,118 @@
+/* ETLX Documentation Custom Styles */
+
+/* Hero section */
+.hero {
+  text-align: center;
+  padding: 2rem 0 1rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  color: var(--md-default-fg-color--light);
+  margin-bottom: 1.5rem;
+}
+
+/* Button spacing */
+.md-button {
+  margin: 0.25rem;
+}
+
+/* Grid cards styling */
+.grid.cards > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.grid.cards > ul > li {
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* Icon sizing in cards */
+.grid.cards .lg {
+  font-size: 2rem;
+  margin-right: 0.5rem;
+}
+
+.grid.cards .middle {
+  vertical-align: middle;
+}
+
+/* Code block enhancements */
+.md-typeset pre > code {
+  font-size: 0.85em;
+}
+
+/* Table improvements */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+}
+
+.md-typeset table:not([class]) th {
+  background: var(--md-code-bg-color);
+  font-weight: 600;
+}
+
+/* Admonition tweaks */
+.md-typeset .admonition.example {
+  border-color: var(--md-accent-fg-color);
+}
+
+.md-typeset .admonition.tip {
+  border-color: #00c853;
+}
+
+/* Navigation improvements */
+.md-nav__link--active {
+  font-weight: 600;
+}
+
+/* Footer adjustments */
+.md-footer-meta {
+  background: var(--md-default-bg-color);
+}
+
+/* Syntax highlighting adjustments */
+.highlight .filename {
+  background: var(--md-code-bg-color);
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  font-size: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin: 0;
+}
+
+/* Tab content spacing */
+.md-typeset .tabbed-content {
+  padding-top: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 76.25em) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 60em) {
+  .grid.cards > ul {
+    grid-template-columns: 1fr;
+  }
+}

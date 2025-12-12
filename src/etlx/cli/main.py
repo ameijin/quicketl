@@ -51,24 +51,30 @@ def main(
     """ETLX - Python ETL/ELT Framework.
 
     A configuration-driven ETL framework with support for multiple
-    compute backends (DuckDB, Polars, DataFusion, Spark, pandas)
-    powered by Ibis.
+    compute backends (DuckDB, Polars, DataFusion, Spark, pandas).
+
+    \b
+    Quick Start:
+      etlx init my_project        # Create project with sample data
+      cd my_project
+      etlx run pipelines/sample.yml   # Run the sample pipeline
 
     \b
     Commands:
-      run       Execute a pipeline
-      validate  Validate configuration
-      init      Initialize new project
-      info      Show ETLX information
-      schema    Output JSON schema for IDE support
+      run       Execute a pipeline from YAML config
+      validate  Validate configuration without running
+      init      Create new project or pipeline
+      info      Show version and available backends
+      schema    Output JSON schema for IDE autocompletion
 
     \b
     Examples:
-      etlx run pipeline.yml
-      etlx validate pipeline.yml
+      etlx run pipeline.yml --var DATE=2025-01-01
+      etlx run pipeline.yml --dry-run
+      etlx validate pipeline.yml --verbose
       etlx init my_project
-      etlx info --backends
-      etlx schema -o .etlx-schema.json
+      etlx init my_pipeline -p
+      etlx info --backends --check
     """
     pass
 

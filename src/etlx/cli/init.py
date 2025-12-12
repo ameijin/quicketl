@@ -16,72 +16,112 @@ app = typer.Typer(help="Initialize a new ETLX project or pipeline")
 
 
 SAMPLE_PIPELINE = '''# Example ETLX Pipeline Configuration
+# Run this pipeline with: etlx run pipelines/sample.yml
 name: {name}
-description: Sample ETL pipeline
+description: Sample ETL pipeline - processes sales data
 
-# Engine to use for processing
+# Engine to use for processing (duckdb is fast and included by default)
 engine: duckdb
 
 # Data source configuration
 source:
   type: file
-  path: data/input.parquet
-  format: parquet
+  path: data/sales.csv
+  format: csv
 
-# Transform steps
+# Transform steps (applied in order)
 transforms:
-  # Filter rows
-  - type: filter
+  # Filter out negative amounts
+  - op: filter
     predicate: amount > 0
 
-  # Add computed column
-  - type: derive_column
+  # Add computed columns
+  - op: derive_column
     name: total_with_tax
     expr: amount * 1.1
 
-  # Select final columns
-  - type: select
-    columns: [id, name, amount, total_with_tax]
+  - op: derive_column
+    name: category_upper
+    expr: upper(category)
 
-# Quality checks
+  # Aggregate by category
+  - op: aggregate
+    group_by: [category]
+    aggs:
+      total_sales: sum(amount)
+      total_with_tax: sum(total_with_tax)
+      order_count: count(*)
+
+  # Sort by total sales descending
+  - op: sort
+    by: [total_sales]
+    descending: true
+
+# Quality checks (run after transforms)
 checks:
   - type: not_null
-    columns: [id, name, amount]
+    columns: [category, total_sales]
   - type: row_count
     min: 1
 
 # Output destination
 sink:
   type: file
-  path: data/output.parquet
+  path: data/output/sales_summary.parquet
   format: parquet
 '''
 
-PROJECT_STRUCTURE = '''# ETLX Project Structure
+PROJECT_STRUCTURE = '''# {name}
 
-## Directory Layout
+An ETLX data pipeline project.
+
+## Quick Start
+
+```bash
+# Run the sample pipeline
+etlx run pipelines/sample.yml
+
+# View the output
+cat data/output/sales_summary.parquet  # or use DuckDB/pandas to read
+```
+
+## Project Structure
+
 ```
 {name}/
 ├── pipelines/           # Pipeline YAML configurations
-│   └── sample.yml
-├── data/                # Input/output data
-│   ├── input/
-│   └── output/
+│   └── sample.yml       # Sample pipeline (ready to run!)
+├── data/
+│   ├── sales.csv        # Sample input data
+│   └── output/          # Pipeline outputs
 ├── scripts/             # Custom Python scripts
 └── .env                 # Environment variables
 ```
 
-## Getting Started
+## Common Commands
 
-1. Edit `pipelines/sample.yml` with your pipeline configuration
-2. Run: `etlx run pipelines/sample.yml`
-3. Validate: `etlx validate pipelines/sample.yml`
+```bash
+# Run a pipeline
+etlx run pipelines/sample.yml
+
+# Run with variables
+etlx run pipelines/sample.yml --var DATE=2025-01-01
+
+# Validate configuration without running
+etlx validate pipelines/sample.yml
+
+# Dry run (transforms but no output)
+etlx run pipelines/sample.yml --dry-run
+
+# Create a new pipeline
+etlx init my_pipeline -p
+```
 
 ## Environment Variables
 
 Set variables in `.env` or export them:
 ```bash
-export ETLX_DATABASE_URL="postgresql://localhost/mydb"
+export DATABASE_URL="postgresql://localhost/mydb"
 ```
 
 Reference in YAML with `${{VAR_NAME}}`:
@@ -90,6 +130,13 @@ source:
   type: database
   connection: ${{DATABASE_URL}}
 ```
+
+## Learn More
+
+- Available transforms: filter, select, derive_column, aggregate, join, sort, etc.
+- Quality checks: not_null, unique, row_count, accepted_values, expression
+- Run `etlx info --backends` to see available compute engines
+- Run `etlx schema` to output JSON schema for IDE autocompletion
 '''
 
 ENV_TEMPLATE = '''# ETLX Environment Variables
@@ -105,6 +152,22 @@ ENV_TEMPLATE = '''# ETLX Environment Variables
 
 # Pipeline variables
 # RUN_DATE=2025-01-01
+'''
+
+# Sample CSV data for the demo pipeline
+SAMPLE_DATA_CSV = '''id,name,category,amount,date
+1,Widget A,Electronics,99.99,2025-01-15
+2,Widget B,Electronics,149.99,2025-01-15
+3,Gadget X,Home,29.99,2025-01-16
+4,Gadget Y,Home,49.99,2025-01-16
+5,Thingamajig,Electronics,199.99,2025-01-17
+6,Doohickey,Office,15.99,2025-01-17
+7,Whatchamacallit,Home,89.99,2025-01-18
+8,Gizmo,Electronics,299.99,2025-01-18
+9,Contraption,Office,45.99,2025-01-19
+10,Apparatus,Office,75.99,2025-01-19
+11,Invalid Item,Electronics,-10.00,2025-01-20
+12,Another Widget,Electronics,125.50,2025-01-20
 '''
 
 
@@ -190,7 +253,7 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
     dirs = [
         project_path,
         project_path / "pipelines",
-        project_path / "data" / "input",
+        project_path / "data",
         project_path / "data" / "output",
         project_path / "scripts",
     ]
@@ -201,6 +264,7 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
     # Create files
     files = {
         project_path / "pipelines" / "sample.yml": SAMPLE_PIPELINE.format(name="sample_pipeline"),
+        project_path / "data" / "sales.csv": SAMPLE_DATA_CSV.strip(),
         project_path / "README.md": PROJECT_STRUCTURE.format(name=name),
         project_path / ".env": ENV_TEMPLATE,
         project_path / ".gitignore": "# Data files\ndata/output/\n\n# Environment\n.env\n\n# Python\n__pycache__/\n*.pyc\n",
@@ -211,10 +275,9 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
         console.print(f"[green]Created:[/green] {file_path}")
 
     console.print(f"\n[bold green]Project created:[/bold green] {project_path}")
-    console.print(f"\nNext steps:")
-    console.print(f"  1. cd {name}")
-    console.print(f"  2. Edit pipelines/sample.yml")
-    console.print(f"  3. etlx run pipelines/sample.yml")
+    console.print(f"\n[bold]Try it now:[/bold]")
+    console.print(f"  cd {name} && etlx run pipelines/sample.yml")
+    console.print(f"\n[dim]This will process the sample sales data and output a summary to data/output/[/dim]")
 
 
 if __name__ == "__main__":

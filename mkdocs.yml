@@ -1,0 +1,249 @@
+# Project Information
+site_name: ETLX Documentation
+site_url: https://etlx.readthedocs.io
+site_description: "ETLX - Configuration-driven ETL framework for Python with 20+ backend support via Ibis"
+site_author: "ETLX Contributors"
+repo_name: etlx/etlx
+repo_url: https://github.com/etlx/etlx
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 ETLX Contributors
+
+# Theme Configuration
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+    admonition:
+      note: octicons/tag-16
+      abstract: octicons/checklist-16
+      info: octicons/info-16
+      tip: octicons/light-bulb-16
+      success: octicons/check-16
+      question: octicons/question-16
+      warning: octicons/alert-16
+      failure: octicons/x-circle-16
+      danger: octicons/zap-16
+      bug: octicons/bug-16
+      example: octicons/beaker-16
+      quote: octicons/quote-16
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-\.]+'
+      lang:
+        - en
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_bases: true
+            heading_level: 2
+            members_order: source
+            docstring_style: google
+            docstring_section_style: spacy
+            merge_init_into_class: true
+            show_if_no_docstring: false
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: true
+
+# Markdown Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  # PyMdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: etlx
+      repo: etlx
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation Structure
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Your First Pipeline: getting-started/first-pipeline.md
+    - Project Structure: getting-started/project-structure.md
+  - User Guide:
+    - user-guide/index.md
+    - Configuration:
+      - user-guide/configuration/index.md
+      - Pipeline YAML: user-guide/configuration/pipeline-yaml.md
+      - Variable Substitution: user-guide/configuration/variables.md
+      - JSON Schema for IDEs: user-guide/configuration/json-schema.md
+    - Sources & Sinks:
+      - user-guide/io/index.md
+      - File Sources: user-guide/io/file-sources.md
+      - Database Sources: user-guide/io/database-sources.md
+      - Cloud Storage: user-guide/io/cloud-storage.md
+      - File Sinks: user-guide/io/file-sinks.md
+      - Database Sinks: user-guide/io/database-sinks.md
+    - Transforms:
+      - user-guide/transforms/index.md
+      - select: user-guide/transforms/select.md
+      - rename: user-guide/transforms/rename.md
+      - filter: user-guide/transforms/filter.md
+      - derive_column: user-guide/transforms/derive-column.md
+      - cast: user-guide/transforms/cast.md
+      - fill_null: user-guide/transforms/fill-null.md
+      - dedup: user-guide/transforms/dedup.md
+      - sort: user-guide/transforms/sort.md
+      - join: user-guide/transforms/join.md
+      - aggregate: user-guide/transforms/aggregate.md
+      - union: user-guide/transforms/union.md
+      - limit: user-guide/transforms/limit.md
+    - Quality Checks:
+      - user-guide/quality/index.md
+      - not_null: user-guide/quality/not-null.md
+      - unique: user-guide/quality/unique.md
+      - row_count: user-guide/quality/row-count.md
+      - accepted_values: user-guide/quality/accepted-values.md
+      - expression: user-guide/quality/expression.md
+    - Backends:
+      - user-guide/backends/index.md
+      - DuckDB: user-guide/backends/duckdb.md
+      - Polars: user-guide/backends/polars.md
+      - DataFusion: user-guide/backends/datafusion.md
+      - Spark: user-guide/backends/spark.md
+      - pandas: user-guide/backends/pandas.md
+      - Snowflake: user-guide/backends/snowflake.md
+      - BigQuery: user-guide/backends/bigquery.md
+      - PostgreSQL: user-guide/backends/postgresql.md
+      - MySQL: user-guide/backends/mysql.md
+      - ClickHouse: user-guide/backends/clickhouse.md
+  - CLI Reference:
+    - cli/index.md
+    - run: cli/run.md
+    - validate: cli/validate.md
+    - init: cli/init.md
+    - info: cli/info.md
+    - schema: cli/schema.md
+  - Python API:
+    - api/index.md
+    - Pipeline: api/pipeline.md
+    - ETLXEngine: api/engine.md
+    - Configuration Models: api/config.md
+    - Quality Checks: api/quality.md
+  - Integrations:
+    - integrations/index.md
+    - Airflow: integrations/airflow.md
+  - Examples:
+    - examples/index.md
+    - Basic Pipeline: examples/basic-pipeline.md
+    - Multi-Source Join: examples/multi-source-join.md
+    - Data Aggregation: examples/aggregation.md
+    - Cloud ETL: examples/cloud-etl.md
+    - Database to Data Lake: examples/db-to-lake.md
+    - Airflow DAG: examples/airflow-dag.md
+  - Best Practices:
+    - best-practices/index.md
+    - Pipeline Design: best-practices/pipeline-design.md
+    - Error Handling: best-practices/error-handling.md
+    - Performance Tuning: best-practices/performance.md
+    - Testing Pipelines: best-practices/testing.md
+    - Production Deployment: best-practices/production.md
+  - Reference:
+    - reference/index.md
+    - Expression Language: reference/expressions.md
+    - Data Types: reference/data-types.md
+    - Environment Variables: reference/environment-variables.md
+    - Troubleshooting: reference/troubleshooting.md
+  - Development:
+    - development/index.md
+    - Contributing: development/contributing.md
+    - Architecture: development/architecture.md
+    - Changelog: development/changelog.md
+
+# Extra Configuration
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/etlx/etlx
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/etlx/
+
+extra_css:
+  - stylesheets/extra.css

@@ -65,12 +65,12 @@ source:
   format: parquet
 
 transforms:
-  - type: filter
+  - op: filter
     predicate: amount > 0
-  - type: derive_column
+  - op: derive_column
     name: total_with_tax
     expr: amount * 1.1
-  - type: aggregate
+  - op: aggregate
     group_by: [region]
     aggs:
       total_sales: sum(amount)
