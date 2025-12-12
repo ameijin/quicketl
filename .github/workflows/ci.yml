@@ -30,16 +30,16 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run linting
-        run: uv run ruff check src/ tests/
+        run: ruff check src/ tests/
 
       - name: Run type checking
-        run: uv run mypy src/
+        run: mypy src/
 
       - name: Run tests
-        run: uv run pytest --cov=quicketl --cov-report=xml
+        run: pytest --cov=quicketl --cov-report=xml
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
@@ -65,9 +65,7 @@ jobs:
         run: uv build
 
       - name: Check package
-        run: |
-          pip install twine
-          twine check dist/*
+        run: uvx twine check dist/*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
