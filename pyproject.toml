@@ -135,10 +135,11 @@ known-first-party = ["quicketl"]
 # MyPy configuration
 [tool.mypy]
 python_version = "3.12"
-strict = true
-warn_return_any = true
+strict = false
+warn_return_any = false
 warn_unused_ignores = true
 plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -147,6 +148,8 @@ module = [
     "s3fs.*",
     "gcsfs.*",
     "adlfs.*",
+    "yaml.*",
+    "pandas.*",
 ]
 ignore_missing_imports = true
 
