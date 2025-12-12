@@ -48,8 +48,8 @@ def sample_data(engine) -> ir.Table:
 @pytest.fixture
 def sample_data_with_nulls(engine) -> ir.Table:
     """Create sample data with null values."""
-    import pandas as pd
     import numpy as np
+    import pandas as pd
 
     data = {
         "id": [1, 2, 3, 4, 5],
@@ -138,13 +138,13 @@ sink:
 @pytest.fixture
 def pipeline_config():
     """Create a sample PipelineConfig object."""
+    from quicketl.config.checks import NotNullCheck, RowCountCheck
     from quicketl.config.models import (
-        FileSource,
         FileSink,
+        FileSource,
         PipelineConfig,
     )
     from quicketl.config.transforms import FilterTransform, SelectTransform
-    from quicketl.config.checks import NotNullCheck, RowCountCheck
 
     return PipelineConfig(
         name="test_pipeline",

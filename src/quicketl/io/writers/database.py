@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import contextlib
+import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
-import time
 
 import ibis
 
@@ -60,18 +61,14 @@ def write_database(
     match mode:
         case "replace":
             # Drop existing table if exists, then create
-            try:
+            with contextlib.suppress(Exception):
                 con.drop_table(target_table, force=True)
-            except Exception:
-                pass  # Table might not exist
             con.create_table(target_table, table)
 
         case "truncate":
             # Truncate existing table, then insert
-            try:
+            with contextlib.suppress(Exception):
                 con.truncate_table(target_table)
-            except Exception:
-                pass  # Table might not exist
             con.insert(target_table, table)
 
         case "append":

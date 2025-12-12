@@ -5,8 +5,7 @@ Display information about ETLX installation and available backends.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Annotated, Optional
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
@@ -14,7 +13,10 @@ from rich.panel import Panel
 from rich.table import Table
 
 from quicketl._version import __version__
-from quicketl.engines.backends import BACKENDS, list_backends
+from quicketl.engines.backends import list_backends
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Display ETLX information")
@@ -39,7 +41,7 @@ def info(
         ),
     ] = False,
     config_file: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--config",
             help="Show info about a specific pipeline config",
@@ -185,7 +187,7 @@ def _show_pipeline_info(config_file: Path) -> None:
 
     except Exception as e:
         console.print(f"[red]Error loading config:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 if __name__ == "__main__":

@@ -35,10 +35,7 @@ def configure_logging(
         >>> log.info("pipeline_started", name="my_pipeline")
     """
     # Determine actual format based on auto-detection
-    if format == "auto":
-        actual_format = "console" if sys.stderr.isatty() else "json"
-    else:
-        actual_format = format
+    actual_format = ("console" if sys.stderr.isatty() else "json") if format == "auto" else format
 
     # Shared processors for all formats
     shared_processors: list[structlog.types.Processor] = [

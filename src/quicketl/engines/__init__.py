@@ -3,8 +3,8 @@
 Provides a unified interface to Ibis backends (DuckDB, Polars, Spark, etc.).
 """
 
+from quicketl.engines.backends import BackendConfig, get_backend, list_backends
 from quicketl.engines.base import ETLXEngine
-from quicketl.engines.backends import get_backend, list_backends, BackendConfig
 
 __all__ = [
     "ETLXEngine",

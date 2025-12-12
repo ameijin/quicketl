@@ -10,30 +10,27 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import ibis
-from ibis import _
 
-from quicketl.config.models import SourceConfig, SinkConfig, FileSource, DatabaseSource
+from quicketl.config.models import DatabaseSource, FileSource, SinkConfig, SourceConfig
 from quicketl.config.transforms import (
-    TransformStep,
-    SelectTransform,
-    RenameTransform,
-    FilterTransform,
-    DeriveColumnTransform,
-    CastTransform,
-    FillNullTransform,
-    DedupTransform,
-    SortTransform,
-    JoinTransform,
     AggregateTransform,
-    UnionTransform,
+    CastTransform,
+    DedupTransform,
+    DeriveColumnTransform,
+    FillNullTransform,
+    FilterTransform,
     LimitTransform,
+    RenameTransform,
+    SelectTransform,
+    SortTransform,
+    TransformStep,
 )
 from quicketl.logging import get_logger
 
 if TYPE_CHECKING:
     import ibis.expr.types as ir
-    import polars as pl
     import pandas as pd
+    import polars as pl
 
 log = get_logger(__name__)
 
@@ -202,10 +199,10 @@ class ETLXEngine:
         Returns:
             WriteResult with operation details
         """
-        from quicketl.config.models import FileSink, DatabaseSink
+        from quicketl.config.models import DatabaseSink, FileSink
 
         match config:
-            case FileSink(path=path, format=fmt, partition_by=parts, mode=mode):
+            case FileSink(path=path, format=fmt, partition_by=parts):
                 return self.write_file(table, path, fmt, partition_by=parts)
             case DatabaseSink():
                 raise NotImplementedError("Database sink not yet implemented")
@@ -217,7 +214,7 @@ class ETLXEngine:
         table: ir.Table,
         path: str,
         format: str = "parquet",
-        partition_by: list[str] | None = None,
+        partition_by: list[str] | None = None,  # noqa: ARG002
     ) -> WriteResult:
         """Write data to a file.
 
@@ -301,7 +298,6 @@ class ETLXEngine:
 
     def _parse_predicate(self, table: ir.Table, predicate: str) -> ibis.Expr:
         """Parse a simple SQL-like predicate into an Ibis expression."""
-        import re
 
         # Handle comparison operators (check longest operators first to avoid partial matches)
         for op_str, op_func in [
@@ -357,7 +353,6 @@ class ETLXEngine:
 
     def _parse_expression(self, table: ir.Table, expr: str) -> ibis.Expr:
         """Parse a simple SQL-like expression into an Ibis expression."""
-        import re
 
         # Handle arithmetic expressions (e.g., "amount * 2", "price + tax")
         for op_str, op_func in [
@@ -498,10 +493,7 @@ class ETLXEngine:
         Returns:
             Sorted table
         """
-        if descending:
-            order_by = [ibis.desc(col) for col in by]
-        else:
-            order_by = by
+        order_by = [ibis.desc(col) for col in by] if descending else by
         return table.order_by(order_by)
 
     def join(

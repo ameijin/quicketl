@@ -5,8 +5,6 @@ Tests all 5 quality check types.
 
 from __future__ import annotations
 
-import pytest
-
 from quicketl.config.checks import (
     AcceptedValuesCheck,
     ExpressionCheck,

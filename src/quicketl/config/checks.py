@@ -5,7 +5,7 @@ Defines the 5 core quality checks as a Pydantic discriminated union.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -108,12 +108,6 @@ class ExpressionCheck(BaseModel):
 
 # Discriminated union for all check types
 CheckConfig = Annotated[
-    Union[
-        NotNullCheck,
-        UniqueCheck,
-        RowCountCheck,
-        AcceptedValuesCheck,
-        ExpressionCheck,
-    ],
+    NotNullCheck | UniqueCheck | RowCountCheck | AcceptedValuesCheck | ExpressionCheck,
     Field(discriminator="type"),
 ]

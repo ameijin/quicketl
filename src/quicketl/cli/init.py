@@ -6,7 +6,7 @@ Initialize a new ETLX project or pipeline.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -188,7 +188,7 @@ def init(
         ),
     ] = False,
     output_dir: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--output",
             "-o",
@@ -275,9 +275,9 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
         console.print(f"[green]Created:[/green] {file_path}")
 
     console.print(f"\n[bold green]Project created:[/bold green] {project_path}")
-    console.print(f"\n[bold]Try it now:[/bold]")
+    console.print("\n[bold]Try it now:[/bold]")
     console.print(f"  cd {name} && quicketl run pipelines/sample.yml")
-    console.print(f"\n[dim]This will process the sample sales data and output a summary to data/output/[/dim]")
+    console.print("\n[dim]This will process the sample sales data and output a summary to data/output/[/dim]")
 
 
 if __name__ == "__main__":

@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
+from typing import TYPE_CHECKING
 
 from quicketl.config.checks import NotNullCheck, RowCountCheck
-from quicketl.config.models import FileSource, FileSink
+from quicketl.config.models import FileSink, FileSource
 from quicketl.config.transforms import FilterTransform, SelectTransform
 from quicketl.pipeline import Pipeline, PipelineResult, PipelineStatus
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestPipelineBuilder:

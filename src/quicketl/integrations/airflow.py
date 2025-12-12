@@ -6,10 +6,13 @@ Provides a task decorator to run QuickETL pipelines in Airflow DAGs.
 from __future__ import annotations
 
 from functools import wraps
-from pathlib import Path
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any
 
-from quicketl.pipeline import Pipeline, PipelineResult
+from quicketl.pipeline import Pipeline
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
 
 
 def quicketl_task(

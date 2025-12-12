@@ -6,13 +6,15 @@ Output JSON schema for pipeline configuration (IDE support).
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Annotated, Optional
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
 
 from quicketl.config.models import PipelineConfig
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Output JSON schema for pipeline configuration")
@@ -21,7 +23,7 @@ app = typer.Typer(help="Output JSON schema for pipeline configuration")
 @app.callback(invoke_without_command=True)
 def schema(
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--output",
             "-o",

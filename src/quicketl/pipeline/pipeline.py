@@ -7,23 +7,24 @@ or using the builder pattern.
 from __future__ import annotations
 
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import ibis.expr.types as ir
 
-from quicketl.config.checks import CheckConfig
+    from quicketl.config.checks import CheckConfig
+    from quicketl.config.models import PipelineConfig, SinkConfig, SourceConfig
+    from quicketl.config.transforms import TransformStep
+
 from quicketl.config.loader import load_pipeline_config
-from quicketl.config.models import PipelineConfig, SinkConfig, SourceConfig
-from quicketl.config.transforms import TransformStep
 from quicketl.engines import ETLXEngine
 from quicketl.logging import get_logger
 from quicketl.pipeline.context import ExecutionContext
 from quicketl.pipeline.result import (
     PipelineResult,
     PipelineResultBuilder,
-    PipelineStatus,
     StepResult,
 )
 from quicketl.quality import CheckSuiteResult, run_checks
@@ -228,7 +229,7 @@ class Pipeline:
             self._variables.update(variables)
 
         # Create execution context
-        ctx = ExecutionContext(variables=self._variables)
+        ExecutionContext(variables=self._variables)
         builder = PipelineResultBuilder(
             pipeline_name=self.name,
             metadata={"engine": self.engine_name, "dry_run": dry_run},

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
-import time
 
 if TYPE_CHECKING:
     import ibis.expr.types as ir
@@ -24,7 +24,7 @@ def write_file(
     table: ir.Table,
     path: str,
     format: str = "parquet",
-    partition_by: list[str] | None = None,
+    partition_by: list[str] | None = None,  # noqa: ARG001
     **options: Any,
 ) -> WriteResult:
     """Write data to a file.

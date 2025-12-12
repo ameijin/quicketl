@@ -5,8 +5,7 @@ Execute an ETLX pipeline from a YAML configuration file.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Annotated, Optional
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
@@ -15,6 +14,9 @@ from rich.table import Table
 
 from quicketl.logging import configure_logging
 from quicketl.pipeline import Pipeline, PipelineStatus
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Run an ETLX pipeline")
@@ -42,7 +44,7 @@ def run(
         ),
     ],
     engine: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--engine",
             "-e",
@@ -50,7 +52,7 @@ def run(
         ),
     ] = None,
     var: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option(
             "--var",
             "-v",
@@ -133,18 +135,18 @@ def run(
 
         # Exit with appropriate code
         if result.status == PipelineStatus.FAILED:
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
         elif result.status == PipelineStatus.PARTIAL:
             raise typer.Exit(2)
 
     except FileNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")
         if verbose:
             console.print_exception()
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def _display_result(result) -> None:
@@ -176,7 +178,7 @@ def _display_result(result) -> None:
         table.add_column("Duration", justify="right")
 
         for step in result.step_results:
-            status_str = "[green]OK[/green]" if step.succeeded else f"[red]FAIL[/red]"
+            status_str = "[green]OK[/green]" if step.succeeded else "[red]FAIL[/red]"
             if step.error:
                 status_str = f"[red]FAIL: {step.error[:30]}...[/red]" if len(step.error) > 30 else f"[red]FAIL: {step.error}[/red]"
             table.add_row(

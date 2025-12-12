@@ -6,13 +6,13 @@ using Pydantic v2 discriminated unions.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal, Union
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
-from quicketl.config.transforms import TransformStep
-from quicketl.config.checks import CheckConfig
-
+if TYPE_CHECKING:
+    from quicketl.config.checks import CheckConfig
+    from quicketl.config.transforms import TransformStep
 
 # =============================================================================
 # Source Configurations
@@ -96,7 +96,7 @@ class IcebergSource(BaseModel):
 
 # Discriminated union for all source types
 SourceConfig = Annotated[
-    Union[FileSource, DatabaseSource, IcebergSource],
+    FileSource | DatabaseSource | IcebergSource,
     Field(discriminator="type"),
 ]
 
@@ -163,7 +163,7 @@ class DatabaseSink(BaseModel):
 
 # Discriminated union for all sink types
 SinkConfig = Annotated[
-    Union[FileSink, DatabaseSink],
+    FileSink | DatabaseSink,
     Field(discriminator="type"),
 ]
 

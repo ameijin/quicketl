@@ -5,8 +5,7 @@ Validate an ETLX pipeline configuration file.
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from pydantic import ValidationError
@@ -15,6 +14,9 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from quicketl.config.loader import load_pipeline_config
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Validate pipeline configuration")
@@ -58,7 +60,7 @@ def validate(
 
         # Success panel
         panel = Panel(
-            f"[green]Configuration is valid[/green]",
+            "[green]Configuration is valid[/green]",
             title=f"Pipeline: {config.name}",
             border_style="green",
         )
@@ -78,7 +80,7 @@ def validate(
 
     except ValidationError as e:
         panel = Panel(
-            f"[red]Configuration is invalid[/red]",
+            "[red]Configuration is invalid[/red]",
             title="Validation Failed",
             border_style="red",
         )
@@ -87,15 +89,15 @@ def validate(
         # Show validation errors
         console.print("\n[bold red]Errors:[/bold red]")
         for error in e.errors():
-            loc = " -> ".join(str(l) for l in error["loc"])
+            loc = " -> ".join(str(part) for part in error["loc"])
             msg = error["msg"]
             console.print(f"  [red]-[/red] {loc}: {msg}")
 
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
 
 def _display_config_details(config) -> None:

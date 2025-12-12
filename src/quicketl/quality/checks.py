@@ -8,9 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-import ibis
-
 if TYPE_CHECKING:
+    import ibis
     import ibis.expr.types as ir
 
 from quicketl.config.checks import (
@@ -287,7 +286,6 @@ def run_expression_check(table: ir.Table, config: ExpressionCheck) -> CheckResul
 
 def _parse_predicate(table: ir.Table, predicate: str) -> ibis.Expr:
     """Parse a simple SQL-like predicate into an Ibis expression."""
-    from typing import Any
 
     # Handle comparison operators
     for op_str, op_func in [

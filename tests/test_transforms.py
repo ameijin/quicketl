@@ -253,7 +253,7 @@ class TestTransformParity:
         )
 
         df = result.execute()
-        totals = dict(zip(df["region"], df["total"]))
+        totals = dict(zip(df["region"], df["total"], strict=False))
 
         assert totals["North"] == 250.0  # 100 + 150
         assert totals["South"] == 450.0  # 200 + 250

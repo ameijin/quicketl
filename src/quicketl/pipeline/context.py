@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class ExecutionContext:
     variables: dict[str, str] = field(default_factory=dict)
     tables: dict[str, ir.Table] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
-    start_time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    start_time: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __post_init__(self) -> None:
         """Initialize default metadata."""
@@ -121,7 +121,7 @@ class ExecutionContext:
     @property
     def elapsed_seconds(self) -> float:
         """Seconds elapsed since execution started."""
-        delta = datetime.now(timezone.utc) - self.start_time
+        delta = datetime.now(UTC) - self.start_time
         return delta.total_seconds()
 
     @property

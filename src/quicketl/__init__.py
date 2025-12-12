@@ -10,9 +10,9 @@ Example:
 """
 
 from quicketl._version import __version__, __version_info__
+from quicketl.engines.base import ETLXEngine
 from quicketl.pipeline.pipeline import Pipeline
 from quicketl.pipeline.result import PipelineResult
-from quicketl.engines.base import ETLXEngine
 
 # Alias for the new package name
 QuickETLEngine = ETLXEngine

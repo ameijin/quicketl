@@ -12,7 +12,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import ibis.expr.types as ir
 
-from quicketl.config.checks import CheckConfig
+    from quicketl.config.checks import CheckConfig
+
 from quicketl.logging import get_logger
 from quicketl.quality.checks import CheckResult, run_check
 

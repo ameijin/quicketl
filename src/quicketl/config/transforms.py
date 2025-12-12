@@ -5,7 +5,7 @@ Defines the 12 core transform operations as a Pydantic discriminated union.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -200,19 +200,6 @@ class LimitTransform(BaseModel):
 
 # Discriminated union for all transform types
 TransformStep = Annotated[
-    Union[
-        SelectTransform,
-        RenameTransform,
-        FilterTransform,
-        DeriveColumnTransform,
-        CastTransform,
-        FillNullTransform,
-        DedupTransform,
-        SortTransform,
-        JoinTransform,
-        AggregateTransform,
-        UnionTransform,
-        LimitTransform,
-    ],
+    SelectTransform | RenameTransform | FilterTransform | DeriveColumnTransform | CastTransform | FillNullTransform | DedupTransform | SortTransform | JoinTransform | AggregateTransform | UnionTransform | LimitTransform,
     Field(discriminator="op"),
 ]

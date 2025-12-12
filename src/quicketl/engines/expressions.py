@@ -5,7 +5,7 @@ Helpers for converting ETLX expression syntax to Ibis expressions.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import ibis
 

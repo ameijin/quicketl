@@ -7,7 +7,7 @@ step-by-step timings and quality check outcomes.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -141,7 +141,7 @@ class PipelineResultBuilder:
     """Builder for constructing PipelineResult incrementally."""
 
     pipeline_name: str
-    start_time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    start_time: datetime = field(default_factory=lambda: datetime.now(UTC))
     step_results: list[StepResult] = field(default_factory=list)
     check_results: dict[str, Any] | None = None
     rows_processed: int = 0
@@ -163,7 +163,7 @@ class PipelineResultBuilder:
 
     def build(self) -> PipelineResult:
         """Build the final PipelineResult."""
-        end_time = datetime.now(timezone.utc)
+        end_time = datetime.now(UTC)
         duration_ms = (end_time - self.start_time).total_seconds() * 1000
 
         # Determine status
