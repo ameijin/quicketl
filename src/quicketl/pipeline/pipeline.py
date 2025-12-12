@@ -295,6 +295,7 @@ class Pipeline:
         builder: PipelineResultBuilder,
     ) -> ir.Table:
         """Execute the source read step."""
+        assert self._source is not None, "Source must be configured"
         start = time.perf_counter()
 
         logger.debug("reading_source", source_type=self._source.type)
@@ -417,6 +418,7 @@ class Pipeline:
         builder: PipelineResultBuilder,
     ) -> Any:
         """Execute the sink write step."""
+        assert self._sink is not None, "Sink must be configured"
         start = time.perf_counter()
 
         logger.debug("writing_sink", sink_type=self._sink.type)
