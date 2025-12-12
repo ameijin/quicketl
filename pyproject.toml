@@ -95,6 +95,9 @@ Issues = "https://github.com/ameijin/quicketl/issues"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.metadata]
+license-files = []
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/quicketl"]
 
