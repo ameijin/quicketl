@@ -5,7 +5,8 @@ Validate an ETLX pipeline configuration file.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from pathlib import Path
+from typing import Annotated
 
 import typer
 from pydantic import ValidationError
@@ -14,9 +15,6 @@ from rich.panel import Panel
 from rich.tree import Tree
 
 from quicketl.config.loader import load_pipeline_config
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Validate pipeline configuration")

@@ -5,7 +5,8 @@ Execute an ETLX pipeline from a YAML configuration file.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from pathlib import Path
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -14,9 +15,6 @@ from rich.table import Table
 
 from quicketl.logging import configure_logging
 from quicketl.pipeline import Pipeline, PipelineStatus
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Run an ETLX pipeline")

@@ -38,7 +38,10 @@ dependencies = [
 
 [project.optional-dependencies]
 # Additional Ibis backends
-spark = ["ibis-framework[pyspark]>=9.0"]
+spark = [
+    "ibis-framework[pyspark]>=9.0",
+    "setuptools>=60.0",  # Provides distutils shim for Python 3.12+
+]
 pandas = ["pandas>=2.0"]  # pandas support is built into ibis-framework
 datafusion = ["ibis-framework[datafusion]>=9.0"]
 

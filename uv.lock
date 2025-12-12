@@ -2814,6 +2814,7 @@ all = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "s3fs" },
+    { name = "setuptools" },
 ]
 aws = [
     { name = "boto3" },
@@ -2868,6 +2869,7 @@ snowflake = [
 ]
 spark = [
     { name = "ibis-framework", extra = ["pyspark"] },
+    { name = "setuptools" },
 ]
 trino = [
     { name = "ibis-framework", extra = ["trino"] },
@@ -2917,6 +2919,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
     { name = "s3fs", marker = "extra == 'aws'", specifier = ">=2024.6" },
+    { name = "setuptools", marker = "extra == 'spark'", specifier = ">=60.0" },
     { name = "structlog", specifier = ">=24.0" },
     { name = "typer", specifier = ">=0.12" },
 ]

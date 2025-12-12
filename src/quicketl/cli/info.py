@@ -5,7 +5,8 @@ Display information about ETLX installation and available backends.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated
+from pathlib import Path
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -14,9 +15,6 @@ from rich.table import Table
 
 from quicketl._version import __version__
 from quicketl.engines.backends import list_backends
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 console = Console()
 app = typer.Typer(help="Display ETLX information")
@@ -119,30 +117,67 @@ def _show_backends(check_imports: bool) -> None:
 
 def _check_backend(backend_name: str) -> str:
     """Check if a backend can be imported."""
+    # Map backend names to ibis module names and install extras
+    BACKEND_INFO: dict[str, dict[str, str]] = {
+        "duckdb": {"module": "duckdb", "extra": "duckdb"},
+        "polars": {"module": "polars", "extra": "polars"},
+        "datafusion": {"module": "datafusion", "extra": "datafusion"},
+        "pandas": {"module": "pandas", "extra": "pandas"},
+        "spark": {"module": "pyspark", "extra": "spark", "note": "Requires Java 8/11/17"},
+        "bigquery": {"module": "bigquery", "extra": "bigquery"},
+        "snowflake": {"module": "snowflake", "extra": "snowflake"},
+        "trino": {"module": "trino", "extra": "trino"},
+        "postgres": {"module": "postgres", "extra": "postgres"},
+        "mysql": {"module": "mysql", "extra": "mysql"},
+        "clickhouse": {"module": "clickhouse", "extra": "clickhouse"},
+        "sqlite": {"module": "sqlite", "extra": None},  # Built into ibis
+    }
+
+    info = BACKEND_INFO.get(backend_name)
+    if not info:
+        return "[dim]Unknown backend[/dim]"
+
+    module_name = info["module"]
+    extra = info["extra"]
+    note = info.get("note", "")
+
     try:
         import ibis
 
-        # Try to create a connection
-        match backend_name:
-            case "duckdb":
-                ibis.duckdb.connect()
-            case "polars":
-                ibis.polars.connect()
-            case "datafusion":
-                ibis.datafusion.connect()
-            case "pandas":
-                ibis.pandas.connect()
-            case _:
-                # For other backends, just check if ibis has the module
-                if hasattr(ibis, backend_name):
-                    return "[yellow]Available[/yellow]"
-                return "[dim]Not checked[/dim]"
+        # Check if ibis has the backend module
+        if not hasattr(ibis, module_name):
+            # Escape brackets for Rich markup
+            install_hint = f"pip install quicketl\\[{extra}]" if extra else "built-in"
+            return f"[red]Not installed[/red] ({install_hint})"
 
-        return "[green]OK[/green]"
+        # For backends that can connect without credentials, test the connection
+        backend_module = getattr(ibis, module_name)
+
+        # These backends can create in-memory connections
+        if backend_name in ("duckdb", "polars", "datafusion", "sqlite"):
+            backend_module.connect()
+            return "[green]OK[/green]"
+
+        # Pandas needs a dictionary to connect
+        if backend_name == "pandas":
+            backend_module.connect({})
+            return "[green]OK[/green]"
+
+        # For backends requiring credentials, just verify the module exists
+        return "[yellow]Available[/yellow]"
+
     except ImportError as e:
-        return f"[red]Missing: {e.name}[/red]"
+        # Get the missing package name, with fallback
+        missing = e.name if e.name else "dependencies"
+        # Escape brackets for Rich markup
+        install_hint = f"pip install quicketl\\[{extra}]" if extra else ""
+        hint_suffix = f" ({install_hint})" if install_hint else ""
+        note_suffix = f" [dim]{note}[/dim]" if note else ""
+        return f"[red]Missing: {missing}[/red]{hint_suffix}{note_suffix}"
+
     except Exception as e:
-        return f"[yellow]{type(e).__name__}[/yellow]"
+        # Show specific error type for debugging
+        return f"[yellow]{type(e).__name__}: {e!s:.50}[/yellow]"
 
 
 def _show_pipeline_info(config_file: Path) -> None:
