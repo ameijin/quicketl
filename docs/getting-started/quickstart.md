@@ -7,7 +7,7 @@ Get up and running with ETLX in 5 minutes.
 Use the `etlx init` command to create a new project with sample data:
 
 ```bash
-etlx init my_project
+quicketl init my_project
 cd my_project
 ```
 
@@ -29,7 +29,7 @@ my_project/
 Run the included sample pipeline:
 
 ```bash
-etlx run pipelines/sample.yml
+quicketl run pipelines/sample.yml
 ```
 
 You'll see output like:
@@ -149,7 +149,7 @@ Try changing the pipeline:
 3. **Run again:**
 
     ```bash
-    etlx run pipelines/sample.yml
+    quicketl run pipelines/sample.yml
     ```
 
 ## Use Variables
@@ -164,7 +164,7 @@ source:
 ```
 
 ```bash
-etlx run pipelines/sample.yml --var DATE=2025-01-15
+quicketl run pipelines/sample.yml --var DATE=2025-01-15
 ```
 
 ## Validate Without Running
@@ -172,7 +172,7 @@ etlx run pipelines/sample.yml --var DATE=2025-01-15
 Check your configuration is valid without executing:
 
 ```bash
-etlx validate pipelines/sample.yml
+quicketl validate pipelines/sample.yml
 ```
 
 ## Dry Run
@@ -180,7 +180,7 @@ etlx validate pipelines/sample.yml
 Execute transforms without writing output:
 
 ```bash
-etlx run pipelines/sample.yml --dry-run
+quicketl run pipelines/sample.yml --dry-run
 ```
 
 ## What's Next?

@@ -3,7 +3,7 @@ site_name: ETLX Documentation
 site_url: https://etlx.readthedocs.io
 site_description: "ETLX - Configuration-driven ETL framework for Python with 20+ backend support via Ibis"
 site_author: "ETLX Contributors"
-repo_name: etlx/etlx
+repo_name: quicketl/quicketl
 repo_url: https://github.com/etlx/etlx
 edit_uri: edit/main/docs/
 
@@ -121,8 +121,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: etlx
-      repo: etlx
+      user: quicketl
+      repo: quicketl
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences:

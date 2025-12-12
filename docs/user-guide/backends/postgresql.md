@@ -5,9 +5,9 @@ PostgreSQL is a powerful open-source relational database. ETLX can execute trans
 ## Installation
 
 ```bash
-pip install etlx[postgres]
+pip install quicketl[postgres]
 # or
-uv add etlx[postgres]
+uv add quicketl[postgres]
 ```
 
 ## When to Use PostgreSQL

@@ -5,7 +5,7 @@ Display ETLX version and backend information.
 ## Usage
 
 ```bash
-etlx info [options]
+quicketl info [options]
 ```
 
 ## Options
@@ -20,7 +20,7 @@ etlx info [options]
 ### Version Info
 
 ```bash
-etlx info
+quicketl info
 ```
 
 Output:
@@ -33,13 +33,13 @@ Python 3.12.0
 ### List Backends
 
 ```bash
-etlx info --backends
+quicketl info --backends
 ```
 
 ### Check Backend Availability
 
 ```bash
-etlx info --backends --check
+quicketl info --backends --check
 ```
 
 Output:
@@ -61,13 +61,13 @@ Available Backends
 ### Verify Installation
 
 ```bash
-etlx info --backends --check
+quicketl info --backends --check
 ```
 
 ### Scripting
 
 ```bash
-if etlx info --backends | grep -q "spark.*OK"; then
+if quicketl info --backends | grep -q "spark.*OK"; then
   echo "Spark is available"
 fi
 ```

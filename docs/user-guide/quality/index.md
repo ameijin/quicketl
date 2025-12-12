@@ -54,7 +54,7 @@ checks:
 ### Fail on Check Failure (Default)
 
 ```bash
-etlx run pipeline.yml --fail-on-checks
+quicketl run pipeline.yml --fail-on-checks
 ```
 
 If any check fails, the pipeline stops and no output is written.
@@ -62,7 +62,7 @@ If any check fails, the pipeline stops and no output is written.
 ### Continue on Check Failure
 
 ```bash
-etlx run pipeline.yml --no-fail-on-checks
+quicketl run pipeline.yml --no-fail-on-checks
 ```
 
 Checks are logged but pipeline continues.

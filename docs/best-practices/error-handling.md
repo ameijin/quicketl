@@ -9,7 +9,7 @@ Strategies for handling errors gracefully in ETLX pipelines.
 Invalid YAML or missing required fields:
 
 ```bash
-$ etlx validate pipeline.yml
+$ quicketl validate pipeline.yml
 Configuration is invalid
 
 Errors:
@@ -20,7 +20,7 @@ Errors:
 **Prevention**: Always validate before running:
 
 ```bash
-etlx validate pipeline.yml && etlx run pipeline.yml
+quicketl validate pipeline.yml && quicketl run pipeline.yml
 ```
 
 ### Runtime Errors
@@ -71,7 +71,7 @@ checks:
 For non-critical pipelines:
 
 ```bash
-etlx run pipeline.yml --no-fail-on-checks
+quicketl run pipeline.yml --no-fail-on-checks
 ```
 
 ### Programmatic Handling
@@ -107,7 +107,7 @@ MAX_RETRIES=3
 RETRY_DELAY=60
 
 for i in $(seq 1 $MAX_RETRIES); do
-    if etlx run pipeline.yml --var DATE=$1; then
+    if quicketl run pipeline.yml --var DATE=$1; then
         echo "Success on attempt $i"
         exit 0
     fi
@@ -130,7 +130,7 @@ MAX_RETRIES=5
 BASE_DELAY=30
 
 for i in $(seq 1 $MAX_RETRIES); do
-    if etlx run pipeline.yml; then
+    if quicketl run pipeline.yml; then
         exit 0
     fi
 
@@ -172,7 +172,7 @@ def run_with_retry(config_path, max_retries=3, base_delay=30):
 ### Verbose Output
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 Shows detailed step-by-step execution.
@@ -180,7 +180,7 @@ Shows detailed step-by-step execution.
 ### JSON Output for Monitoring
 
 ```bash
-etlx run pipeline.yml --json > result.json
+quicketl run pipeline.yml --json > result.json
 ```
 
 ```json
@@ -199,7 +199,7 @@ etlx run pipeline.yml --json > result.json
 
 ```bash
 #!/bin/bash
-RESULT=$(etlx run pipeline.yml --json)
+RESULT=$(quicketl run pipeline.yml --json)
 STATUS=$(echo $RESULT | jq -r '.status')
 DURATION=$(echo $RESULT | jq -r '.duration_ms')
 ROWS=$(echo $RESULT | jq -r '.rows_written')
@@ -302,7 +302,7 @@ except Exception as e:
 
 ```bash
 #!/bin/bash
-if ! etlx run pipeline.yml; then
+if ! quicketl run pipeline.yml; then
     echo "Pipeline failed at $(date)" | \
     mail -s "ALERT: ETL Pipeline Failed" team@company.com
     exit 1
@@ -342,7 +342,7 @@ except Exception as e:
 
 ```bash
 #!/bin/bash
-if ! etlx run pipeline.yml; then
+if ! quicketl run pipeline.yml; then
     curl -X POST https://events.pagerduty.com/v2/enqueue \
       -H "Content-Type: application/json" \
       -d '{
@@ -351,7 +351,7 @@ if ! etlx run pipeline.yml; then
         "payload": {
           "summary": "ETL Pipeline Failed",
           "severity": "critical",
-          "source": "etlx"
+          "source": "quicketl"
         }
       }'
     exit 1
@@ -365,25 +365,25 @@ fi
 Test without writing output:
 
 ```bash
-etlx run pipeline.yml --dry-run
+quicketl run pipeline.yml --dry-run
 ```
 
 ### Verbose Logging
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 ### Validate Configuration
 
 ```bash
-etlx validate pipeline.yml --verbose
+quicketl validate pipeline.yml --verbose
 ```
 
 ### Check Backend Availability
 
 ```bash
-etlx info --backends --check
+quicketl info --backends --check
 ```
 
 ### Test with Sample Data
@@ -392,7 +392,7 @@ Create a small test dataset:
 
 ```bash
 head -100 data/large_file.csv > data/test_sample.csv
-etlx run pipeline.yml --var INPUT=data/test_sample.csv
+quicketl run pipeline.yml --var INPUT=data/test_sample.csv
 ```
 
 ## Related

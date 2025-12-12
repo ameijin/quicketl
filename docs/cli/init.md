@@ -5,7 +5,7 @@ Initialize a new ETLX project or pipeline file.
 ## Usage
 
 ```bash
-etlx init <name> [options]
+quicketl init <name> [options]
 ```
 
 ## Arguments
@@ -27,7 +27,7 @@ etlx init <name> [options]
 ### Create Project
 
 ```bash
-etlx init my_project
+quicketl init my_project
 cd my_project
 ```
 
@@ -47,7 +47,7 @@ my_project/
 ### Create Pipeline Only
 
 ```bash
-etlx init my_pipeline -p
+quicketl init my_pipeline -p
 ```
 
 Creates: `my_pipeline.yml`
@@ -55,13 +55,13 @@ Creates: `my_pipeline.yml`
 ### Specify Output Directory
 
 ```bash
-etlx init my_project -o ./projects/
+quicketl init my_project -o ./projects/
 ```
 
 ### Force Overwrite
 
 ```bash
-etlx init my_project --force
+quicketl init my_project --force
 ```
 
 ## Project Contents
@@ -72,7 +72,7 @@ The generated `sample.yml` is runnable immediately:
 
 ```bash
 cd my_project
-etlx run pipelines/sample.yml
+quicketl run pipelines/sample.yml
 ```
 
 ### Sample Data

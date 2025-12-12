@@ -8,13 +8,13 @@ Export the JSON schema:
 
 ```bash
 # To stdout
-etlx schema
+quicketl schema
 
 # To file
-etlx schema -o .etlx-schema.json
+quicketl schema -o .quicketl-schema.json
 
 # With custom indentation
-etlx schema -o .etlx-schema.json --indent 4
+quicketl schema -o .quicketl-schema.json --indent 4
 ```
 
 ## VS Code Setup
@@ -160,8 +160,8 @@ Regenerate the schema when ETLX is updated:
 
 ```bash
 # After upgrading ETLX
-pip install --upgrade etlx
-etlx schema -o .etlx-schema.json
+pip install --upgrade quicketl
+quicketl schema -o .quicketl-schema.json
 ```
 
 Add to your `Makefile` or scripts:
@@ -193,7 +193,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install ETLX
-        run: pip install etlx
+        run: pip install quicketl
 
       - name: Validate all pipelines
         run: |
@@ -216,7 +216,7 @@ jobs:
 Regenerate the schema after updating ETLX:
 
 ```bash
-etlx schema -o .etlx-schema.json
+quicketl schema -o .quicketl-schema.json
 ```
 
 ### Custom Transforms

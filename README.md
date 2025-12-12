@@ -1,8 +1,8 @@
-# ETLX Framework
+# QuickETL
 
-**Unified ETL/ELT for Python with 20+ backend support via Ibis**
+**Fast & Flexible Python ETL Framework with 20+ backend support via Ibis**
 
-ETLX is a configuration-driven ETL framework that provides a simple, unified API for data processing across multiple compute backends including DuckDB, Polars, Spark, and pandas.
+QuickETL is a configuration-driven ETL framework that provides a simple, unified API for data processing across multiple compute backends including DuckDB, Polars, Spark, and pandas.
 
 ## Features
 
@@ -10,27 +10,27 @@ ETLX is a configuration-driven ETL framework that provides a simple, unified API
 - **Configuration-driven**: Define pipelines in YAML with variable substitution
 - **Quality Checks**: Built-in data quality validation (not_null, unique, row_count, accepted_values, expression)
 - **12 Transform Operations**: select, rename, filter, derive_column, cast, fill_null, dedup, sort, join, aggregate, union, limit
-- **CLI Interface**: `etlx run`, `etlx validate`, `etlx init`, `etlx info`
-- **Airflow Integration**: `@etlx_task` decorator for DAG tasks
+- **CLI Interface**: `quicketl run`, `quicketl validate`, `quicketl init`, `quicketl info`
+- **Airflow Integration**: `@quicketl_task` decorator for DAG tasks
 - **Cloud Storage**: S3, GCS, Azure via fsspec
 
 ## Installation
 
 ```bash
 # Basic installation (DuckDB + Polars)
-pip install etlx
+pip install quicketl
 
 # With additional backends
-pip install etlx[spark]
-pip install etlx[datafusion]
+pip install quicketl[spark]
+pip install quicketl[datafusion]
 
 # With cloud storage
-pip install etlx[aws]
-pip install etlx[gcp]
-pip install etlx[azure]
+pip install quicketl[aws]
+pip install quicketl[gcp]
+pip install quicketl[azure]
 
 # All backends and tools
-pip install etlx[all]
+pip install quicketl[all]
 ```
 
 ## Quick Start
@@ -39,17 +39,17 @@ pip install etlx[all]
 
 ```bash
 # Initialize a new project
-etlx init my_project
+quicketl init my_project
 cd my_project
 
 # Run a pipeline
-etlx run pipelines/sample.yml
+quicketl run pipelines/sample.yml
 
 # Validate configuration
-etlx validate pipelines/sample.yml
+quicketl validate pipelines/sample.yml
 
 # Show available backends
-etlx info --backends
+quicketl info --backends
 ```
 
 ### Pipeline Configuration (YAML)
@@ -91,9 +91,9 @@ sink:
 ### Python API
 
 ```python
-from etlx import Pipeline, ETLXEngine
-from etlx.config.models import FileSource, FileSink
-from etlx.config.transforms import FilterTransform, DeriveColumnTransform
+from quicketl import Pipeline, QuickETLEngine
+from quicketl.config.models import FileSource, FileSink
+from quicketl.config.transforms import FilterTransform, DeriveColumnTransform
 
 # From YAML
 pipeline = Pipeline.from_yaml("pipeline.yml")
@@ -110,7 +110,7 @@ pipeline = (
 result = pipeline.run()
 
 # Direct engine usage
-engine = ETLXEngine(backend="duckdb")
+engine = QuickETLEngine(backend="duckdb")
 table = engine.read_file("data.parquet", "parquet")
 filtered = engine.filter(table, "amount > 100")
 result = engine.to_polars(filtered)
@@ -119,9 +119,9 @@ result = engine.to_polars(filtered)
 ### Airflow Integration
 
 ```python
-from etlx.integrations.airflow import etlx_task
+from quicketl.integrations.airflow import quicketl_task
 
-@etlx_task(config_path="pipelines/daily_etl.yml")
+@quicketl_task(config_path="pipelines/daily_etl.yml")
 def run_daily_etl(**context):
     return {"RUN_DATE": context["ds"]}
 ```
@@ -132,22 +132,22 @@ def run_daily_etl(**context):
 |---------|------|--------------|
 | DuckDB | Local/Embedded | Included by default |
 | Polars | Local/Embedded | Included by default |
-| DataFusion | Local/Embedded | `pip install etlx[datafusion]` |
-| Spark | Distributed | `pip install etlx[spark]` |
-| pandas | Local | `pip install etlx[pandas]` |
-| PostgreSQL | Database | `pip install etlx[postgres]` |
-| MySQL | Database | `pip install etlx[mysql]` |
-| ClickHouse | Database | `pip install etlx[clickhouse]` |
-| Snowflake | Cloud DW | `pip install etlx[snowflake]` |
-| BigQuery | Cloud DW | `pip install etlx[bigquery]` |
-| Trino | Distributed SQL | `pip install etlx[trino]` |
+| DataFusion | Local/Embedded | `pip install quicketl[datafusion]` |
+| Spark | Distributed | `pip install quicketl[spark]` |
+| pandas | Local | `pip install quicketl[pandas]` |
+| PostgreSQL | Database | `pip install quicketl[postgres]` |
+| MySQL | Database | `pip install quicketl[mysql]` |
+| ClickHouse | Database | `pip install quicketl[clickhouse]` |
+| Snowflake | Cloud DW | `pip install quicketl[snowflake]` |
+| BigQuery | Cloud DW | `pip install quicketl[bigquery]` |
+| Trino | Distributed SQL | `pip install quicketl[trino]` |
 
 ## Development
 
 ```bash
 # Clone and install dev dependencies
-git clone https://github.com/yourusername/etlx.git
-cd etlx
+git clone https://github.com/ameijin/quicketl.git
+cd quicketl
 pip install -e ".[dev]"
 
 # Run tests

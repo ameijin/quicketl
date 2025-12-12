@@ -5,9 +5,9 @@ Apache DataFusion is a fast, extensible query engine written in Rust. ETLX uses 
 ## Installation
 
 ```bash
-pip install etlx[datafusion]
+pip install quicketl[datafusion]
 # or
-uv add etlx[datafusion]
+uv add quicketl[datafusion]
 ```
 
 ## When to Use DataFusion
@@ -55,7 +55,7 @@ sink:
 ### CLI Override
 
 ```bash
-etlx run pipeline.yml --engine datafusion
+quicketl run pipeline.yml --engine datafusion
 ```
 
 ## Performance Characteristics
@@ -270,7 +270,7 @@ ModuleNotFoundError: No module named 'datafusion'
 
 **Solution**:
 ```bash
-pip install etlx[datafusion]
+pip install quicketl[datafusion]
 ```
 
 ### File Not Found

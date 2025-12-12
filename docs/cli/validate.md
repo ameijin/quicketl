@@ -5,7 +5,7 @@ Validate a pipeline configuration without executing it.
 ## Usage
 
 ```bash
-etlx validate <config_file> [options]
+quicketl validate <config_file> [options]
 ```
 
 ## Arguments
@@ -25,13 +25,13 @@ etlx validate <config_file> [options]
 ### Basic Validation
 
 ```bash
-etlx validate pipeline.yml
+quicketl validate pipeline.yml
 ```
 
 ### Verbose Output
 
 ```bash
-etlx validate pipeline.yml --verbose
+quicketl validate pipeline.yml --verbose
 ```
 
 ## Output
@@ -80,7 +80,7 @@ Errors:
 # .git/hooks/pre-commit
 
 for file in $(git diff --cached --name-only | grep 'pipelines/.*\.yml$'); do
-  etlx validate "$file" || exit 1
+  quicketl validate "$file" || exit 1
 done
 ```
 

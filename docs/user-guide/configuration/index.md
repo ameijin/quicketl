@@ -70,7 +70,7 @@ ETLX validates configurations using Pydantic:
 Validate without running:
 
 ```bash
-etlx validate pipeline.yml
+quicketl validate pipeline.yml
 ```
 
 ## YAML vs Python

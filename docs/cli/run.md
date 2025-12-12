@@ -5,7 +5,7 @@ Execute a pipeline from a YAML configuration file.
 ## Usage
 
 ```bash
-etlx run <config_file> [options]
+quicketl run <config_file> [options]
 ```
 
 ## Arguments
@@ -31,21 +31,21 @@ etlx run <config_file> [options]
 ### Basic Run
 
 ```bash
-etlx run pipeline.yml
+quicketl run pipeline.yml
 ```
 
 ### With Variables
 
 ```bash
-etlx run pipeline.yml --var DATE=2025-01-15
-etlx run pipeline.yml --var DATE=2025-01-15 --var REGION=north
+quicketl run pipeline.yml --var DATE=2025-01-15
+quicketl run pipeline.yml --var DATE=2025-01-15 --var REGION=north
 ```
 
 ### Override Engine
 
 ```bash
-etlx run pipeline.yml --engine polars
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine polars
+quicketl run pipeline.yml --engine spark
 ```
 
 ### Dry Run
@@ -53,13 +53,13 @@ etlx run pipeline.yml --engine spark
 Execute transforms without writing to sink:
 
 ```bash
-etlx run pipeline.yml --dry-run
+quicketl run pipeline.yml --dry-run
 ```
 
 ### Continue on Check Failure
 
 ```bash
-etlx run pipeline.yml --no-fail-on-checks
+quicketl run pipeline.yml --no-fail-on-checks
 ```
 
 ### JSON Output
@@ -67,7 +67,7 @@ etlx run pipeline.yml --no-fail-on-checks
 For scripting and automation:
 
 ```bash
-etlx run pipeline.yml --json
+quicketl run pipeline.yml --json
 ```
 
 Output:
@@ -87,7 +87,7 @@ Output:
 ### Verbose Logging
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 ## Output

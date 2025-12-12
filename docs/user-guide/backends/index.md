@@ -28,7 +28,7 @@ engine: duckdb  # or polars, spark, snowflake, etc.
 Or at runtime:
 
 ```bash
-etlx run pipeline.yml --engine polars
+quicketl run pipeline.yml --engine polars
 ```
 
 ## Backend Comparison
@@ -73,7 +73,7 @@ For data too large for a single machine:
 List installed backends:
 
 ```bash
-etlx info --backends --check
+quicketl info --backends --check
 ```
 
 Output:
@@ -96,15 +96,15 @@ Install additional backends:
 
 ```bash
 # Individual backends
-pip install etlx[spark]
-pip install etlx[snowflake]
-pip install etlx[bigquery]
+pip install quicketl[spark]
+pip install quicketl[snowflake]
+pip install quicketl[bigquery]
 
 # Multiple backends
-pip install etlx[spark,snowflake,bigquery]
+pip install quicketl[spark,snowflake,bigquery]
 
 # All backends
-pip install etlx[all]
+pip install quicketl[all]
 ```
 
 ## Backend Parity

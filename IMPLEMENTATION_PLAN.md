@@ -311,13 +311,13 @@ all = ["etlx[spark,pandas,datafusion,aws,gcp,azure,snowflake,bigquery,trino,post
 
 ## CLI Commands
 ```bash
-etlx run pipeline.yml                    # Run pipeline
-etlx run pipeline.yml --engine duckdb    # Override engine
-etlx run pipeline.yml --var RUN_DATE=2025-12-01
-etlx validate pipeline.yml               # Validate config
-etlx init my_project                     # Create project
-etlx info pipeline.yml                   # Show pipeline info
-etlx schema                              # Output JSON schema
+quicketl run pipeline.yml                    # Run pipeline
+quicketl run pipeline.yml --engine duckdb    # Override engine
+quicketl run pipeline.yml --var RUN_DATE=2025-12-01
+quicketl validate pipeline.yml               # Validate config
+quicketl init my_project                     # Create project
+quicketl info pipeline.yml                   # Show pipeline info
+quicketl schema                              # Output JSON schema
 ```
 
 ---

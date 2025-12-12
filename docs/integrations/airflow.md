@@ -5,9 +5,9 @@ ETLX provides first-class integration with Apache Airflow for orchestrating data
 ## Installation
 
 ```bash
-pip install etlx[airflow]
+pip install quicketl[airflow]
 # or
-uv add etlx[airflow]
+uv add quicketl[airflow]
 ```
 
 ## Quick Start

@@ -21,7 +21,7 @@ def engine_name(request: pytest.FixtureRequest) -> str:
 @pytest.fixture
 def engine(engine_name: str):
     """Create an ETLXEngine for testing."""
-    from etlx.engines import ETLXEngine
+    from quicketl.engines import ETLXEngine
 
     return ETLXEngine(backend=engine_name)
 
@@ -138,13 +138,13 @@ sink:
 @pytest.fixture
 def pipeline_config():
     """Create a sample PipelineConfig object."""
-    from etlx.config.models import (
+    from quicketl.config.models import (
         FileSource,
         FileSink,
         PipelineConfig,
     )
-    from etlx.config.transforms import FilterTransform, SelectTransform
-    from etlx.config.checks import NotNullCheck, RowCountCheck
+    from quicketl.config.transforms import FilterTransform, SelectTransform
+    from quicketl.config.checks import NotNullCheck, RowCountCheck
 
     return PipelineConfig(
         name="test_pipeline",

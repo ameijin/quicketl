@@ -185,12 +185,12 @@ sink:
 
 ```bash
 # Development
-etlx run pipelines/base/sales.yml \
+quicketl run pipelines/base/sales.yml \
   --var INPUT_PATH=data/samples/sales.parquet \
   --var OUTPUT_PATH=data/output/sales.parquet
 
 # Production
-etlx run pipelines/base/sales.yml \
+quicketl run pipelines/base/sales.yml \
   --var INPUT_PATH=s3://prod-bucket/sales/ \
   --var OUTPUT_PATH=s3://prod-bucket/output/sales/
 ```

@@ -104,7 +104,7 @@ sink:
 ### Validate First
 
 ```bash
-etlx validate pipelines/basic.yml
+quicketl validate pipelines/basic.yml
 ```
 
 Expected output:
@@ -123,7 +123,7 @@ Pipeline: basic_sales_pipeline
 ### Execute
 
 ```bash
-etlx run pipelines/basic.yml
+quicketl run pipelines/basic.yml
 ```
 
 Expected output:
@@ -281,7 +281,7 @@ source:
 ```
 
 ```bash
-etlx run pipelines/basic.yml --var DATE=2025-01-15
+quicketl run pipelines/basic.yml --var DATE=2025-01-15
 ```
 
 ### Dry Run
@@ -289,7 +289,7 @@ etlx run pipelines/basic.yml --var DATE=2025-01-15
 Preview without writing output:
 
 ```bash
-etlx run pipelines/basic.yml --dry-run
+quicketl run pipelines/basic.yml --dry-run
 ```
 
 ## Next Steps

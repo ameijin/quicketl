@@ -12,10 +12,10 @@ Common issues and solutions when working with ETLX.
 
 ```bash
 # Install ETLX
-pip install etlx
+pip install quicketl
 
 # Or with specific backend
-pip install etlx[duckdb]
+pip install quicketl[duckdb]
 
 # Verify installation
 python -c "import etlx; print(etlx.__version__)"
@@ -30,10 +30,10 @@ ModuleNotFoundError: No module named 'duckdb'
 **Solution**: Install the backend extra:
 
 ```bash
-pip install etlx[duckdb]
-pip install etlx[polars]
-pip install etlx[spark]
-pip install etlx[snowflake]
+pip install quicketl[duckdb]
+pip install quicketl[polars]
+pip install quicketl[spark]
+pip install quicketl[snowflake]
 ```
 
 ### Python Version Error
@@ -80,7 +80,7 @@ transforms:
 Use a YAML validator or `etlx validate`:
 
 ```bash
-etlx validate pipeline.yml
+quicketl validate pipeline.yml
 ```
 
 ### Missing Required Field
@@ -138,7 +138,7 @@ KeyError: 'DATE'
 **Solution**: Provide the variable:
 
 ```bash
-etlx run pipeline.yml --var DATE=2025-01-15
+quicketl run pipeline.yml --var DATE=2025-01-15
 ```
 
 Or use defaults:
@@ -165,7 +165,7 @@ ls -la data/input.csv
 pwd
 
 # Use absolute path
-etlx run pipeline.yml --var INPUT_PATH=/absolute/path/to/data.csv
+quicketl run pipeline.yml --var INPUT_PATH=/absolute/path/to/data.csv
 ```
 
 ### Permission Denied
@@ -196,7 +196,7 @@ MemoryError: Unable to allocate array
 1. Use a more memory-efficient backend:
 
 ```bash
-etlx run pipeline.yml --engine polars  # Streaming support
+quicketl run pipeline.yml --engine polars  # Streaming support
 ```
 
 2. Filter data early:
@@ -373,7 +373,7 @@ Quota exceeded: Your project exceeded quota for concurrent queries
 **Diagnosis**:
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 Look for slow steps.
@@ -395,7 +395,7 @@ Look for slow steps.
 1. Use Polars (streaming support):
 
 ```bash
-etlx run pipeline.yml --engine polars
+quicketl run pipeline.yml --engine polars
 ```
 
 2. Select fewer columns
@@ -404,7 +404,7 @@ etlx run pipeline.yml --engine polars
 
 ```bash
 for date in 2025-01-{01..31}; do
-  etlx run pipeline.yml --var DATE=$date
+  quicketl run pipeline.yml --var DATE=$date
 done
 ```
 
@@ -413,20 +413,20 @@ done
 ### Check Version
 
 ```bash
-etlx --version
-etlx info --backends --check
+quicketl --version
+quicketl info --backends --check
 ```
 
 ### Verbose Output
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 ### Validate Configuration
 
 ```bash
-etlx validate pipeline.yml --verbose
+quicketl validate pipeline.yml --verbose
 ```
 
 ### Report Issues

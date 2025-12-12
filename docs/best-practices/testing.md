@@ -21,11 +21,11 @@ Strategies for testing ETLX pipelines to ensure data quality and reliability.
 
 ```bash
 # Always validate first
-etlx validate pipeline.yml
+quicketl validate pipeline.yml
 
 # Validate all pipelines
 for f in pipelines/*.yml; do
-  etlx validate "$f" || exit 1
+  quicketl validate "$f" || exit 1
 done
 ```
 
@@ -49,7 +49,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install ETLX
-        run: pip install etlx[duckdb]
+        run: pip install quicketl[duckdb]
 
       - name: Validate all pipelines
         run: |
@@ -344,7 +344,7 @@ pytest
 pytest -m "not integration"
 
 # Run with coverage
-pytest --cov=etlx --cov-report=html
+pytest --cov=quicketl --cov-report=html
 
 # Run verbose
 pytest -v
@@ -361,7 +361,7 @@ repos:
     hooks:
       - id: validate-pipelines
         name: Validate ETLX Pipelines
-        entry: bash -c 'for f in pipelines/*.yml; do etlx validate "$f" || exit 1; done'
+        entry: bash -c 'for f in pipelines/*.yml; do quicketl validate "$f" || exit 1; done'
         language: system
         files: \.yml$
         pass_filenames: false

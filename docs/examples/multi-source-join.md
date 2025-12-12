@@ -190,10 +190,10 @@ transforms:
 
 ```bash
 # Validate
-etlx validate pipelines/order_report.yml
+quicketl validate pipelines/order_report.yml
 
 # Execute
-etlx run pipelines/order_report.yml
+quicketl run pipelines/order_report.yml
 ```
 
 ## Expected Output

@@ -5,9 +5,9 @@ MySQL is a widely-used open-source relational database. ETLX supports MySQL as b
 ## Installation
 
 ```bash
-pip install etlx[mysql]
+pip install quicketl[mysql]
 # or
-uv add etlx[mysql]
+uv add quicketl[mysql]
 ```
 
 ## When to Use MySQL

@@ -7,14 +7,14 @@ from __future__ import annotations
 
 import pytest
 
-from etlx.config.checks import (
+from quicketl.config.checks import (
     AcceptedValuesCheck,
     ExpressionCheck,
     NotNullCheck,
     RowCountCheck,
     UniqueCheck,
 )
-from etlx.quality import run_check, run_checks
+from quicketl.quality import run_check, run_checks
 
 
 class TestNotNullCheck:

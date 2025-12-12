@@ -29,7 +29,7 @@ ETLX follows a layered architecture:
 Pydantic models for type-safe configuration:
 
 ```python
-# etlx/config/models.py
+# quicketl/config/models.py
 class PipelineConfig(BaseModel):
     name: str
     description: str | None = None
@@ -54,7 +54,7 @@ TransformConfig = Annotated[
 The engine orchestrates pipeline execution:
 
 ```python
-# etlx/engine/engine.py
+# quicketl/engine/engine.py
 class ETLXEngine:
     def __init__(self, backend: str = "duckdb"):
         self.backend = backend
@@ -73,14 +73,14 @@ class ETLXEngine:
 Each transform is a class implementing a common interface:
 
 ```python
-# etlx/transforms/base.py
+# quicketl/transforms/base.py
 class BaseTransform(ABC):
     @abstractmethod
     def apply(self, table: Table) -> Table:
         """Apply transform to table."""
         pass
 
-# etlx/transforms/filter.py
+# quicketl/transforms/filter.py
 class FilterTransform(BaseTransform):
     def __init__(self, predicate: str):
         self.predicate = predicate
@@ -94,14 +94,14 @@ class FilterTransform(BaseTransform):
 Quality checks follow the same pattern:
 
 ```python
-# etlx/quality/base.py
+# quicketl/quality/base.py
 class BaseCheck(ABC):
     @abstractmethod
     def run(self, table: Table, engine: ETLXEngine) -> CheckResult:
         """Execute quality check."""
         pass
 
-# etlx/quality/not_null.py
+# quicketl/quality/not_null.py
 class NotNullCheck(BaseCheck):
     def __init__(self, columns: list[str]):
         self.columns = columns
@@ -121,7 +121,7 @@ class NotNullCheck(BaseCheck):
 Ibis provides the backend abstraction layer:
 
 ```python
-# etlx/backends/factory.py
+# quicketl/backends/factory.py
 def create_connection(backend: str) -> ibis.BaseBackend:
     if backend == "duckdb":
         return ibis.duckdb.connect()
@@ -199,7 +199,7 @@ YAML provides:
 1. Create transform class:
 
 ```python
-# etlx/transforms/my_transform.py
+# quicketl/transforms/my_transform.py
 class MyTransform(BaseTransform):
     op: Literal["my_transform"] = "my_transform"
     param: str
@@ -212,7 +212,7 @@ class MyTransform(BaseTransform):
 2. Register in discriminated union:
 
 ```python
-# etlx/config/transforms.py
+# quicketl/config/transforms.py
 TransformConfig = Annotated[
     ... | MyTransform,
     Field(discriminator="op")
@@ -224,7 +224,7 @@ TransformConfig = Annotated[
 1. Implement connection factory:
 
 ```python
-# etlx/backends/my_backend.py
+# quicketl/backends/my_backend.py
 def create_my_backend_connection(**options):
     return ibis.my_backend.connect(**options)
 ```
@@ -232,7 +232,7 @@ def create_my_backend_connection(**options):
 2. Register in backend factory:
 
 ```python
-# etlx/backends/factory.py
+# quicketl/backends/factory.py
 BACKENDS["my_backend"] = create_my_backend_connection
 ```
 
@@ -241,7 +241,7 @@ BACKENDS["my_backend"] = create_my_backend_connection
 1. Create check class:
 
 ```python
-# etlx/quality/my_check.py
+# quicketl/quality/my_check.py
 class MyCheck(BaseCheck):
     check: Literal["my_check"] = "my_check"
 

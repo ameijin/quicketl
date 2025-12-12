@@ -116,10 +116,10 @@ transforms:
 
 ```bash
 # Development
-etlx run pipeline.yml --var SAMPLE_SIZE=1000
+quicketl run pipeline.yml --var SAMPLE_SIZE=1000
 
 # Production
-etlx run pipeline.yml --var SAMPLE_SIZE=1000000
+quicketl run pipeline.yml --var SAMPLE_SIZE=1000000
 ```
 
 ### Preview Data

@@ -5,7 +5,7 @@ Output JSON schema for pipeline configuration.
 ## Usage
 
 ```bash
-etlx schema [options]
+quicketl schema [options]
 ```
 
 ## Options
@@ -20,19 +20,19 @@ etlx schema [options]
 ### Output to Stdout
 
 ```bash
-etlx schema
+quicketl schema
 ```
 
 ### Save to File
 
 ```bash
-etlx schema -o .etlx-schema.json
+quicketl schema -o .quicketl-schema.json
 ```
 
 ### Custom Indentation
 
 ```bash
-etlx schema -o schema.json --indent 4
+quicketl schema -o schema.json --indent 4
 ```
 
 ## Use Cases
@@ -40,7 +40,7 @@ etlx schema -o schema.json --indent 4
 ### VS Code Integration
 
 ```bash
-etlx schema -o .etlx-schema.json
+quicketl schema -o .quicketl-schema.json
 ```
 
 Then in `.vscode/settings.json`:
@@ -56,7 +56,7 @@ Then in `.vscode/settings.json`:
 ### Generate for Distribution
 
 ```bash
-etlx schema -o docs/schema.json --indent 2
+quicketl schema -o docs/schema.json --indent 2
 ```
 
 ## Output Format

@@ -19,8 +19,8 @@ Choose the right backend for your workload:
 
 ```bash
 # Test different backends
-time etlx run pipeline.yml --engine duckdb
-time etlx run pipeline.yml --engine polars
+time quicketl run pipeline.yml --engine duckdb
+time quicketl run pipeline.yml --engine polars
 ```
 
 ## File Format Optimization
@@ -235,14 +235,14 @@ Run independent pipelines in parallel:
 
 ```bash
 # Sequential (slow)
-etlx run pipeline1.yml
-etlx run pipeline2.yml
-etlx run pipeline3.yml
+quicketl run pipeline1.yml
+quicketl run pipeline2.yml
+quicketl run pipeline3.yml
 
 # Parallel (fast)
-etlx run pipeline1.yml &
-etlx run pipeline2.yml &
-etlx run pipeline3.yml &
+quicketl run pipeline1.yml &
+quicketl run pipeline2.yml &
+quicketl run pipeline3.yml &
 wait
 ```
 
@@ -255,7 +255,7 @@ export SPARK_EXECUTOR_INSTANCES=10
 export SPARK_EXECUTOR_CORES=4
 export SPARK_EXECUTOR_MEMORY=8g
 
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ## I/O Optimization
@@ -304,13 +304,13 @@ sink:
 ### Measure Execution Time
 
 ```bash
-time etlx run pipeline.yml
+time quicketl run pipeline.yml
 ```
 
 ### JSON Metrics
 
 ```bash
-etlx run pipeline.yml --json | jq '.duration_ms'
+quicketl run pipeline.yml --json | jq '.duration_ms'
 ```
 
 ### Compare Backends
@@ -334,7 +334,7 @@ for backend in backends:
 ### Verbose Output
 
 ```bash
-etlx run pipeline.yml --verbose
+quicketl run pipeline.yml --verbose
 ```
 
 Shows timing for each step.

@@ -5,9 +5,9 @@ ClickHouse is a column-oriented OLAP database designed for real-time analytics. 
 ## Installation
 
 ```bash
-pip install etlx[clickhouse]
+pip install quicketl[clickhouse]
 # or
-uv add etlx[clickhouse]
+uv add quicketl[clickhouse]
 ```
 
 ## When to Use ClickHouse

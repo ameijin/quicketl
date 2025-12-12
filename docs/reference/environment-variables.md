@@ -34,17 +34,17 @@ source:
 
 ```bash
 # Command line
-etlx run pipeline.yml --var DATE=2025-01-15 --var REGION=north
+quicketl run pipeline.yml --var DATE=2025-01-15 --var REGION=north
 
 # Environment
 export DATE=2025-01-15
 export REGION=north
-etlx run pipeline.yml
+quicketl run pipeline.yml
 
 # .env file
 echo "DATE=2025-01-15" >> .env
 echo "REGION=north" >> .env
-etlx run pipeline.yml
+quicketl run pipeline.yml
 ```
 
 ## Database Connections
@@ -252,7 +252,7 @@ LOG_LEVEL=INFO
 ```bash
 # Load specific env file
 export $(cat .env.production | xargs)
-etlx run pipeline.yml
+quicketl run pipeline.yml
 ```
 
 ## Secrets Management
@@ -300,7 +300,7 @@ export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
 env | grep -E '^(ETLX_|POSTGRES_|SNOWFLAKE_|AWS_|GOOGLE_)'
 
 # Test variable substitution
-etlx validate pipeline.yml --verbose
+quicketl validate pipeline.yml --verbose
 ```
 
 ### Common Issues

@@ -5,9 +5,9 @@ Snowflake is a cloud-native data warehouse. ETLX can push transformations direct
 ## Installation
 
 ```bash
-pip install etlx[snowflake]
+pip install quicketl[snowflake]
 # or
-uv add etlx[snowflake]
+uv add quicketl[snowflake]
 ```
 
 ## When to Use Snowflake

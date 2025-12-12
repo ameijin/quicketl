@@ -5,9 +5,9 @@ Polars is a blazing fast DataFrame library written in Rust. ETLX uses Polars via
 ## Installation
 
 ```bash
-pip install etlx[polars]
+pip install quicketl[polars]
 # or
-uv add etlx[polars]
+uv add quicketl[polars]
 ```
 
 ## When to Use Polars
@@ -55,7 +55,7 @@ sink:
 ### CLI Override
 
 ```bash
-etlx run pipeline.yml --engine polars
+quicketl run pipeline.yml --engine polars
 ```
 
 ## Performance Characteristics
@@ -232,7 +232,7 @@ ModuleNotFoundError: No module named 'polars'
 
 **Solution**: Install Polars extra:
 ```bash
-pip install etlx[polars]
+pip install quicketl[polars]
 ```
 
 ### Memory Issues

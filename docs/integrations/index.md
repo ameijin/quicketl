@@ -172,15 +172,15 @@ jobs:
           python-version: '3.12'
 
       - name: Install ETLX
-        run: pip install etlx[duckdb]
+        run: pip install quicketl[duckdb]
 
       - name: Validate Pipeline
-        run: etlx validate pipelines/daily.yml
+        run: quicketl validate pipelines/daily.yml
 
       - name: Run Pipeline
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: etlx run pipelines/daily.yml --json
+        run: quicketl run pipelines/daily.yml --json
 ```
 
 ### GitLab CI
@@ -195,15 +195,15 @@ validate:
   stage: validate
   image: python:3.12
   script:
-    - pip install etlx[duckdb]
-    - etlx validate pipelines/*.yml
+    - pip install quicketl[duckdb]
+    - quicketl validate pipelines/*.yml
 
 run:
   stage: run
   image: python:3.12
   script:
-    - pip install etlx[duckdb]
-    - etlx run pipelines/daily.yml
+    - pip install quicketl[duckdb]
+    - quicketl run pipelines/daily.yml
   only:
     - schedules
 ```

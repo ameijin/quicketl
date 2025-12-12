@@ -132,7 +132,7 @@ source:
 ```
 
 ```bash
-etlx run pipeline.yml \
+quicketl run pipeline.yml \
   --var START_DATE=2025-01-01 \
   --var END_DATE=2025-02-01 \
   --var REGION=north
@@ -272,7 +272,7 @@ Error: No module named 'psycopg2'
 Install the required extra:
 
 ```bash
-pip install etlx[postgres]
+pip install quicketl[postgres]
 ```
 
 ### Timeout

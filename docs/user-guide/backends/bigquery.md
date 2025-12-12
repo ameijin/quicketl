@@ -5,9 +5,9 @@ Google BigQuery is a serverless, highly scalable data warehouse. ETLX pushes tra
 ## Installation
 
 ```bash
-pip install etlx[bigquery]
+pip install quicketl[bigquery]
 # or
-uv add etlx[bigquery]
+uv add quicketl[bigquery]
 ```
 
 ## When to Use BigQuery

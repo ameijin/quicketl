@@ -207,26 +207,26 @@ sink:
 
 ```bash
 # Extract today's orders
-etlx run pipelines/extract_orders.yml --var DATE=$(date +%Y-%m-%d)
+quicketl run pipelines/extract_orders.yml --var DATE=$(date +%Y-%m-%d)
 
 # Extract customer snapshot
-etlx run pipelines/extract_customers.yml
+quicketl run pipelines/extract_customers.yml
 ```
 
 ### Incremental Extract
 
 ```bash
 # Get last extract timestamp from watermark table or file
-LAST_EXTRACT=$(cat /var/etlx/watermarks/orders.txt)
+LAST_EXTRACT=$(cat /var/quicketl/watermarks/orders.txt)
 CURRENT_EXTRACT=$(date -u +%Y-%m-%dT%H:%M:%S)
 
 # Run incremental
-etlx run pipelines/extract_incremental.yml \
+quicketl run pipelines/extract_incremental.yml \
   --var LAST_EXTRACT=$LAST_EXTRACT \
   --var CURRENT_EXTRACT=$CURRENT_EXTRACT
 
 # Update watermark
-echo $CURRENT_EXTRACT > /var/etlx/watermarks/orders.txt
+echo $CURRENT_EXTRACT > /var/quicketl/watermarks/orders.txt
 ```
 
 ### Orchestration Script
@@ -238,12 +238,12 @@ echo $CURRENT_EXTRACT > /var/etlx/watermarks/orders.txt
 set -e
 
 DATE=${1:-$(date +%Y-%m-%d)}
-LOG_DIR=/var/log/etlx
+LOG_DIR=/var/log/quicketl
 
 echo "$(date): Starting extraction for $DATE"
 
 # Extract orders
-if etlx run pipelines/extract_orders.yml --var DATE=$DATE --json > $LOG_DIR/orders_$DATE.json; then
+if quicketl run pipelines/extract_orders.yml --var DATE=$DATE --json > $LOG_DIR/orders_$DATE.json; then
     echo "$(date): Orders extracted successfully"
 else
     echo "$(date): Orders extraction failed"
@@ -251,7 +251,7 @@ else
 fi
 
 # Extract products
-if etlx run pipelines/extract_products.yml --json > $LOG_DIR/products_$DATE.json; then
+if quicketl run pipelines/extract_products.yml --json > $LOG_DIR/products_$DATE.json; then
     echo "$(date): Products extracted successfully"
 else
     echo "$(date): Products extraction failed"
@@ -259,7 +259,7 @@ else
 fi
 
 # Extract customers
-if etlx run pipelines/extract_customers.yml --json > $LOG_DIR/customers_$DATE.json; then
+if quicketl run pipelines/extract_customers.yml --json > $LOG_DIR/customers_$DATE.json; then
     echo "$(date): Customers extracted successfully"
 else
     echo "$(date): Customers extraction failed"
@@ -323,7 +323,7 @@ s3://data-lake/raw/events/
 ### JSON Output for Metrics
 
 ```bash
-RESULT=$(etlx run pipelines/extract_orders.yml --var DATE=$DATE --json)
+RESULT=$(quicketl run pipelines/extract_orders.yml --var DATE=$DATE --json)
 
 ROWS=$(echo $RESULT | jq -r '.rows_written')
 DURATION=$(echo $RESULT | jq -r '.duration_ms')

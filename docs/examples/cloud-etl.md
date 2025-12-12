@@ -55,7 +55,7 @@ description: Process daily events from S3 to Snowflake
 engine: spark
 
 # Environment variables for dates
-# Run with: etlx run pipeline.yml --var DATE=2025-01-15
+# Run with: quicketl run pipeline.yml --var DATE=2025-01-15
 
 source:
   type: file
@@ -156,16 +156,16 @@ sink:
 
 ```bash
 # Today's date
-etlx run pipelines/cloud_etl.yml --var DATE=$(date +%Y-%m-%d)
+quicketl run pipelines/cloud_etl.yml --var DATE=$(date +%Y-%m-%d)
 
 # Specific date
-etlx run pipelines/cloud_etl.yml --var DATE=2025-01-15
+quicketl run pipelines/cloud_etl.yml --var DATE=2025-01-15
 ```
 
 ### With JSON Output (for monitoring)
 
 ```bash
-etlx run pipelines/cloud_etl.yml --var DATE=2025-01-15 --json
+quicketl run pipelines/cloud_etl.yml --var DATE=2025-01-15 --json
 ```
 
 Output:
@@ -227,7 +227,7 @@ Run for each region:
 
 ```bash
 for region in us-east us-west eu-west ap-south; do
-  etlx run pipelines/multi_region.yml \
+  quicketl run pipelines/multi_region.yml \
     --var DATE=2025-01-15 \
     --var REGION=$region &
 done
@@ -282,7 +282,7 @@ MAX_RETRIES=3
 RETRY_DELAY=300
 
 for i in $(seq 1 $MAX_RETRIES); do
-  if etlx run pipelines/cloud_etl.yml --var DATE=$1; then
+  if quicketl run pipelines/cloud_etl.yml --var DATE=$1; then
     echo "Success on attempt $i"
     exit 0
   fi
@@ -317,7 +317,7 @@ Send metrics to CloudWatch:
 
 ```bash
 #!/bin/bash
-RESULT=$(etlx run pipelines/cloud_etl.yml --var DATE=$1 --json)
+RESULT=$(quicketl run pipelines/cloud_etl.yml --var DATE=$1 --json)
 
 # Extract metrics
 DURATION=$(echo $RESULT | jq -r '.duration_ms')

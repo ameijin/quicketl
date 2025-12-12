@@ -111,16 +111,16 @@ ETLX provides a **unified API** for data transformation across multiple compute 
 
 ```bash
 # Basic installation (includes DuckDB + Polars)
-pip install etlx
+pip install quicketl
 
 # With cloud storage support
-pip install etlx[aws]      # S3
-pip install etlx[gcp]      # GCS + BigQuery
-pip install etlx[azure]    # Azure ADLS
+pip install quicketl[aws]      # S3
+pip install quicketl[gcp]      # GCS + BigQuery
+pip install quicketl[azure]    # Azure ADLS
 
 # With additional backends
-pip install etlx[spark]
-pip install etlx[snowflake]
+pip install quicketl[spark]
+pip install quicketl[snowflake]
 ```
 
 ---

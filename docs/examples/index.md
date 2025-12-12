@@ -103,27 +103,27 @@ def process_daily(**context):
 
 ```bash
 # Clone or create project
-etlx init examples
+quicketl init examples
 cd examples
 
 # Install dependencies
-pip install etlx[duckdb]
+pip install quicketl[duckdb]
 ```
 
 ### Run Any Example
 
 ```bash
 # Validate first
-etlx validate pipelines/example.yml
+quicketl validate pipelines/example.yml
 
 # Run
-etlx run pipelines/example.yml
+quicketl run pipelines/example.yml
 ```
 
 ### With Variables
 
 ```bash
-etlx run pipelines/example.yml --var DATE=2025-01-15
+quicketl run pipelines/example.yml --var DATE=2025-01-15
 ```
 
 ## Sample Data

@@ -236,7 +236,7 @@ sink:
 Check the configuration:
 
 ```bash
-etlx validate pipelines/sales_report.yml
+quicketl validate pipelines/sales_report.yml
 ```
 
 ### Dry Run
@@ -244,7 +244,7 @@ etlx validate pipelines/sales_report.yml
 Execute without writing output:
 
 ```bash
-etlx run pipelines/sales_report.yml --dry-run
+quicketl run pipelines/sales_report.yml --dry-run
 ```
 
 ### Full Run
@@ -252,7 +252,7 @@ etlx run pipelines/sales_report.yml --dry-run
 Execute the complete pipeline:
 
 ```bash
-etlx run pipelines/sales_report.yml
+quicketl run pipelines/sales_report.yml
 ```
 
 ### Verbose Output
@@ -260,7 +260,7 @@ etlx run pipelines/sales_report.yml
 See detailed logs:
 
 ```bash
-etlx run pipelines/sales_report.yml --verbose
+quicketl run pipelines/sales_report.yml --verbose
 ```
 
 ## Using Python Instead

@@ -228,7 +228,7 @@ class TestTransformParity:
     @pytest.mark.parity
     def test_filter_parity(self, engine_name, sample_data):
         """Verify filter produces same results across backends."""
-        from etlx.engines import ETLXEngine
+        from quicketl.engines import ETLXEngine
 
         engine = ETLXEngine(backend=engine_name)
         result = engine.filter(sample_data, "amount > 150")
@@ -243,7 +243,7 @@ class TestTransformParity:
     @pytest.mark.parity
     def test_aggregate_parity(self, engine_name, sample_data):
         """Verify aggregation produces same results across backends."""
-        from etlx.engines import ETLXEngine
+        from quicketl.engines import ETLXEngine
 
         engine = ETLXEngine(backend=engine_name)
         result = engine.aggregate(

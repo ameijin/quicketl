@@ -118,20 +118,20 @@ Provider-agnostic via fsspec abstraction—same pipeline YAML works everywhere:
 Installed via extras to keep base install light:
 
 ```bash
-pip install etlx                     # Core (Polars + DuckDB backends)
-pip install etlx[spark]              # + PySpark backend
-pip install etlx[aws]                # + s3fs for S3 access
-pip install etlx[gcp]                # + gcsfs + BigQuery backend
-pip install etlx[azure]              # + adlfs for ADLS access
-pip install etlx[snowflake]          # + Snowflake backend
-pip install etlx[all]                # Everything
+pip install quicketl                     # Core (Polars + DuckDB backends)
+pip install quicketl[spark]              # + PySpark backend
+pip install quicketl[aws]                # + s3fs for S3 access
+pip install quicketl[gcp]                # + gcsfs + BigQuery backend
+pip install quicketl[azure]              # + adlfs for ADLS access
+pip install quicketl[snowflake]          # + Snowflake backend
+pip install quicketl[all]                # Everything
 ```
 
 Or with uv (recommended):
 
 ```bash
-uv add etlx
-uv add etlx --extra spark --extra aws
+uv add quicketl
+uv add quicketl --extra spark --extra aws
 ```
 
 ---
@@ -439,13 +439,13 @@ Since Ibis handles backend abstraction, all backends work with the same code:
 #### 4.2.5 CLI
 
 ```bash
-etlx run pipeline.yml                      # Run pipeline
-etlx run pipeline.yml --engine duckdb      # Override engine
-etlx run pipeline.yml --var RUN_DATE=2025-12-01
-etlx validate pipeline.yml                 # Validate config
-etlx init my_project                       # Create project from template
-etlx info pipeline.yml                     # Show pipeline info
-etlx schema                                # Output JSON schema for IDE support
+quicketl run pipeline.yml                      # Run pipeline
+quicketl run pipeline.yml --engine duckdb      # Override engine
+quicketl run pipeline.yml --var RUN_DATE=2025-12-01
+quicketl validate pipeline.yml                 # Validate config
+quicketl init my_project                       # Create project from template
+quicketl info pipeline.yml                     # Show pipeline info
+quicketl schema                                # Output JSON schema for IDE support
 ```
 
 #### 4.2.6 Airflow Integration

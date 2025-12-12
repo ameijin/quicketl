@@ -36,7 +36,7 @@ This gives you:
 Check that ETLX is installed correctly:
 
 ```bash
-etlx --version
+quicketl --version
 ```
 
 You should see output like:
@@ -48,7 +48,7 @@ etlx version 0.1.0
 Check available backends:
 
 ```bash
-etlx info --backends --check
+quicketl info --backends --check
 ```
 
 ## Optional Dependencies
@@ -117,13 +117,13 @@ For connecting to cloud data warehouses:
 
 ```bash
 # Snowflake
-pip install etlx[snowflake]
+pip install quicketl[snowflake]
 
 # Google BigQuery
-pip install etlx[bigquery]
+pip install quicketl[bigquery]
 
 # Trino
-pip install etlx[trino]
+pip install quicketl[trino]
 ```
 
 ### Databases
@@ -132,13 +132,13 @@ For connecting to relational databases:
 
 ```bash
 # PostgreSQL
-pip install etlx[postgres]
+pip install quicketl[postgres]
 
 # MySQL
-pip install etlx[mysql]
+pip install quicketl[mysql]
 
 # ClickHouse
-pip install etlx[clickhouse]
+pip install quicketl[clickhouse]
 ```
 
 ### Multiple Extras
@@ -146,7 +146,7 @@ pip install etlx[clickhouse]
 Install multiple extras at once:
 
 ```bash
-pip install etlx[aws,spark,snowflake]
+pip install quicketl[aws,spark,snowflake]
 ```
 
 ### Everything
@@ -154,7 +154,7 @@ pip install etlx[aws,spark,snowflake]
 Install all optional dependencies:
 
 ```bash
-pip install etlx[all]
+pip install quicketl[all]
 ```
 
 !!! warning "Large Installation"
@@ -167,7 +167,7 @@ For contributing to ETLX:
 ```bash
 # Clone the repository
 git clone https://github.com/etlx/etlx.git
-cd etlx
+cd quicketl
 
 # Create virtual environment
 python -m venv .venv
@@ -190,7 +190,7 @@ ImportError: No module named 'ibis.backends.snowflake'
 Install the required extra:
 
 ```bash
-pip install etlx[snowflake]
+pip install quicketl[snowflake]
 ```
 
 ### DuckDB Version Conflicts
@@ -198,7 +198,7 @@ pip install etlx[snowflake]
 If you have version conflicts with DuckDB:
 
 ```bash
-pip install etlx --upgrade
+pip install quicketl --upgrade
 ```
 
 ### Spark Java Requirements

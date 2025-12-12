@@ -259,7 +259,7 @@ Use expressions for conditional counting:
 # Run all aggregation pipelines
 for f in pipelines/*.yml; do
   echo "Running $f..."
-  etlx run "$f"
+  quicketl run "$f"
 done
 ```
 

@@ -1,14 +1,14 @@
 [project]
-name = "etlx"
+name = "quicketl"
 version = "0.1.0"
-description = "ETLX Framework - Unified ETL/ELT for Python with 20+ backend support via Ibis"
+description = "QuickETL - Fast & Flexible Python ETL Framework with 20+ backend support via Ibis"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    { name = "Eiji", email = "eiji@eidosoft.co" }
 ]
-keywords = ["etl", "elt", "data-engineering", "ibis", "polars", "duckdb", "pipeline"]
+keywords = ["etl", "elt", "data-engineering", "ibis", "polars", "duckdb", "pipeline", "quicketl"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -79,27 +79,27 @@ docs = [
 
 # All backends and tools
 all = [
-    "etlx[spark,pandas,datafusion,aws,gcp,azure,snowflake,bigquery,trino,postgres,mysql,clickhouse,dev,docs]",
+    "quicketl[spark,pandas,datafusion,aws,gcp,azure,snowflake,bigquery,trino,postgres,mysql,clickhouse,dev,docs]",
 ]
 
 [project.scripts]
-etlx = "etlx.cli.main:cli"
+quicketl = "quicketl.cli.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/etlx"
-Documentation = "https://etlx.readthedocs.io"
-Repository = "https://github.com/yourusername/etlx"
-Issues = "https://github.com/yourusername/etlx/issues"
+Homepage = "https://quicketl.com"
+Documentation = "https://quicketl.readthedocs.io"
+Repository = "https://github.com/ameijin/quicketl"
+Issues = "https://github.com/ameijin/quicketl/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/etlx"]
+packages = ["src/quicketl"]
 
 [tool.hatch.version]
-path = "src/etlx/_version.py"
+path = "src/quicketl/_version.py"
 
 # Ruff configuration
 [tool.ruff]
@@ -127,7 +127,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["etlx"]
+known-first-party = ["quicketl"]
 
 # MyPy configuration
 [tool.mypy]
@@ -155,7 +155,7 @@ addopts = [
     "-ra",
     "-q",
     "--strict-markers",
-    "--cov=etlx",
+    "--cov=quicketl",
     "--cov-report=term-missing",
 ]
 markers = [
@@ -166,7 +166,7 @@ markers = [
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["src/etlx"]
+source = ["src/quicketl"]
 branch = true
 
 [tool.coverage.report]
@@ -181,4 +181,5 @@ exclude_lines = [
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
+    "twine>=6.2.0",
 ]

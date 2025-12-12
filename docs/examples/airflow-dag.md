@@ -59,7 +59,7 @@ default_args = {
     start_date=datetime(2025, 1, 1),
     catchup=False,
     default_args=default_args,
-    tags=["etlx", "production", "daily"],
+    tags=["quicketl", "production", "daily"],
     doc_md=__doc__,
 )
 def daily_etl_pipeline():

@@ -15,7 +15,7 @@ Thank you for your interest in contributing to ETLX! This guide will help you ge
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/etlx.git
-cd etlx
+cd quicketl
 
 # Create virtual environment and install dependencies
 uv venv
@@ -50,7 +50,7 @@ git checkout -b feature/my-feature
 pytest
 
 # Run with coverage
-pytest --cov=etlx --cov-report=html
+pytest --cov=quicketl --cov-report=html
 
 # Run specific tests
 pytest tests/test_transforms.py

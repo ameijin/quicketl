@@ -167,7 +167,7 @@ source:
 ```
 
 ```bash
-etlx run pipeline.yml --var DATE=2025-01-15
+quicketl run pipeline.yml --var DATE=2025-01-15
 ```
 
 ### Glob Patterns

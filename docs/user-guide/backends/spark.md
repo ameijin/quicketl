@@ -5,9 +5,9 @@ Apache Spark is a distributed computing framework for big data processing. Use S
 ## Installation
 
 ```bash
-pip install etlx[spark]
+pip install quicketl[spark]
 # or
-uv add etlx[spark]
+uv add quicketl[spark]
 ```
 
 !!! warning "Java Required"
@@ -81,14 +81,14 @@ For development and testing:
 
 ```bash
 export SPARK_MASTER=local[*]
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ### Standalone Cluster
 
 ```bash
 export SPARK_MASTER=spark://master:7077
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ### YARN
@@ -96,7 +96,7 @@ etlx run pipeline.yml --engine spark
 ```bash
 export SPARK_MASTER=yarn
 export HADOOP_CONF_DIR=/etc/hadoop/conf
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ### Kubernetes
@@ -104,7 +104,7 @@ etlx run pipeline.yml --engine spark
 ```bash
 export SPARK_MASTER=k8s://https://kubernetes:443
 export SPARK_KUBERNETES_CONTAINER_IMAGE=spark:3.5.0
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ## Supported Features
@@ -212,7 +212,7 @@ transforms:
 export SPARK_MASTER=yarn
 export AWS_REGION=us-east-1
 
-etlx run pipeline.yml --engine spark
+quicketl run pipeline.yml --engine spark
 ```
 
 ### Databricks

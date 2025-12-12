@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from etlx.config.checks import NotNullCheck, RowCountCheck
-from etlx.config.models import FileSource, FileSink
-from etlx.config.transforms import FilterTransform, SelectTransform
-from etlx.pipeline import Pipeline, PipelineResult, PipelineStatus
+from quicketl.config.checks import NotNullCheck, RowCountCheck
+from quicketl.config.models import FileSource, FileSink
+from quicketl.config.transforms import FilterTransform, SelectTransform
+from quicketl.pipeline import Pipeline, PipelineResult, PipelineStatus
 
 
 class TestPipelineBuilder:

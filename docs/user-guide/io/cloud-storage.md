@@ -11,7 +11,7 @@ ETLX supports cloud storage through [fsspec](https://filesystem-spec.readthedocs
 ### Installation
 
 ```bash
-pip install etlx[aws]
+pip install quicketl[aws]
 ```
 
 ### Configuration
@@ -75,7 +75,7 @@ source:
 ### Installation
 
 ```bash
-pip install etlx[gcp]
+pip install quicketl[gcp]
 ```
 
 ### Configuration
@@ -125,7 +125,7 @@ sink:
 ### Installation
 
 ```bash
-pip install etlx[azure]
+pip install quicketl[azure]
 ```
 
 ### Configuration

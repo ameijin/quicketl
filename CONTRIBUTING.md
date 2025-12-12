@@ -38,7 +38,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 ```bash
 # Clone your fork
 git clone https://github.com/YOUR_USERNAME/etlx.git
-cd etlx
+cd quicketl
 
 # Create virtual environment and install dependencies
 uv venv
@@ -58,7 +58,7 @@ pre-commit install
 pytest
 
 # Run with coverage
-pytest --cov=etlx --cov-report=html
+pytest --cov=quicketl --cov-report=html
 
 # Run specific test file
 pytest tests/test_transforms.py

@@ -49,7 +49,7 @@ Configure connections and credentials via environment:
 
 ```bash
 export POSTGRES_HOST=localhost
-export POSTGRES_USER=etlx
+export POSTGRES_USER=quicketl
 export AWS_REGION=us-east-1
 ```
 

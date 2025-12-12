@@ -7,9 +7,9 @@ Pandas is the most widely-used Python data analysis library. ETLX supports Panda
 Pandas is included with the base ETLX installation:
 
 ```bash
-pip install etlx
+pip install quicketl
 # or
-uv add etlx
+uv add quicketl
 ```
 
 ## When to Use Pandas
@@ -57,7 +57,7 @@ sink:
 ### CLI Override
 
 ```bash
-etlx run pipeline.yml --engine pandas
+quicketl run pipeline.yml --engine pandas
 ```
 
 ## Performance Characteristics

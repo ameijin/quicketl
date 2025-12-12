@@ -25,7 +25,7 @@ export DATABASE_CONNECTION=postgres_prod
 export OUTPUT_BUCKET=s3://prod-data-lake
 export DATE=$(date +%Y-%m-%d)
 
-etlx run pipeline.yml
+quicketl run pipeline.yml
 ```
 
 ### Use .env Files
@@ -50,11 +50,11 @@ Use secret managers:
 ```bash
 # AWS Secrets Manager
 export DB_PASSWORD=$(aws secretsmanager get-secret-value \
-  --secret-id prod/etlx/db-password \
+  --secret-id prod/quicketl/db-password \
   --query SecretString --output text)
 
 # HashiCorp Vault
-export DB_PASSWORD=$(vault kv get -field=password secret/etlx/database)
+export DB_PASSWORD=$(vault kv get -field=password secret/quicketl/database)
 
 # Google Secret Manager
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
@@ -67,7 +67,7 @@ export DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password)
 Use JSON output for parsing:
 
 ```bash
-etlx run pipeline.yml --json > /var/log/etlx/$(date +%Y%m%d_%H%M%S).json
+quicketl run pipeline.yml --json > /var/log/quicketl/$(date +%Y%m%d_%H%M%S).json
 ```
 
 ### Metrics Collection
@@ -77,7 +77,7 @@ etlx run pipeline.yml --json > /var/log/etlx/$(date +%Y%m%d_%H%M%S).json
 # run_pipeline.sh
 
 START_TIME=$(date +%s)
-RESULT=$(etlx run pipeline.yml --json)
+RESULT=$(quicketl run pipeline.yml --json)
 END_TIME=$(date +%s)
 
 # Extract metrics
@@ -101,12 +101,12 @@ from etlx import Pipeline
 
 pipeline = Pipeline.from_yaml("pipeline.yml")
 
-with statsd.timed("etlx.pipeline.duration", tags=["pipeline:daily_sales"]):
+with statsd.timed("quicketl.pipeline.duration", tags=["pipeline:daily_sales"]):
     result = pipeline.run()
 
-statsd.gauge("etlx.pipeline.rows_written", result.rows_written,
+statsd.gauge("quicketl.pipeline.rows_written", result.rows_written,
              tags=["pipeline:daily_sales"])
-statsd.gauge("etlx.pipeline.checks_passed", result.checks_passed,
+statsd.gauge("quicketl.pipeline.checks_passed", result.checks_passed,
              tags=["pipeline:daily_sales"])
 ```
 
@@ -140,18 +140,18 @@ if __name__ == "__main__":
 ### Cron
 
 ```bash
-# /etc/cron.d/etlx
+# /etc/cron.d/quicketl
 # Daily at 6 AM UTC
-0 6 * * * etlx /opt/etlx/run_pipeline.sh daily_sales >> /var/log/etlx/cron.log 2>&1
+0 6 * * * quicketl /opt/quicketl/run_pipeline.sh daily_sales >> /var/log/quicketl/cron.log 2>&1
 
 # Hourly
-0 * * * * etlx /opt/etlx/run_pipeline.sh hourly_metrics >> /var/log/etlx/cron.log 2>&1
+0 * * * * quicketl /opt/quicketl/run_pipeline.sh hourly_metrics >> /var/log/quicketl/cron.log 2>&1
 ```
 
 ### Systemd Timer
 
 ```ini
-# /etc/systemd/system/etlx-daily.service
+# /etc/systemd/system/quicketl-daily.service
 [Unit]
 Description=ETLX Daily Pipeline
 After=network.target
@@ -168,7 +168,7 @@ WantedBy=multi-user.target
 ```
 
 ```ini
-# /etc/systemd/system/etlx-daily.timer
+# /etc/systemd/system/quicketl-daily.timer
 [Unit]
 Description=Run ETLX Daily Pipeline
 
@@ -181,8 +181,8 @@ WantedBy=timers.target
 ```
 
 ```bash
-sudo systemctl enable etlx-daily.timer
-sudo systemctl start etlx-daily.timer
+sudo systemctl enable quicketl-daily.timer
+sudo systemctl start quicketl-daily.timer
 ```
 
 ### Orchestrators
@@ -205,7 +205,7 @@ MAX_RETRIES=3
 RETRY_DELAY=300  # 5 minutes
 
 for i in $(seq 1 $MAX_RETRIES); do
-    if etlx run pipeline.yml --var DATE=$1; then
+    if quicketl run pipeline.yml --var DATE=$1; then
         echo "$(date): Pipeline succeeded on attempt $i"
         exit 0
     fi
@@ -229,7 +229,7 @@ exit 1
 PIPELINE_NAME=$1
 DATE=${2:-$(date +%Y-%m-%d)}
 
-if ! etlx run "pipelines/${PIPELINE_NAME}.yml" --var DATE=$DATE; then
+if ! quicketl run "pipelines/${PIPELINE_NAME}.yml" --var DATE=$DATE; then
     # Send alert
     curl -X POST "$SLACK_WEBHOOK" \
         -H "Content-Type: application/json" \
@@ -250,7 +250,7 @@ fi
 ### PagerDuty for Critical Pipelines
 
 ```bash
-if ! etlx run critical_pipeline.yml; then
+if ! quicketl run critical_pipeline.yml; then
     curl -X POST https://events.pagerduty.com/v2/enqueue \
         -H "Content-Type: application/json" \
         -d "{
@@ -291,32 +291,32 @@ CMD ["--help"]
 
 ```bash
 # Build and run
-docker build -t etlx-pipelines .
-docker run --env-file .env etlx-pipelines run pipelines/daily.yml
+docker build -t quicketl-pipelines .
+docker run --env-file .env quicketl-pipelines run pipelines/daily.yml
 ```
 
 ### Kubernetes
 
 ```yaml
-# k8s/etlx-job.yaml
+# k8s/quicketl-job.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: etlx-daily-sales
+  name: quicketl-daily-sales
 spec:
   template:
     spec:
       containers:
-        - name: etlx
-          image: etlx-pipelines:latest
-          command: ["etlx", "run", "pipelines/daily_sales.yml"]
+        - name: quicketl
+          image: quicketl-pipelines:latest
+          command: ["quicketl", "run", "pipelines/daily_sales.yml"]
           env:
             - name: DATE
               value: "2025-01-15"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: etlx-secrets
+                  name: quicketl-secrets
                   key: database-url
           resources:
             requests:
@@ -332,11 +332,11 @@ spec:
 ### Kubernetes CronJob
 
 ```yaml
-# k8s/etlx-cronjob.yaml
+# k8s/quicketl-cronjob.yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: etlx-daily-sales
+  name: quicketl-daily-sales
 spec:
   schedule: "0 6 * * *"  # 6 AM daily
   jobTemplate:
@@ -344,12 +344,12 @@ spec:
       template:
         spec:
           containers:
-            - name: etlx
-              image: etlx-pipelines:latest
-              command: ["etlx", "run", "pipelines/daily_sales.yml"]
+            - name: quicketl
+              image: quicketl-pipelines:latest
+              command: ["quicketl", "run", "pipelines/daily_sales.yml"]
               envFrom:
                 - secretRef:
-                    name: etlx-secrets
+                    name: quicketl-secrets
           restartPolicy: OnFailure
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -366,7 +366,7 @@ For large datasets:
 export PYTHONMALLOC=malloc
 
 # Use memory-efficient backend
-etlx run pipeline.yml --engine polars
+quicketl run pipeline.yml --engine polars
 ```
 
 ### Disk Space
@@ -381,7 +381,7 @@ Clean up temporary files:
 find /data/staging -type f -mtime +7 -delete
 
 # Remove logs older than 30 days
-find /var/log/etlx -type f -mtime +30 -delete
+find /var/log/quicketl -type f -mtime +30 -delete
 ```
 
 ### Database Connections
@@ -430,7 +430,7 @@ BACKUP_TABLE="${TABLE}_backup_$(date +%Y%m%d)"
 psql -c "CREATE TABLE $BACKUP_TABLE AS SELECT * FROM $TABLE;"
 
 # Run pipeline
-if ! etlx run pipeline.yml; then
+if ! quicketl run pipeline.yml; then
     echo "Pipeline failed, restoring from backup..."
     psql -c "TRUNCATE $TABLE; INSERT INTO $TABLE SELECT * FROM $BACKUP_TABLE;"
     exit 1

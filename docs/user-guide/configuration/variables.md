@@ -31,8 +31,8 @@ source:
 Pass variables with `--var`:
 
 ```bash
-etlx run pipeline.yml --var DATE=2025-01-15
-etlx run pipeline.yml --var DATE=2025-01-15 --var REGION=north
+quicketl run pipeline.yml --var DATE=2025-01-15
+quicketl run pipeline.yml --var DATE=2025-01-15 --var REGION=north
 ```
 
 ### Environment Variables
@@ -43,7 +43,7 @@ Variables are resolved from the environment:
 export DATE=2025-01-15
 export DATABASE_URL=postgresql://localhost/db
 
-etlx run pipeline.yml
+quicketl run pipeline.yml
 ```
 
 ### Python API
@@ -92,9 +92,9 @@ sink:
 ```
 
 ```bash
-etlx run pipeline.yml --var YEAR=2025 --var MONTH=01 --var DAY=15
+quicketl run pipeline.yml --var YEAR=2025 --var MONTH=01 --var DAY=15
 # OR
-etlx run pipeline.yml --var RUN_DATE=2025-01-15
+quicketl run pipeline.yml --var RUN_DATE=2025-01-15
 ```
 
 ### Environment-Specific Configuration
@@ -131,7 +131,7 @@ transforms:
 ```
 
 ```bash
-etlx run pipeline.yml \
+quicketl run pipeline.yml \
   --var REGION=north \
   --var START_DATE=2025-01-01 \
   --var END_DATE=2025-01-31
@@ -198,14 +198,14 @@ description: The variable syntax is $${VAR}
 Unresolved required variables cause validation errors:
 
 ```bash
-$ etlx run pipeline.yml
+$ quicketl run pipeline.yml
 Error: Variable 'DATABASE_URL' is not set and has no default value
 ```
 
 Use `etlx validate` to check variables:
 
 ```bash
-etlx validate pipeline.yml --var DATE=2025-01-15
+quicketl validate pipeline.yml --var DATE=2025-01-15
 ```
 
 ## Best Practices

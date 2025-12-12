@@ -135,11 +135,11 @@ sink:
 ```bash
 # Development
 DATA_PATH=./data DATABASE_CONNECTION=postgres_dev SCHEMA=dev \
-  etlx run pipeline.yml
+  quicketl run pipeline.yml
 
 # Production
 DATA_PATH=s3://bucket DATABASE_CONNECTION=postgres_prod SCHEMA=prod \
-  etlx run pipeline.yml
+  quicketl run pipeline.yml
 ```
 
 ## Anti-Patterns to Avoid
