@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 def _rebuild_models() -> None:
     """Rebuild models to resolve forward references."""
-    from quicketl.config.checks import CheckConfig  # noqa: F811
-    from quicketl.config.transforms import TransformStep  # noqa: F811
+    from quicketl.config.checks import CheckConfig  # noqa: F401, F811
+    from quicketl.config.transforms import TransformStep  # noqa: F401, F811
 
     PipelineConfig.model_rebuild()
 
