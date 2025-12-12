@@ -1,4 +1,4 @@
-"""Core Pydantic configuration models for ETLX.
+"""Core Pydantic configuration models for QuickETL.
 
 This module defines the configuration schema for sources, sinks, and pipelines
 using Pydantic v2 discriminated unions.
@@ -13,6 +13,14 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from quicketl.config.checks import CheckConfig
     from quicketl.config.transforms import TransformStep
+
+
+def _rebuild_models() -> None:
+    """Rebuild models to resolve forward references."""
+    from quicketl.config.checks import CheckConfig  # noqa: F811
+    from quicketl.config.transforms import TransformStep  # noqa: F811
+
+    PipelineConfig.model_rebuild()
 
 # =============================================================================
 # Source Configurations
@@ -222,3 +230,7 @@ class PipelineConfig(BaseModel):
     model_config = {
         "extra": "forbid",
     }
+
+
+# Rebuild models to resolve forward references
+_rebuild_models()
