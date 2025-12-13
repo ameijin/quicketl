@@ -174,11 +174,11 @@ SAMPLE_DATA_CSV = '''id,name,category,amount,date
 @app.callback(invoke_without_command=True)
 def init(
     name: Annotated[
-        str,
+        str | None,
         typer.Argument(
-            help="Project or pipeline name",
+            help="Project or pipeline name (optional - defaults to current directory)",
         ),
-    ],
+    ] = None,
     pipeline_only: Annotated[
         bool,
         typer.Option(
@@ -212,16 +212,25 @@ def init(
     - Environment template
 
     Examples:
-        quicketl init my_project           # Create full project
+        quicketl init                      # Initialize in current directory
+        quicketl init my_project           # Create new project subdirectory
         quicketl init my_pipeline -p       # Create single pipeline file
         quicketl init my_project -o ./projects/
     """
     base_path = output_dir or Path.cwd()
 
     if pipeline_only:
+        # For pipeline-only, name is required
+        if not name:
+            console.print("[red]Error:[/red] Pipeline name is required with --pipeline flag")
+            raise typer.Exit(1)
         _create_pipeline(name, base_path, force)
-    else:
+    elif name:
+        # Name provided - create new subdirectory (original behavior)
         _create_project(name, base_path, force)
+    else:
+        # No name - initialize in current directory
+        _init_in_current_dir(base_path, force)
 
 
 def _create_pipeline(name: str, base_path: Path, force: bool) -> None:
@@ -241,8 +250,59 @@ def _create_pipeline(name: str, base_path: Path, force: bool) -> None:
     console.print(f"\nRun with: [cyan]quicketl run {file_path}[/cyan]")
 
 
+def _init_in_current_dir(base_path: Path, force: bool) -> None:
+    """Initialize quicketl in the current directory."""
+    # Create directories
+    dirs = [
+        base_path / "pipelines",
+        base_path / "data",
+        base_path / "data" / "output",
+    ]
+
+    for dir_path in dirs:
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Files to create - only create if they don't exist (unless force)
+    files = {
+        base_path / "pipelines" / "sample.yml": SAMPLE_PIPELINE.format(name="sample_pipeline"),
+        base_path / "data" / "sales.csv": SAMPLE_DATA_CSV.strip(),
+    }
+
+    # Optional files - skip if they exist (common project files)
+    optional_files = {
+        base_path / ".env": ENV_TEMPLATE,
+    }
+
+    created_count = 0
+    skipped_count = 0
+
+    for file_path, content in files.items():
+        if file_path.exists() and not force:
+            console.print(f"[yellow]Skipped:[/yellow] {file_path} (already exists)")
+            skipped_count += 1
+        else:
+            file_path.write_text(content)
+            console.print(f"[green]Created:[/green] {file_path}")
+            created_count += 1
+
+    for file_path, content in optional_files.items():
+        if file_path.exists():
+            console.print(f"[dim]Skipped:[/dim] {file_path} (already exists)")
+            skipped_count += 1
+        else:
+            file_path.write_text(content)
+            console.print(f"[green]Created:[/green] {file_path}")
+            created_count += 1
+
+    console.print(f"\n[bold green]Initialized quicketl in:[/bold green] {base_path}")
+    if skipped_count > 0:
+        console.print(f"[dim]({created_count} created, {skipped_count} skipped)[/dim]")
+    console.print("\n[bold]Try it now:[/bold]")
+    console.print("  quicketl run pipelines/sample.yml")
+
+
 def _create_project(name: str, base_path: Path, force: bool) -> None:
-    """Create a full project structure."""
+    """Create a full project structure in a new subdirectory."""
     project_path = base_path / name
 
     if project_path.exists() and not force:
@@ -277,7 +337,6 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
     console.print(f"\n[bold green]Project created:[/bold green] {project_path}")
     console.print("\n[bold]Try it now:[/bold]")
     console.print(f"  cd {name} && quicketl run pipelines/sample.yml")
-    console.print("\n[dim]This will process the sample sales data and output a summary to data/output/[/dim]")
 
 
 if __name__ == "__main__":
