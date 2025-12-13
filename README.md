@@ -38,7 +38,10 @@ pip install quicketl[all]
 ### CLI Usage
 
 ```bash
-# Initialize a new project
+# Initialize in existing project
+quicketl init
+
+# Or create a new project
 quicketl init my_project
 cd my_project
 

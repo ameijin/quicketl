@@ -2,23 +2,50 @@
 
 Get up and running with QuickETL in 5 minutes.
 
-## Create a New Project
+## Initialize QuickETL
 
-Use the `quicketl init` command to create a new project with sample data:
+### In an Existing Project
+
+If you already have a project, run `quicketl init` in your project directory:
+
+```bash
+cd my_existing_project
+quicketl init
+```
+
+This adds QuickETL structure to your current directory:
+
+```
+my_existing_project/
+├── pipelines/
+│   └── sample.yml      # Sample pipeline configuration
+├── data/
+│   ├── sales.csv       # Sample data to process
+│   └── output/         # Pipeline outputs
+└── .env                # Environment variables (if not present)
+```
+
+Existing files (like `README.md`, `.gitignore`) are preserved.
+
+### Create a New Project
+
+To create a fresh project in a new directory:
 
 ```bash
 quicketl init my_project
 cd my_project
 ```
 
-This creates:
+This creates a complete project structure:
 
 ```
 my_project/
 ├── pipelines/
 │   └── sample.yml      # Sample pipeline configuration
 ├── data/
-│   └── sales.csv       # Sample data to process
+│   ├── sales.csv       # Sample data to process
+│   └── output/         # Pipeline outputs
+├── scripts/            # Custom Python scripts
 ├── README.md           # Project documentation
 ├── .env                # Environment variables
 └── .gitignore

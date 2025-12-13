@@ -180,26 +180,35 @@ Errors:
 
 ## init {#init}
 
-Initialize a new QuickETL project or pipeline file.
+Initialize QuickETL in the current directory or create a new project.
 
 ### Usage
 
 ```bash
-quicketl init <name> [options]
+quicketl init [name] [options]
 ```
+
+### Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | No | Project name. If omitted, initializes in current directory |
 
 ### Options
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--pipeline` | `-p` | Create pipeline file only (not full project) |
+| `--pipeline` | `-p` | Create pipeline file only (requires name) |
 | `--output` | `-o` | Output directory (default: current) |
 | `--force` | `-f` | Overwrite existing files |
 
 ### Examples
 
 ```bash
-# Create full project
+# Initialize in current directory (existing project)
+quicketl init
+
+# Create new project in subdirectory
 quicketl init my_project
 cd my_project
 
@@ -210,14 +219,34 @@ quicketl init my_pipeline -p
 quicketl init my_project -o ./projects/
 ```
 
-### Project Structure Created
+### In Current Directory
+
+When run without a name, `quicketl init` adds QuickETL structure to your existing project:
+
+```
+your_project/
+├── pipelines/
+│   └── sample.yml      # Working sample pipeline
+├── data/
+│   ├── sales.csv       # Sample data
+│   └── output/         # Pipeline outputs
+└── .env                # Created only if not present
+```
+
+Existing files (`README.md`, `.gitignore`, etc.) are preserved.
+
+### New Project Structure
+
+When run with a name, creates a complete project:
 
 ```
 my_project/
 ├── pipelines/
 │   └── sample.yml      # Working sample pipeline
 ├── data/
-│   └── sales.csv       # Sample data
+│   ├── sales.csv       # Sample data
+│   └── output/         # Pipeline outputs
+├── scripts/            # Custom Python scripts
 ├── README.md
 ├── .env
 └── .gitignore
@@ -226,7 +255,6 @@ my_project/
 The sample pipeline is immediately runnable:
 
 ```bash
-cd my_project
 quicketl run pipelines/sample.yml
 ```
 
