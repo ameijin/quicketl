@@ -189,14 +189,8 @@ exclude_lines = [
 # Semantic Release configuration
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-version_variables = ["src/quicketl/_version.py:__version__"]
 commit_parser = "conventional"
 build_command = "uv build"
-tag_format = "v{version}"
-
-[tool.semantic_release.branches.main]
-match = "(main|master)"
-prerelease = false
 
 [tool.semantic_release.remote]
 type = "github"
