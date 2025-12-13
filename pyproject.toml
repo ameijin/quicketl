@@ -188,12 +188,7 @@ exclude_lines = [
 
 # Semantic Release configuration
 [tool.semantic_release]
-version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
-build_command = "uv build"
-
-[tool.semantic_release.remote]
-type = "github"
 
 [dependency-groups]
 dev = [
