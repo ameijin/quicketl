@@ -1,6 +1,6 @@
 """CLI command: quicketl init
 
-Initialize a new ETLX project or pipeline.
+Initialize a new QuickETL project or pipeline.
 """
 
 from __future__ import annotations
@@ -12,10 +12,10 @@ import typer
 from rich.console import Console
 
 console = Console()
-app = typer.Typer(help="Initialize a new ETLX project or pipeline")
+app = typer.Typer(help="Initialize a new QuickETL project or pipeline")
 
 
-SAMPLE_PIPELINE = '''# Example ETLX Pipeline Configuration
+SAMPLE_PIPELINE = '''# Example QuickETL Pipeline Configuration
 # Run this pipeline with: quicketl run pipelines/sample.yml
 name: {name}
 description: Sample ETL pipeline - processes sales data
@@ -73,7 +73,7 @@ sink:
 
 PROJECT_STRUCTURE = '''# {name}
 
-An ETLX data pipeline project.
+A QuickETL data pipeline project.
 
 ## Quick Start
 
@@ -139,7 +139,7 @@ source:
 - Run `quicketl schema` to output JSON schema for IDE autocompletion
 '''
 
-ENV_TEMPLATE = '''# ETLX Environment Variables
+ENV_TEMPLATE = '''# QuickETL Environment Variables
 # Reference these in pipeline YAML with ${VAR_NAME}
 
 # Database connections
@@ -204,7 +204,7 @@ def init(
         ),
     ] = False,
 ) -> None:
-    """Initialize a new ETLX project or pipeline.
+    """Initialize a new QuickETL project or pipeline.
 
     Creates project structure with:
     - Sample pipeline configuration

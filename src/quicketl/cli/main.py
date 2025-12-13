@@ -1,4 +1,4 @@
-"""ETLX CLI main entry point.
+"""QuickETL CLI main entry point.
 
 Assembles all subcommands into the main Typer application.
 """
@@ -17,7 +17,7 @@ from quicketl.cli.validate import app as validate_app
 # Create main app
 app = typer.Typer(
     name="quicketl",
-    help="ETLX - Python ETL/ELT Framework",
+    help="QuickETL - Python ETL/ELT Framework",
     no_args_is_help=True,
     add_completion=True,
 )
@@ -48,15 +48,14 @@ def main(
         help="Show version and exit",
     ),
 ) -> None:
-    """ETLX - Python ETL/ELT Framework.
+    """QuickETL - Python ETL/ELT Framework.
 
     A configuration-driven ETL framework with support for multiple
     compute backends (DuckDB, Polars, DataFusion, Spark, pandas).
 
     \b
     Quick Start:
-      quicketl init my_project        # Create project with sample data
-      cd my_project
+      quicketl init                       # Initialize in current directory
       quicketl run pipelines/sample.yml   # Run the sample pipeline
 
     \b

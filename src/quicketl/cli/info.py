@@ -1,6 +1,6 @@
 """CLI command: quicketl info
 
-Display information about ETLX installation and available backends.
+Display information about QuickETL installation and available backends.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from quicketl._version import __version__
 from quicketl.engines.backends import list_backends
 
 console = Console()
-app = typer.Typer(help="Display ETLX information")
+app = typer.Typer(help="Display QuickETL information")
 
 
 @app.callback(invoke_without_command=True)
@@ -46,7 +46,7 @@ def info(
         ),
     ] = None,
 ) -> None:
-    """Display ETLX version and configuration information.
+    """Display QuickETL version and configuration information.
 
     Examples:
         quicketl info                  # Show version info
@@ -65,7 +65,7 @@ def info(
 def _show_version_info() -> None:
     """Display version and installation info."""
     panel = Panel(
-        f"[bold]ETLX Framework[/bold]\n"
+        f"[bold]QuickETL Framework[/bold]\n"
         f"Version: {__version__}\n"
         f"Python ETL/ELT framework with Ibis backend support",
         title="quicketl",

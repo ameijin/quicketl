@@ -1,0 +1,864 @@
+{
+  "$defs": {
+    "AcceptedValuesCheck": {
+      "description": "Check that a column contains only expected values.\n\nExample YAML:\n    - type: accepted_values\n      column: status\n      values: [pending, active, completed, cancelled]",
+      "properties": {
+        "type": {
+          "const": "accepted_values",
+          "default": "accepted_values",
+          "title": "Type",
+          "type": "string"
+        },
+        "column": {
+          "description": "Column to check",
+          "title": "Column",
+          "type": "string"
+        },
+        "values": {
+          "description": "List of accepted values",
+          "items": {},
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "column",
+        "values"
+      ],
+      "title": "AcceptedValuesCheck",
+      "type": "object"
+    },
+    "AggregateTransform": {
+      "description": "Group and aggregate data.\n\nExample YAML:\n    - op: aggregate\n      group_by: [region, category]\n      aggs:\n        total_revenue: sum(amount)\n        order_count: count(*)\n        avg_order: mean(amount)",
+      "properties": {
+        "op": {
+          "const": "aggregate",
+          "default": "aggregate",
+          "title": "Op",
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Columns to group by",
+          "items": {
+            "type": "string"
+          },
+          "title": "Group By",
+          "type": "array"
+        },
+        "aggs": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mapping of output column names to aggregation expressions",
+          "title": "Aggs",
+          "type": "object"
+        }
+      },
+      "required": [
+        "group_by",
+        "aggs"
+      ],
+      "title": "AggregateTransform",
+      "type": "object"
+    },
+    "CastTransform": {
+      "description": "Cast column types.\n\nExample YAML:\n    - op: cast\n      columns:\n        id: string\n        amount: float64\n        created_at: datetime",
+      "properties": {
+        "op": {
+          "const": "cast",
+          "default": "cast",
+          "title": "Op",
+          "type": "string"
+        },
+        "columns": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mapping of column names to target types",
+          "title": "Columns",
+          "type": "object"
+        }
+      },
+      "required": [
+        "columns"
+      ],
+      "title": "CastTransform",
+      "type": "object"
+    },
+    "DatabaseSink": {
+      "description": "Database data sink configuration.\n\nExample YAML:\n    sink:\n      type: database\n      connection: ${POSTGRES_URI}\n      table: processed_data\n      mode: upsert\n      upsert_keys: [id]",
+      "properties": {
+        "type": {
+          "const": "database",
+          "default": "database",
+          "title": "Type",
+          "type": "string"
+        },
+        "connection": {
+          "description": "Connection string or environment variable reference",
+          "title": "Connection",
+          "type": "string"
+        },
+        "table": {
+          "description": "Target table name",
+          "title": "Table",
+          "type": "string"
+        },
+        "mode": {
+          "default": "append",
+          "description": "Write mode",
+          "enum": [
+            "append",
+            "truncate",
+            "upsert"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "upsert_keys": {
+          "description": "Primary key columns for upsert mode",
+          "items": {
+            "type": "string"
+          },
+          "title": "Upsert Keys",
+          "type": "array"
+        }
+      },
+      "required": [
+        "connection",
+        "table"
+      ],
+      "title": "DatabaseSink",
+      "type": "object"
+    },
+    "DatabaseSource": {
+      "description": "Database data source configuration.\n\nSupports PostgreSQL, MySQL, SQL Server, and other databases via Ibis.\n\nExample YAML:\n    source:\n      type: database\n      connection: ${POSTGRES_URI}\n      query: SELECT * FROM users WHERE active = true",
+      "properties": {
+        "type": {
+          "const": "database",
+          "default": "database",
+          "title": "Type",
+          "type": "string"
+        },
+        "connection": {
+          "description": "Connection string or environment variable reference",
+          "title": "Connection",
+          "type": "string"
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "SQL query to execute",
+          "title": "Query"
+        },
+        "table": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Table name (alternative to query)",
+          "title": "Table"
+        }
+      },
+      "required": [
+        "connection"
+      ],
+      "title": "DatabaseSource",
+      "type": "object"
+    },
+    "DedupTransform": {
+      "description": "Remove duplicate rows.\n\nExample YAML:\n    - op: dedup\n      columns: [id]  # Dedupe based on id column\n\n    # Or dedupe on all columns:\n    - op: dedup",
+      "properties": {
+        "op": {
+          "const": "dedup",
+          "default": "dedup",
+          "title": "Op",
+          "type": "string"
+        },
+        "columns": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Columns to consider for deduplication (None = all)",
+          "title": "Columns"
+        }
+      },
+      "title": "DedupTransform",
+      "type": "object"
+    },
+    "DeriveColumnTransform": {
+      "description": "Create a new computed column.\n\nExample YAML:\n    - op: derive_column\n      name: revenue\n      expr: quantity * unit_price",
+      "properties": {
+        "op": {
+          "const": "derive_column",
+          "default": "derive_column",
+          "title": "Op",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name for the new column",
+          "title": "Name",
+          "type": "string"
+        },
+        "expr": {
+          "description": "SQL-like expression for the column value",
+          "title": "Expr",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "expr"
+      ],
+      "title": "DeriveColumnTransform",
+      "type": "object"
+    },
+    "ExpressionCheck": {
+      "description": "Check that a custom SQL expression evaluates to true for all rows.\n\nExample YAML:\n    - type: expression\n      expr: amount >= 0\n\n    # Or more complex:\n    - type: expression\n      expr: end_date >= start_date",
+      "properties": {
+        "type": {
+          "const": "expression",
+          "default": "expression",
+          "title": "Type",
+          "type": "string"
+        },
+        "expr": {
+          "description": "SQL-like expression that must be true for all rows",
+          "title": "Expr",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expr"
+      ],
+      "title": "ExpressionCheck",
+      "type": "object"
+    },
+    "FileSink": {
+      "description": "File-based data sink configuration.\n\nExample YAML:\n    sink:\n      type: file\n      path: s3://bucket/output/\n      format: parquet\n      partition_by: [date, region]",
+      "properties": {
+        "type": {
+          "const": "file",
+          "default": "file",
+          "title": "Type",
+          "type": "string"
+        },
+        "path": {
+          "description": "Output path (local or cloud URI)",
+          "title": "Path",
+          "type": "string"
+        },
+        "format": {
+          "default": "parquet",
+          "description": "Output format",
+          "enum": [
+            "parquet",
+            "csv"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "partition_by": {
+          "description": "Columns to partition output by",
+          "items": {
+            "type": "string"
+          },
+          "title": "Partition By",
+          "type": "array"
+        },
+        "mode": {
+          "default": "overwrite",
+          "description": "Write mode",
+          "enum": [
+            "overwrite",
+            "append"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "FileSink",
+      "type": "object"
+    },
+    "FileSource": {
+      "description": "File-based data source configuration.\n\nSupports CSV, Parquet, and JSON files from local filesystem or cloud storage\n(S3, GCS, Azure) via fsspec.\n\nExample YAML:\n    source:\n      type: file\n      path: s3://bucket/data.parquet\n      format: parquet",
+      "properties": {
+        "type": {
+          "const": "file",
+          "default": "file",
+          "title": "Type",
+          "type": "string"
+        },
+        "path": {
+          "description": "File path (local or cloud URI)",
+          "title": "Path",
+          "type": "string"
+        },
+        "format": {
+          "default": "parquet",
+          "description": "File format",
+          "enum": [
+            "csv",
+            "parquet",
+            "json"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "options": {
+          "additionalProperties": true,
+          "description": "Format-specific read options",
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "FileSource",
+      "type": "object"
+    },
+    "FillNullTransform": {
+      "description": "Replace null values with defaults.\n\nExample YAML:\n    - op: fill_null\n      columns:\n        discount: 0\n        notes: \"N/A\"",
+      "properties": {
+        "op": {
+          "const": "fill_null",
+          "default": "fill_null",
+          "title": "Op",
+          "type": "string"
+        },
+        "columns": {
+          "additionalProperties": true,
+          "description": "Mapping of column names to fill values",
+          "title": "Columns",
+          "type": "object"
+        }
+      },
+      "required": [
+        "columns"
+      ],
+      "title": "FillNullTransform",
+      "type": "object"
+    },
+    "FilterTransform": {
+      "description": "Filter rows using a SQL-like predicate.\n\nExample YAML:\n    - op: filter\n      predicate: amount > 100 AND status = 'active'",
+      "properties": {
+        "op": {
+          "const": "filter",
+          "default": "filter",
+          "title": "Op",
+          "type": "string"
+        },
+        "predicate": {
+          "description": "SQL-like filter predicate",
+          "title": "Predicate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "predicate"
+      ],
+      "title": "FilterTransform",
+      "type": "object"
+    },
+    "IcebergSource": {
+      "description": "Apache Iceberg table source configuration.\n\nNote: Full Iceberg support planned for v0.2.\n\nExample YAML:\n    source:\n      type: iceberg\n      catalog: my_catalog\n      database: analytics\n      table: events",
+      "properties": {
+        "type": {
+          "const": "iceberg",
+          "default": "iceberg",
+          "title": "Type",
+          "type": "string"
+        },
+        "catalog": {
+          "description": "Iceberg catalog name",
+          "title": "Catalog",
+          "type": "string"
+        },
+        "database": {
+          "description": "Database/namespace name",
+          "title": "Database",
+          "type": "string"
+        },
+        "table": {
+          "description": "Table name",
+          "title": "Table",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional snapshot ID for time travel",
+          "title": "Snapshot Id"
+        }
+      },
+      "required": [
+        "catalog",
+        "database",
+        "table"
+      ],
+      "title": "IcebergSource",
+      "type": "object"
+    },
+    "JoinTransform": {
+      "description": "Join with another data source.\n\nExample YAML:\n    - op: join\n      right: customers  # Reference to another source\n      on: [customer_id]\n      how: left",
+      "properties": {
+        "op": {
+          "const": "join",
+          "default": "join",
+          "title": "Op",
+          "type": "string"
+        },
+        "right": {
+          "description": "Reference to the right dataset",
+          "title": "Right",
+          "type": "string"
+        },
+        "on": {
+          "description": "Join key columns",
+          "items": {
+            "type": "string"
+          },
+          "title": "On",
+          "type": "array"
+        },
+        "how": {
+          "default": "inner",
+          "description": "Join type",
+          "enum": [
+            "inner",
+            "left",
+            "right",
+            "outer"
+          ],
+          "title": "How",
+          "type": "string"
+        }
+      },
+      "required": [
+        "right",
+        "on"
+      ],
+      "title": "JoinTransform",
+      "type": "object"
+    },
+    "LimitTransform": {
+      "description": "Limit to first N rows.\n\nExample YAML:\n    - op: limit\n      n: 1000",
+      "properties": {
+        "op": {
+          "const": "limit",
+          "default": "limit",
+          "title": "Op",
+          "type": "string"
+        },
+        "n": {
+          "description": "Maximum number of rows",
+          "exclusiveMinimum": 0,
+          "title": "N",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "n"
+      ],
+      "title": "LimitTransform",
+      "type": "object"
+    },
+    "NotNullCheck": {
+      "description": "Check that specified columns contain no null values.\n\nExample YAML:\n    - type: not_null\n      columns: [id, name, email]",
+      "properties": {
+        "type": {
+          "const": "not_null",
+          "default": "not_null",
+          "title": "Type",
+          "type": "string"
+        },
+        "columns": {
+          "description": "Columns that must not contain null values",
+          "items": {
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "columns"
+      ],
+      "title": "NotNullCheck",
+      "type": "object"
+    },
+    "RenameTransform": {
+      "description": "Rename columns.\n\nExample YAML:\n    - op: rename\n      mapping:\n        old_name: new_name\n        another_old: another_new",
+      "properties": {
+        "op": {
+          "const": "rename",
+          "default": "rename",
+          "title": "Op",
+          "type": "string"
+        },
+        "mapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mapping of old column names to new names",
+          "title": "Mapping",
+          "type": "object"
+        }
+      },
+      "required": [
+        "mapping"
+      ],
+      "title": "RenameTransform",
+      "type": "object"
+    },
+    "RowCountCheck": {
+      "description": "Check that row count is within expected bounds.\n\nExample YAML:\n    - type: row_count\n      min: 1\n      max: 1000000\n\n    # Or just minimum:\n    - type: row_count\n      min: 1",
+      "properties": {
+        "type": {
+          "const": "row_count",
+          "default": "row_count",
+          "title": "Type",
+          "type": "string"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Minimum expected row count",
+          "title": "Min"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Maximum expected row count",
+          "title": "Max"
+        }
+      },
+      "title": "RowCountCheck",
+      "type": "object"
+    },
+    "SelectTransform": {
+      "description": "Select specific columns from the data.\n\nExample YAML:\n    - op: select\n      columns: [id, name, amount]",
+      "properties": {
+        "op": {
+          "const": "select",
+          "default": "select",
+          "title": "Op",
+          "type": "string"
+        },
+        "columns": {
+          "description": "Columns to select",
+          "items": {
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "columns"
+      ],
+      "title": "SelectTransform",
+      "type": "object"
+    },
+    "SortTransform": {
+      "description": "Sort rows by specified columns.\n\nExample YAML:\n    - op: sort\n      by: [created_at, id]\n      descending: true",
+      "properties": {
+        "op": {
+          "const": "sort",
+          "default": "sort",
+          "title": "Op",
+          "type": "string"
+        },
+        "by": {
+          "description": "Columns to sort by",
+          "items": {
+            "type": "string"
+          },
+          "title": "By",
+          "type": "array"
+        },
+        "descending": {
+          "default": false,
+          "description": "Sort in descending order",
+          "title": "Descending",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "by"
+      ],
+      "title": "SortTransform",
+      "type": "object"
+    },
+    "UnionTransform": {
+      "description": "Vertically concatenate multiple datasets.\n\nExample YAML:\n    - op: union\n      sources: [dataset1, dataset2]",
+      "properties": {
+        "op": {
+          "const": "union",
+          "default": "union",
+          "title": "Op",
+          "type": "string"
+        },
+        "sources": {
+          "description": "References to datasets to union",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "sources"
+      ],
+      "title": "UnionTransform",
+      "type": "object"
+    },
+    "UniqueCheck": {
+      "description": "Check that specified columns are unique (no duplicates).\n\nExample YAML:\n    - type: unique\n      columns: [id]\n\n    # Or for composite uniqueness:\n    - type: unique\n      columns: [date, customer_id, product_id]",
+      "properties": {
+        "type": {
+          "const": "unique",
+          "default": "unique",
+          "title": "Type",
+          "type": "string"
+        },
+        "columns": {
+          "description": "Columns that must be unique (composite if multiple)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Columns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "columns"
+      ],
+      "title": "UniqueCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Schema for QuickETL pipeline YAML configuration files",
+  "properties": {
+    "name": {
+      "description": "Pipeline name",
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "description": "Pipeline description",
+      "title": "Description",
+      "type": "string"
+    },
+    "engine": {
+      "default": "duckdb",
+      "description": "Compute engine to use",
+      "enum": [
+        "duckdb",
+        "polars",
+        "datafusion",
+        "spark",
+        "pandas"
+      ],
+      "title": "Engine",
+      "type": "string"
+    },
+    "source": {
+      "description": "Data source configuration",
+      "discriminator": {
+        "mapping": {
+          "database": "#/$defs/DatabaseSource",
+          "file": "#/$defs/FileSource",
+          "iceberg": "#/$defs/IcebergSource"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FileSource"
+        },
+        {
+          "$ref": "#/$defs/DatabaseSource"
+        },
+        {
+          "$ref": "#/$defs/IcebergSource"
+        }
+      ],
+      "title": "Source"
+    },
+    "transforms": {
+      "description": "Transform steps to apply",
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "aggregate": "#/$defs/AggregateTransform",
+            "cast": "#/$defs/CastTransform",
+            "dedup": "#/$defs/DedupTransform",
+            "derive_column": "#/$defs/DeriveColumnTransform",
+            "fill_null": "#/$defs/FillNullTransform",
+            "filter": "#/$defs/FilterTransform",
+            "join": "#/$defs/JoinTransform",
+            "limit": "#/$defs/LimitTransform",
+            "rename": "#/$defs/RenameTransform",
+            "select": "#/$defs/SelectTransform",
+            "sort": "#/$defs/SortTransform",
+            "union": "#/$defs/UnionTransform"
+          },
+          "propertyName": "op"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/SelectTransform"
+          },
+          {
+            "$ref": "#/$defs/RenameTransform"
+          },
+          {
+            "$ref": "#/$defs/FilterTransform"
+          },
+          {
+            "$ref": "#/$defs/DeriveColumnTransform"
+          },
+          {
+            "$ref": "#/$defs/CastTransform"
+          },
+          {
+            "$ref": "#/$defs/FillNullTransform"
+          },
+          {
+            "$ref": "#/$defs/DedupTransform"
+          },
+          {
+            "$ref": "#/$defs/SortTransform"
+          },
+          {
+            "$ref": "#/$defs/JoinTransform"
+          },
+          {
+            "$ref": "#/$defs/AggregateTransform"
+          },
+          {
+            "$ref": "#/$defs/UnionTransform"
+          },
+          {
+            "$ref": "#/$defs/LimitTransform"
+          }
+        ]
+      },
+      "title": "Transforms",
+      "type": "array"
+    },
+    "checks": {
+      "description": "Quality checks to run",
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "accepted_values": "#/$defs/AcceptedValuesCheck",
+            "expression": "#/$defs/ExpressionCheck",
+            "not_null": "#/$defs/NotNullCheck",
+            "row_count": "#/$defs/RowCountCheck",
+            "unique": "#/$defs/UniqueCheck"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/NotNullCheck"
+          },
+          {
+            "$ref": "#/$defs/UniqueCheck"
+          },
+          {
+            "$ref": "#/$defs/RowCountCheck"
+          },
+          {
+            "$ref": "#/$defs/AcceptedValuesCheck"
+          },
+          {
+            "$ref": "#/$defs/ExpressionCheck"
+          }
+        ]
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "sink": {
+      "description": "Data sink configuration",
+      "discriminator": {
+        "mapping": {
+          "database": "#/$defs/DatabaseSink",
+          "file": "#/$defs/FileSink"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FileSink"
+        },
+        {
+          "$ref": "#/$defs/DatabaseSink"
+        }
+      ],
+      "title": "Sink"
+    }
+  },
+  "required": [
+    "name",
+    "source",
+    "sink"
+  ],
+  "title": "QuickETL Pipeline Configuration",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

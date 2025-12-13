@@ -37,14 +37,14 @@ def schema(
         ),
     ] = 2,
 ) -> None:
-    """Output JSON schema for ETLX pipeline configuration.
+    """Output JSON schema for QuickETL pipeline configuration.
 
     The schema can be used for IDE autocompletion and validation
     in YAML/JSON editors.
 
     Examples:
         quicketl schema                           # Print to stdout
-        quicketl schema -o quicketl-schema.json       # Write to file
+        quicketl schema -o quicketl-schema.json   # Write to file
         quicketl schema --indent 4                # Custom indentation
 
     Usage with VS Code (YAML):
@@ -57,8 +57,8 @@ def schema(
 
     # Add schema metadata
     json_schema["$schema"] = "http://json-schema.org/draft-07/schema#"
-    json_schema["title"] = "ETLX Pipeline Configuration"
-    json_schema["description"] = "Schema for ETLX pipeline YAML configuration files"
+    json_schema["title"] = "QuickETL Pipeline Configuration"
+    json_schema["description"] = "Schema for QuickETL pipeline YAML configuration files"
 
     # Format output
     schema_json = json.dumps(json_schema, indent=indent)

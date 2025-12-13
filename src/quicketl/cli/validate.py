@@ -1,6 +1,6 @@
 """CLI command: quicketl validate
 
-Validate an ETLX pipeline configuration file.
+Validate a QuickETL pipeline configuration file.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ def validate(
         ),
     ] = False,
 ) -> None:
-    """Validate an ETLX pipeline configuration file.
+    """Validate a QuickETL pipeline configuration file.
 
     Checks:
     - YAML syntax

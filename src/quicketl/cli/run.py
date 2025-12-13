@@ -1,6 +1,6 @@
 """CLI command: quicketl run
 
-Execute an ETLX pipeline from a YAML configuration file.
+Execute a QuickETL pipeline from a YAML configuration file.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from quicketl.logging import configure_logging
 from quicketl.pipeline import Pipeline, PipelineStatus
 
 console = Console()
-app = typer.Typer(help="Run an ETLX pipeline")
+app = typer.Typer(help="Run a QuickETL pipeline")
 
 
 def parse_variables(var_strings: list[str]) -> dict[str, str]:
@@ -88,7 +88,7 @@ def run(
         ),
     ] = False,
 ) -> None:
-    """Execute an ETLX pipeline.
+    """Execute a QuickETL pipeline.
 
     Examples:
         quicketl run pipeline.yml
