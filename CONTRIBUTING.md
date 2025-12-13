@@ -1,6 +1,6 @@
-# Contributing to ETLX
+# Contributing to QuickETL
 
-Thank you for your interest in contributing to ETLX! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to QuickETL! This document provides guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -37,7 +37,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/etlx.git
+git clone https://github.com/YOUR_USERNAME/quicketl.git
 cd quicketl
 
 # Create virtual environment and install dependencies
@@ -93,7 +93,7 @@ Use descriptive branch names:
 
 ### Commit Messages
 
-Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for **automated semantic versioning**. Your commit messages determine how versions are bumped automatically when merged to `main`.
 
 ```
 <type>(<scope>): <description>
@@ -103,25 +103,44 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 [optional footer(s)]
 ```
 
-**Types:**
+**Types and Version Bumps:**
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation changes |
-| `style` | Code style changes (formatting, etc.) |
-| `refactor` | Code refactoring |
-| `test` | Adding or updating tests |
-| `chore` | Maintenance tasks |
+| Type | Description | Version Bump |
+|------|-------------|--------------|
+| `feat` | New feature | **Minor** (0.x.0) |
+| `fix` | Bug fix | **Patch** (0.0.x) |
+| `perf` | Performance improvement | **Patch** (0.0.x) |
+| `refactor` | Code refactoring | No bump |
+| `docs` | Documentation changes | No bump |
+| `style` | Code style changes (formatting, etc.) | No bump |
+| `test` | Adding or updating tests | No bump |
+| `build` | Build system changes | No bump |
+| `ci` | CI/CD changes | No bump |
+| `chore` | Maintenance tasks | No bump |
+
+**Breaking Changes (Major bump):**
+
+For breaking changes that require a **Major** version bump (x.0.0), add `BREAKING CHANGE:` in the commit body or append `!` after the type:
+
+```
+feat!: remove deprecated API endpoint
+
+BREAKING CHANGE: The /v1/old endpoint has been removed. Use /v2/new instead.
+```
 
 **Examples:**
 
 ```
-feat(transforms): add window function support
+feat(pipeline): add support for incremental loads
 
-fix(quality): handle null values in unique check
+Adds delta detection for efficient incremental data processing.
+```
 
+```
+fix(cli): correct exit code on validation errors
+```
+
+```
 docs(api): add examples for Pipeline builder pattern
 ```
 
@@ -151,8 +170,8 @@ tests/
 
 ```python
 import pytest
-from etlx import Pipeline
-from etlx.config.transforms import FilterTransform
+from quicketl import Pipeline
+from quicketl.config.transforms import FilterTransform
 
 
 class TestFilterTransform:
@@ -241,8 +260,7 @@ def aggregate(
 1. Update documentation for any new features
 2. Add tests for your changes
 3. Ensure all tests pass locally
-4. Update CHANGELOG.md if applicable
-5. Submit the pull request
+4. Submit the pull request
 
 ### Pull Request Checklist
 
@@ -250,8 +268,20 @@ def aggregate(
 - [ ] Self-review of code performed
 - [ ] Documentation updated
 - [ ] Tests added and passing
-- [ ] CHANGELOG.md updated (if applicable)
+- [ ] Commit messages follow Conventional Commits format
 - [ ] Branch is up to date with main
+
+### Automated Releases
+
+When your PR is merged to `main`, the release workflow automatically:
+
+1. Analyzes commit messages to determine version bump (major/minor/patch)
+2. Updates version in `pyproject.toml` and `src/quicketl/_version.py`
+3. Generates/updates `CHANGELOG.md`
+4. Creates a Git tag and GitHub release
+5. Publishes the package to PyPI
+
+**No manual release steps required!** Just use proper commit messages.
 
 ## Style Guide
 
@@ -277,8 +307,8 @@ import ibis
 from pydantic import BaseModel
 
 # Local
-from etlx.config.models import SourceConfig
-from etlx.logging import get_logger
+from quicketl.config.models import SourceConfig
+from quicketl.logging import get_logger
 
 if TYPE_CHECKING:
     import ibis.expr.types as ir
@@ -297,6 +327,6 @@ if TYPE_CHECKING:
 
 - Open an issue for questions
 - Check existing issues and discussions
-- Read the documentation at https://etlx.readthedocs.io
+- Read the documentation at https://quicketl.com
 
 Thank you for contributing!
