@@ -5,7 +5,7 @@ Display information about ETLX installation and available backends.
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path  # noqa: TC003 - required at runtime for Typer
 from typing import Annotated
 
 import typer
@@ -118,7 +118,7 @@ def _show_backends(check_imports: bool) -> None:
 def _check_backend(backend_name: str) -> str:
     """Check if a backend can be imported."""
     # Map backend names to ibis module names and install extras
-    BACKEND_INFO: dict[str, dict[str, str]] = {
+    BACKEND_INFO: dict[str, dict[str, str | None]] = {
         "duckdb": {"module": "duckdb", "extra": "duckdb"},
         "polars": {"module": "polars", "extra": "polars"},
         "datafusion": {"module": "datafusion", "extra": "datafusion"},
@@ -140,6 +140,9 @@ def _check_backend(backend_name: str) -> str:
     module_name = info["module"]
     extra = info["extra"]
     note = info.get("note", "")
+
+    # Type narrowing - module is always present
+    assert module_name is not None
 
     try:
         import ibis
