@@ -117,4 +117,4 @@ quicketl workflow generate workflows/medallion.yml --target prefect -o flows/med
 
 - [Workflow YAML Configuration](workflow-yaml.md) - Complete configuration reference
 - [DAG Generation](dag-generation.md) - Generate Airflow and Prefect code
-- [Airflow Integration](../integrations/airflow.md) - Deploy to Airflow
+- [Airflow Integration](../../integrations/airflow.md) - Deploy to Airflow
