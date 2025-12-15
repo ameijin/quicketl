@@ -38,11 +38,18 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
+      - name: Generate release token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - name: Python Semantic Release
         id: release
         uses: python-semantic-release/python-semantic-release@v10.2.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           build: "false"
 
       - name: Build package
@@ -59,5 +66,5 @@ jobs:
         if: steps.release.outputs.released == 'true'
         uses: python-semantic-release/publish-action@v10.2.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.generate-token.outputs.token }}
           tag: ${{ steps.release.outputs.tag }}
