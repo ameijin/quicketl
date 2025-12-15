@@ -9,7 +9,7 @@ from __future__ import annotations
 import concurrent.futures
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import yaml
 
@@ -18,9 +18,6 @@ from quicketl.config.workflow import PipelineRef, WorkflowConfig, WorkflowStage
 from quicketl.logging import get_logger
 from quicketl.pipeline import Pipeline, PipelineResult
 from quicketl.pipeline.result import StageResult, WorkflowResult, WorkflowStatus
-
-if TYPE_CHECKING:
-    pass
 
 logger = get_logger(__name__)
 
@@ -63,7 +60,7 @@ class Workflow:
         self.variables = variables or {}
         self.fail_fast = fail_fast
         self._stages: list[WorkflowStage] = []
-        self._base_path: Path = Path(".")
+        self._base_path: Path = Path()
 
     @classmethod
     def from_config(cls, config: WorkflowConfig, base_path: Path | None = None) -> Workflow:
@@ -242,10 +239,9 @@ class Workflow:
                     pipelines_failed += stage_result.pipelines_failed
 
                     # Check for failure
-                    if not stage_result.succeeded:
-                        if self.fail_fast and not stage.continue_on_failure:
-                            error = f"Stage '{stage_name}' failed"
-                            raise StopIteration
+                    if not stage_result.succeeded and self.fail_fast and not stage.continue_on_failure:
+                        error = f"Stage '{stage_name}' failed"
+                        raise StopIteration
 
         except StopIteration:
             pass
@@ -258,10 +254,7 @@ class Workflow:
 
         # Determine status
         if error or pipelines_failed > 0:
-            if pipelines_succeeded > 0:
-                status = WorkflowStatus.PARTIAL
-            else:
-                status = WorkflowStatus.FAILED
+            status = WorkflowStatus.PARTIAL if pipelines_succeeded > 0 else WorkflowStatus.FAILED
         else:
             status = WorkflowStatus.SUCCESS
 
@@ -333,10 +326,7 @@ class Workflow:
 
         # Determine status
         all_succeeded = all(r.succeeded for r in pipeline_results)
-        if error or not all_succeeded:
-            status = "failed"
-        else:
-            status = "success"
+        status = "failed" if error or not all_succeeded else "success"
 
         logger.info(
             "stage_complete",

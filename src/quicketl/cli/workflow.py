@@ -183,7 +183,7 @@ def validate(
             console.print(
                 Panel(
                     "[bold red]INVALID[/bold red]\n\n"
-                    f"Missing pipeline files:\n" + "\n".join(f"  - {m}" for m in missing),
+                    "Missing pipeline files:\n" + "\n".join(f"  - {m}" for m in missing),
                     title="Validation Failed",
                 )
             )
@@ -411,10 +411,7 @@ def _display_result(result) -> None:
         table.add_column("Duration", justify="right")
 
         for stage in result.stage_results:
-            if stage.succeeded:
-                status_str = "[green]OK[/green]"
-            else:
-                status_str = "[red]FAIL[/red]"
+            status_str = "[green]OK[/green]" if stage.succeeded else "[red]FAIL[/red]"
 
             pipelines_str = f"{stage.pipelines_succeeded}/{len(stage.pipeline_results)}"
             table.add_row(

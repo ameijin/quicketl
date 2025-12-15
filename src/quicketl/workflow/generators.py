@@ -5,7 +5,6 @@ Generates Airflow and Prefect code from workflow configurations.
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -64,7 +63,7 @@ def generate_airflow_dag(
             lines.extend([
                 f"def run_{func_name}(**context):",
                 f'    """Run {pipeline_ref.resolved_name} pipeline."""',
-                f"    result = run_pipeline(",
+                "    result = run_pipeline(",
                 f'        "{pipeline_path}",',
             ])
 
@@ -98,7 +97,7 @@ def generate_airflow_dag(
         "    \"retries\": 1,",
         "}",
         "",
-        f'with DAG(',
+        "with DAG(",
         f'    dag_id="{dag_id}",',
         f'    description="{config.description}",',
         f"    schedule={schedule_str},",
@@ -191,7 +190,7 @@ def generate_prefect_flow(
                 "@task",
                 f"def run_{func_name}():",
                 f'    """Run {pipeline_ref.resolved_name} pipeline."""',
-                f"    result = run_pipeline(",
+                "    result = run_pipeline(",
                 f'        "{pipeline_path}",',
             ])
 
@@ -220,7 +219,7 @@ def generate_prefect_flow(
         "",
         "@flow(name=\"" + flow_name + "\")",
         f"def {flow_name}():",
-        f'    """',
+        '    """',
         f"    {config.description}" if config.description else f"    Execute {config.name} workflow.",
         "",
         "    Stages:",
