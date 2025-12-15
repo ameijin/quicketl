@@ -190,7 +190,7 @@ exclude_lines = [
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"
-build_command = "uv build"
+build_command = false
 
 [dependency-groups]
 dev = [
