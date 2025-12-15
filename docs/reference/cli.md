@@ -8,6 +8,7 @@ QuickETL provides a command-line interface for running and managing pipelines.
 |---------|-------------|
 | [`run`](#run) | Execute a pipeline |
 | [`validate`](#validate) | Validate configuration |
+| [`workflow`](#workflow) | Run and manage multi-pipeline workflows |
 | [`init`](#init) | Create new project or pipeline |
 | [`info`](#info) | Display version and backend info |
 | [`schema`](#schema) | Output JSON schema for IDE support |
@@ -175,6 +176,184 @@ Errors:
       quicketl validate "$f"
     done
 ```
+
+---
+
+## workflow {#workflow}
+
+Run and manage multi-pipeline workflows with dependency management and parallel execution.
+
+### Subcommands
+
+| Subcommand | Description |
+|------------|-------------|
+| `run` | Execute a workflow |
+| `validate` | Validate workflow configuration |
+| `info` | Show workflow structure and execution order |
+| `generate` | Generate Airflow DAG or Prefect flow |
+
+### workflow run
+
+Execute a workflow from a YAML configuration file.
+
+```bash
+quicketl workflow run <config_file> [options]
+```
+
+#### Options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--var` | `-v` | Set variable (KEY=VALUE), can be repeated |
+| `--dry-run` | | Execute without writing output |
+| `--workers` | `-w` | Maximum parallel workers for parallel stages |
+| `--verbose` | `-V` | Enable verbose logging |
+| `--json` | `-j` | Output result as JSON |
+
+#### Examples
+
+```bash
+# Basic run
+quicketl workflow run workflows/medallion.yml
+
+# With variables
+quicketl workflow run workflows/etl.yml --var DATE=2025-01-15
+
+# Dry run
+quicketl workflow run workflows/etl.yml --dry-run
+
+# Limit parallel workers
+quicketl workflow run workflows/etl.yml --workers 4
+
+# JSON output for scripting
+quicketl workflow run workflows/etl.yml --json
+```
+
+#### Output
+
+```
+Running workflow: medallion_etl
+  Stages: 3
+  Pipelines: 9
+
+╭────────────────────── Workflow: medallion_etl ──────────────────────╮
+│ SUCCESS                                                              │
+╰───────────────────────── Duration: 1643.7ms ─────────────────────────╯
+                        Stages
+┏━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┓
+┃ Stage        ┃ Status ┃ Pipelines ┃ Duration ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━┩
+│ bronze       │ OK     │       4/4 │ 1314.2ms │
+│ silver_clean │ OK     │       3/3 │  205.9ms │
+│ silver_agg   │ OK     │       2/2 │  122.8ms │
+└──────────────┴────────┴───────────┴──────────┘
+Pipelines: 9/9 succeeded
+```
+
+### workflow validate
+
+Validate a workflow configuration without executing it.
+
+```bash
+quicketl workflow validate <config_file> [options]
+```
+
+#### Options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--verbose` | `-V` | Show detailed workflow structure |
+
+#### Examples
+
+```bash
+# Basic validation
+quicketl workflow validate workflows/medallion.yml
+
+# Show structure
+quicketl workflow validate workflows/medallion.yml --verbose
+```
+
+Validation checks:
+
+- YAML syntax is valid
+- All required fields are present
+- Stage dependencies are valid (no cycles, no missing deps)
+- All referenced pipeline files exist
+
+### workflow info
+
+Display workflow structure and execution order.
+
+```bash
+quicketl workflow info <config_file>
+```
+
+#### Example
+
+```bash
+quicketl workflow info workflows/medallion.yml
+```
+
+Output:
+
+```
+Workflow: medallion_etl
+  Bronze -> Silver medallion architecture pipeline
+
+Execution Order:
+  1. bronze
+  2. silver_clean, silver_agg
+  3. gold
+
+                        Stages
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Stage        ┃ Pipelines ┃ Parallel ┃ Depends On       ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ bronze       │         4 │ Yes      │ -                │
+│ silver_clean │         3 │ Yes      │ bronze           │
+│ silver_agg   │         2 │ No       │ silver_clean     │
+│ gold         │         2 │ No       │ silver_agg       │
+└──────────────┴───────────┴──────────┴──────────────────┘
+
+Variables:
+  DATA_DIR: ./data
+```
+
+### workflow generate
+
+Generate orchestration code from a workflow configuration.
+
+```bash
+quicketl workflow generate <config_file> [options]
+```
+
+#### Options
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--target` | `-t` | Target orchestrator: `airflow` or `prefect` (default: airflow) |
+| `--output` | `-o` | Output file path (prints to stdout if not specified) |
+| `--dag-id` | | DAG/flow ID (defaults to workflow name) |
+| `--schedule` | `-s` | Cron schedule (Airflow only) |
+
+#### Examples
+
+```bash
+# Generate Airflow DAG to stdout
+quicketl workflow generate workflows/etl.yml --target airflow
+
+# Save to file with schedule
+quicketl workflow generate workflows/etl.yml --target airflow -o dags/etl_dag.py --schedule "0 0 * * *"
+
+# Generate Prefect flow
+quicketl workflow generate workflows/etl.yml --target prefect -o flows/etl_flow.py
+
+# Custom DAG ID
+quicketl workflow generate workflows/etl.yml --target airflow --dag-id daily_etl_v2
+```
+
+See [Workflow Documentation](../guides/workflows/index.md) for complete workflow configuration reference.
 
 ---
 

@@ -13,6 +13,7 @@ from typing import Any
 import yaml
 
 from quicketl.config.models import PipelineConfig
+from quicketl.config.workflow import WorkflowConfig
 
 
 def substitute_variables(
@@ -133,3 +134,33 @@ def load_pipeline_config(
     """
     config_dict = load_yaml_with_variables(path, variables)
     return PipelineConfig.model_validate(config_dict)
+
+
+def load_workflow_config(
+    path: Path | str,
+    variables: dict[str, str] | None = None,
+) -> WorkflowConfig:
+    """Load and validate a workflow configuration from YAML.
+
+    Args:
+        path: Path to the workflow YAML file
+        variables: Optional mapping of variable names to values
+
+    Returns:
+        A validated WorkflowConfig instance
+
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        yaml.YAMLError: If the file is not valid YAML
+        pydantic.ValidationError: If the config doesn't match the schema
+
+    Example:
+        >>> config = load_workflow_config(
+        ...     "workflows/medallion.yml",
+        ...     variables={"RUN_DATE": "2025-01-01"}
+        ... )
+        >>> print(config.name)
+        'medallion_etl'
+    """
+    config_dict = load_yaml_with_variables(path, variables)
+    return WorkflowConfig.model_validate(config_dict)

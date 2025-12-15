@@ -173,6 +173,10 @@ nav:
       - Distributed (Spark): guides/backends/distributed.md
       - Cloud Warehouses: guides/backends/cloud-warehouses.md
       - Databases: guides/backends/databases.md
+    - Workflows:
+      - guides/workflows/index.md
+      - Workflow YAML: guides/workflows/workflow-yaml.md
+      - DAG Generation: guides/workflows/dag-generation.md
     - Airflow Integration: integrations/airflow.md
     - Best Practices:
       - Pipeline Design: best-practices/pipeline-design.md
@@ -200,6 +204,7 @@ nav:
     - Basic Pipeline: examples/basic-pipeline.md
     - Multi-Source Join: examples/multi-source-join.md
     - Data Aggregation: examples/aggregation.md
+    - Medallion Workflow: examples/medallion-workflow.md
     - Cloud ETL: examples/cloud-etl.md
     - Database to Data Lake: examples/db-to-lake.md
     - Airflow DAG: examples/airflow-dag.md

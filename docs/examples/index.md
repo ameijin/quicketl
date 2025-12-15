@@ -59,6 +59,26 @@ transforms:
       avg_order_value: avg(amount)
 ```
 
+## Workflow Examples
+
+### [Medallion Workflow](medallion-workflow.md)
+
+Complete Bronze → Silver → Gold medallion architecture with multi-stage workflow orchestration.
+
+```yaml
+stages:
+  - name: bronze
+    parallel: true
+    pipelines:
+      - path: pipelines/bronze/ingest_users.yml
+      - path: pipelines/bronze/ingest_events.yml
+
+  - name: silver
+    depends_on: [bronze]
+    pipelines:
+      - path: pipelines/silver/clean_users.yml
+```
+
 ## Cloud & Production Examples
 
 ### [Cloud ETL](cloud-etl.md)
@@ -94,8 +114,9 @@ def process_daily(**context):
 | **Basic** | [Basic Pipeline](basic-pipeline.md) | Core concepts |
 | **Joins** | [Multi-Source Join](multi-source-join.md) | Combining data |
 | **Analytics** | [Aggregation](aggregation.md) | Metrics and summaries |
+| **Workflows** | [Medallion Workflow](medallion-workflow.md) | Multi-pipeline orchestration |
 | **Cloud** | [Cloud ETL](cloud-etl.md) | Production cloud pipelines |
-| **Orchestration** | [Airflow DAG](airflow-dag.md) | Workflow integration |
+| **Orchestration** | [Airflow DAG](airflow-dag.md) | Airflow integration |
 
 ## Running Examples
 

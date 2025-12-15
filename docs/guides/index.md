@@ -46,6 +46,14 @@ This guide covers all aspects of building pipelines with QuickETL.
 
     [:octicons-arrow-right-24: Backends](backends/index.md)
 
+-   :material-sitemap:{ .lg .middle } **Workflows**
+
+    ---
+
+    Orchestrate multiple pipelines with dependencies, parallel execution, and DAG generation.
+
+    [:octicons-arrow-right-24: Workflows](workflows/index.md)
+
 </div>
 
 ## How QuickETL Works
