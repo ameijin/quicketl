@@ -74,9 +74,9 @@ sink:
 Full documentation, tutorials, and API reference at **[quicketl.com](https://quicketl.com)**
 
 - [Getting Started](https://quicketl.com/getting-started/)
-- [Pipeline Configuration](https://quicketl.com/configuration/)
-- [Supported Backends](https://quicketl.com/backends/)
-- [CLI Reference](https://quicketl.com/cli/)
+- [Pipeline Configuration](https://quicketl.com/guides/configuration/)
+- [Supported Backends](https://quicketl.com/guides/backends/)
+- [CLI Reference](https://quicketl.com/reference/cli/)
 
 ## License
 
