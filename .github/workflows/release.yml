@@ -24,11 +24,19 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - name: Generate release token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_branch }}
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -37,13 +45,6 @@ jobs:
 
       - name: Set up Python
         run: uv python install 3.12
-
-      - name: Generate release token
-        id: generate-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.RELEASER_APP_ID }}
-          private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
 
       - name: Python Semantic Release
         id: release
