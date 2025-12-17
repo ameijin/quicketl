@@ -18,13 +18,14 @@ class WriteResult:
     path: str
     format: str
     duration_ms: float
+    partitions: int = 0
 
 
 def write_file(
     table: ir.Table,
     path: str,
     format: str = "parquet",
-    partition_by: list[str] | None = None,  # noqa: ARG001
+    partition_by: list[str] | None = None,
     **options: Any,
 ) -> WriteResult:
     """Write data to a file.
@@ -47,12 +48,19 @@ def write_file(
 
     # Get row count before writing
     row_count = table.count().execute()
+    partitions = 0
 
     match format.lower():
         case "parquet" | "pq":
-            table.to_parquet(path, **options)
+            if partition_by:
+                partitions = _write_partitioned_parquet(table, path, partition_by, **options)
+            else:
+                table.to_parquet(path, **options)
         case "csv":
-            table.to_csv(path, **options)
+            if partition_by:
+                partitions = _write_partitioned_csv(table, path, partition_by, **options)
+            else:
+                table.to_csv(path, **options)
         case _:
             raise ValueError(f"Unsupported output format: {format}")
 
@@ -63,7 +71,88 @@ def write_file(
         path=path,
         format=format,
         duration_ms=duration,
+        partitions=partitions,
     )
+
+
+def _write_partitioned_parquet(
+    table: ir.Table,
+    path: str,
+    partition_by: list[str],
+    **options: Any,
+) -> int:
+    """Write partitioned parquet files using PyArrow dataset API.
+
+    Args:
+        table: Ibis table to write
+        path: Output directory path
+        partition_by: Columns to partition by
+        **options: Additional write options
+
+    Returns:
+        Number of partitions written
+    """
+    import pyarrow.dataset as ds
+
+    # Materialize to PyArrow
+    arrow_table = table.to_pyarrow()
+
+    # Write partitioned dataset
+    ds.write_dataset(
+        arrow_table,
+        path,
+        format="parquet",
+        partitioning=partition_by,
+        existing_data_behavior="delete_matching",
+        **options,
+    )
+
+    # Count unique partition combinations
+    partition_count = (
+        arrow_table.select(partition_by).to_pandas().drop_duplicates().shape[0]
+    )
+
+    return partition_count
+
+
+def _write_partitioned_csv(
+    table: ir.Table,
+    path: str,
+    partition_by: list[str],
+    **options: Any,
+) -> int:
+    """Write partitioned CSV files using PyArrow dataset API.
+
+    Args:
+        table: Ibis table to write
+        path: Output directory path
+        partition_by: Columns to partition by
+        **options: Additional write options
+
+    Returns:
+        Number of partitions written
+    """
+    import pyarrow.dataset as ds
+
+    # Materialize to PyArrow
+    arrow_table = table.to_pyarrow()
+
+    # Write partitioned dataset
+    ds.write_dataset(
+        arrow_table,
+        path,
+        format="csv",
+        partitioning=partition_by,
+        existing_data_behavior="delete_matching",
+        **options,
+    )
+
+    # Count unique partition combinations
+    partition_count = (
+        arrow_table.select(partition_by).to_pandas().drop_duplicates().shape[0]
+    )
+
+    return partition_count
 
 
 def write_parquet(

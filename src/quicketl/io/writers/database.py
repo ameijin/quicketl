@@ -51,8 +51,10 @@ def write_database(
     """
     start = time.perf_counter()
 
-    # Get row count
-    row_count = table.count().execute()
+    # Materialize the data to PyArrow for cross-backend compatibility
+    # This allows writing data from any Ibis backend to any database
+    arrow_table = table.to_pyarrow()
+    row_count = len(arrow_table)
 
     # Connect to database
     con = ibis.connect(connection, **options)
@@ -60,24 +62,30 @@ def write_database(
     # Handle different modes
     match mode:
         case "replace":
-            # Drop existing table if exists, then create
+            # Drop existing table if exists, then create from Arrow
             with contextlib.suppress(Exception):
                 con.drop_table(target_table, force=True)
-            con.create_table(target_table, table)
+            con.create_table(target_table, arrow_table)
 
         case "truncate":
-            # Truncate existing table, then insert
-            with contextlib.suppress(Exception):
-                con.truncate_table(target_table)
-            con.insert(target_table, table)
+            # Check if table exists first
+            try:
+                con.table(target_table)  # Raises if table doesn't exist
+                # Table exists - use raw SQL to truncate since not all backends support truncate_table
+                with contextlib.suppress(Exception):
+                    con.raw_sql(f"DELETE FROM {target_table}")
+                con.insert(target_table, arrow_table)
+            except Exception:
+                # Table doesn't exist, create it
+                con.create_table(target_table, arrow_table)
 
         case "append":
             # Insert into existing table (create if not exists)
             try:
-                con.insert(target_table, table)
+                con.insert(target_table, arrow_table)
             except Exception:
                 # Table might not exist, create it
-                con.create_table(target_table, table)
+                con.create_table(target_table, arrow_table)
 
         case _:
             raise ValueError(f"Unsupported write mode: {mode}")

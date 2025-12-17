@@ -70,6 +70,7 @@ class Pipeline:
         self.description = description
         self.engine_name = engine
         self._source: SourceConfig | None = None
+        self._sources: dict[str, SourceConfig] = {}
         self._transforms: list[TransformStep] = []
         self._checks: list[CheckConfig] = []
         self._sink: SinkConfig | None = None
@@ -91,6 +92,7 @@ class Pipeline:
             engine=config.engine,
         )
         pipeline._source = config.source
+        pipeline._sources = config.sources
         pipeline._transforms = config.transforms
         pipeline._checks = config.checks
         pipeline._sink = config.sink
@@ -244,8 +246,10 @@ class Pipeline:
         )
 
         try:
-            # Validate configuration
-            if self._source is None:
+            # Validate configuration - need either source or sources
+            has_single_source = self._source is not None
+            has_multi_source = bool(self._sources)
+            if not has_single_source and not has_multi_source:
                 raise ValueError("Pipeline source not configured")
             if self._sink is None and not dry_run:
                 raise ValueError("Pipeline sink not configured")
@@ -253,11 +257,33 @@ class Pipeline:
             # Initialize engine
             engine = ETLXEngine(backend=self.engine_name)
 
-            # Step 1: Read source
-            table = self._run_read_step(engine, builder)
+            # Load all sources into context
+            table_context: dict[str, ir.Table] = {}
 
-            # Step 2: Run transforms
-            table = self._run_transform_steps(engine, table, builder)
+            if has_multi_source:
+                # Multi-source mode: load all named sources
+                primary_name = next(iter(self._sources.keys()))
+                for name, source_config in self._sources.items():
+                    start = time.perf_counter()
+                    logger.debug("reading_source", source_name=name, source_type=source_config.type)
+                    table_context[name] = engine.read_source(source_config)
+                    duration_ms = (time.perf_counter() - start) * 1000
+                    builder.add_step(
+                        StepResult(
+                            step_name=f"read_source_{name}",
+                            step_type=source_config.type,
+                            status="success",
+                            duration_ms=duration_ms,
+                        )
+                    )
+                # Primary table is the first named source
+                table = table_context[primary_name]
+            else:
+                # Single-source mode (backward compatible)
+                table = self._run_read_step(engine, builder)
+
+            # Step 2: Run transforms (with context for join/union)
+            table = self._run_transform_steps(engine, table, builder, table_context)
 
             # Get row count after transforms
             builder.rows_processed = table.count().execute()
@@ -318,15 +344,23 @@ class Pipeline:
         engine: ETLXEngine,
         table: ir.Table,
         builder: PipelineResultBuilder,
+        context: dict[str, ir.Table] | None = None,
     ) -> ir.Table:
-        """Execute all transform steps."""
+        """Execute all transform steps.
+
+        Args:
+            engine: ETL engine
+            table: Primary input table
+            builder: Result builder
+            context: Named tables for join/union operations
+        """
         for i, transform in enumerate(self._transforms):
             start = time.perf_counter()
             step_name = f"transform_{i}_{transform.op}"
 
             try:
                 logger.debug("applying_transform", step=step_name, type=transform.op)
-                table = engine.apply_transform(table, transform)
+                table = engine.apply_transform(table, transform, context)
 
                 duration_ms = (time.perf_counter() - start) * 1000
                 builder.add_step(
