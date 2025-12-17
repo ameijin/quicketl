@@ -69,7 +69,8 @@ def validate(
         else:
             # Brief summary
             console.print(f"\n  Engine: {config.engine}")
-            console.print(f"  Source: {config.source.type}")
+            source_type = config.source.type if config.source else "multi-source"
+            console.print(f"  Source: {source_type}")
             console.print(f"  Transforms: {len(config.transforms)}")
             console.print(f"  Checks: {len(config.checks)}")
             console.print(f"  Sink: {config.sink.type}")

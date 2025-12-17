@@ -7,7 +7,7 @@ exposing a simplified, ETL-focused API.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import ibis
 
@@ -246,7 +246,7 @@ class ETLXEngine:
         table: ir.Table,
         connection: str,
         target_table: str,
-        mode: str = "append",
+        mode: Literal["append", "truncate", "replace", "upsert"] = "append",
     ) -> WriteResult:
         """Write data to a database table.
 

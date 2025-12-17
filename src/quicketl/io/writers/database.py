@@ -27,7 +27,7 @@ def write_database(
     table: ir.Table,
     connection: str,
     target_table: str,
-    mode: Literal["append", "truncate", "replace"] = "append",
+    mode: Literal["append", "truncate", "replace", "upsert"] = "append",
     **options: Any,
 ) -> DatabaseWriteResult:
     """Write data to a database table.
