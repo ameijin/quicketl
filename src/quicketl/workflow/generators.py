@@ -5,8 +5,6 @@ Generates Airflow and Prefect code from workflow configurations.
 
 from __future__ import annotations
 
-import os
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -200,10 +198,10 @@ def generate_prefect_flow(
         "    python flows/medallion_flow.py",
         "",
         "    # Deploy to Prefect Cloud",
-        f"    python flows/medallion_flow.py --deploy",
+        "    python flows/medallion_flow.py --deploy",
         "",
         "    # Serve locally (for development)",
-        f"    python flows/medallion_flow.py --serve",
+        "    python flows/medallion_flow.py --serve",
         '"""',
         "",
         "import argparse",
@@ -332,7 +330,7 @@ def generate_prefect_flow(
         "    args = parser.parse_args()",
         "",
         "    if args.deploy:",
-        f"        # Deploy to Prefect Cloud",
+        "        # Deploy to Prefect Cloud",
         f"        {flow_name}.deploy(",
         f'            name="{flow_name}-deployment",',
         '            work_pool_name=os.environ.get("PREFECT_WORK_POOL", "default-agent-pool"),',
