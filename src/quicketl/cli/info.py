@@ -199,10 +199,15 @@ def _show_pipeline_info(config_file: Path) -> None:
 
         # Source info
         console.print("\n[bold]Source:[/bold]")
-        source_dict = config.source.model_dump()
-        for key, value in source_dict.items():
-            if value:
-                console.print(f"  {key}: {value}")
+        if config.source:
+            source_dict = config.source.model_dump()
+            for key, value in source_dict.items():
+                if value:
+                    console.print(f"  {key}: {value}")
+        elif config.sources:
+            console.print(f"  Multi-source pipeline with {len(config.sources)} sources:")
+            for name in config.sources:
+                console.print(f"    - {name}")
 
         # Transforms
         console.print(f"\n[bold]Transforms:[/bold] ({len(config.transforms)})")

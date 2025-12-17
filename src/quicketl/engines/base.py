@@ -7,7 +7,7 @@ exposing a simplified, ETL-focused API.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import ibis
 
@@ -19,11 +19,13 @@ from quicketl.config.transforms import (
     DeriveColumnTransform,
     FillNullTransform,
     FilterTransform,
+    JoinTransform,
     LimitTransform,
     RenameTransform,
     SelectTransform,
     SortTransform,
     TransformStep,
+    UnionTransform,
 )
 from quicketl.logging import get_logger
 
@@ -204,8 +206,8 @@ class ETLXEngine:
         match config:
             case FileSink(path=path, format=fmt, partition_by=parts):
                 return self.write_file(table, path, fmt, partition_by=parts)
-            case DatabaseSink():
-                raise NotImplementedError("Database sink not yet implemented")
+            case DatabaseSink(connection=conn, table=target_table, mode=mode):
+                return self.write_database(table, conn, target_table, mode=mode)
             case _:
                 raise NotImplementedError(f"Sink type not supported: {type(config)}")
 
@@ -214,7 +216,7 @@ class ETLXEngine:
         table: ir.Table,
         path: str,
         format: str = "parquet",
-        partition_by: list[str] | None = None,  # noqa: ARG002
+        partition_by: list[str] | None = None,
     ) -> WriteResult:
         """Write data to a file.
 
@@ -227,29 +229,59 @@ class ETLXEngine:
         Returns:
             WriteResult with operation details
         """
-        import time
+        from quicketl.io.writers.file import write_file
 
-        log.debug("writing_file", path=path, format=format)
-        start = time.perf_counter()
+        log.debug("writing_file", path=path, format=format, partition_by=partition_by)
 
-        # Execute and get row count
-        row_count = table.count().execute()
-
-        # Write to file
-        match format:
-            case "parquet":
-                table.to_parquet(path)
-            case "csv":
-                table.to_csv(path)
-            case _:
-                raise ValueError(f"Unsupported output format: {format}")
-
-        duration = (time.perf_counter() - start) * 1000
+        result = write_file(table, path, format, partition_by=partition_by)
 
         return WriteResult(
-            rows_written=row_count,
-            path=path,
-            duration_ms=duration,
+            rows_written=result.rows_written,
+            path=result.path,
+            duration_ms=result.duration_ms,
+        )
+
+    def write_database(
+        self,
+        table: ir.Table,
+        connection: str,
+        target_table: str,
+        mode: Literal["append", "truncate", "replace", "upsert"] = "append",
+    ) -> WriteResult:
+        """Write data to a database table.
+
+        Args:
+            table: Ibis Table expression
+            connection: Database connection string
+            target_table: Target table name (can include schema, e.g., 'gold.revenue')
+            mode: Write mode - 'append', 'truncate', or 'replace'
+
+        Returns:
+            WriteResult with operation details
+
+        Example:
+            >>> engine.write_database(
+            ...     table,
+            ...     "postgresql://user:pass@localhost/db",
+            ...     "gold.revenue_summary",
+            ...     mode="truncate"
+            ... )
+        """
+        from quicketl.io.writers.database import write_database
+
+        log.debug("writing_database", table=target_table, mode=mode)
+
+        result = write_database(
+            table,
+            connection=connection,
+            target_table=target_table,
+            mode=mode,
+        )
+
+        return WriteResult(
+            rows_written=result.rows_written,
+            table=result.table,
+            duration_ms=result.duration_ms,
         )
 
     # =========================================================================
@@ -297,13 +329,58 @@ class ETLXEngine:
         return table.filter(expr)
 
     def _parse_predicate(self, table: ir.Table, predicate: str) -> ibis.Expr:
-        """Parse a simple SQL-like predicate into an Ibis expression."""
+        """Parse a simple SQL-like predicate into an Ibis expression.
+
+        Supported predicates:
+            - Comparison: col > 100, col == 'value', col != 0
+            - IN: col IN ('a', 'b', 'c'), col IN (1, 2, 3)
+            - NOT IN: col NOT IN ('x', 'y')
+            - NULL checks: col IS NULL, col IS NOT NULL
+            - Boolean: active, NOT active
+        """
+        import re
+
+        predicate = predicate.strip()
+        predicate_lower = predicate.lower()
+
+        # Handle IS NULL and IS NOT NULL
+        is_null_match = re.match(r"(\w+)\s+IS\s+NULL", predicate, re.I)
+        if is_null_match:
+            return table[is_null_match.group(1)].isnull()
+
+        is_not_null_match = re.match(r"(\w+)\s+IS\s+NOT\s+NULL", predicate, re.I)
+        if is_not_null_match:
+            return table[is_not_null_match.group(1)].notnull()
+
+        # Handle NOT IN (col NOT IN (val1, val2, ...))
+        not_in_match = re.match(r"(\w+)\s+NOT\s+IN\s*\((.+)\)", predicate, re.I)
+        if not_in_match:
+            col_name = not_in_match.group(1)
+            values_str = not_in_match.group(2)
+            values = [self._parse_value(v.strip()) for v in values_str.split(",")]
+            return ~table[col_name].isin(values)
+
+        # Handle IN (col IN (val1, val2, ...))
+        in_match = re.match(r"(\w+)\s+IN\s*\((.+)\)", predicate, re.I)
+        if in_match:
+            col_name = in_match.group(1)
+            values_str = in_match.group(2)
+            values = [self._parse_value(v.strip()) for v in values_str.split(",")]
+            return table[col_name].isin(values)
+
+        # Handle LIKE pattern matching
+        like_match = re.match(r"(\w+)\s+LIKE\s+'(.+)'", predicate, re.I)
+        if like_match:
+            col_name = like_match.group(1)
+            pattern = like_match.group(2)
+            return table[col_name].like(pattern)
 
         # Handle comparison operators (check longest operators first to avoid partial matches)
         for op_str, op_func in [
             (">=", lambda col, val: col >= val),
             ("<=", lambda col, val: col <= val),
             ("!=", lambda col, val: col != val),
+            ("<>", lambda col, val: col != val),  # SQL not equal
             ("==", lambda col, val: col == val),
             (">", lambda col, val: col > val),
             ("<", lambda col, val: col < val),
@@ -321,12 +398,11 @@ class ETLXEngine:
                     return op_func(table[col_name], val)
 
         # Handle boolean column references (e.g., "active" or "NOT active")
-        predicate_lower = predicate.strip().lower()
         if predicate_lower.startswith("not "):
-            col_name = predicate.strip()[4:].strip()
+            col_name = predicate[4:].strip()
             return ~table[col_name]
-        elif predicate.strip() in table.columns:
-            return table[predicate.strip()]
+        elif predicate in table.columns:
+            return table[predicate]
 
         raise ValueError(f"Unable to parse predicate: {predicate}")
 
@@ -352,7 +428,73 @@ class ETLXEngine:
             return val_str
 
     def _parse_expression(self, table: ir.Table, expr: str) -> ibis.Expr:
-        """Parse a simple SQL-like expression into an Ibis expression."""
+        """Parse a simple SQL-like expression into an Ibis expression.
+
+        Supported expressions:
+            - Arithmetic: amount * 2, price + tax, a / b, a - b
+            - Functions: coalesce(col1, col2, default), nullif(col, value)
+            - Column references: column_name
+            - Literals: 123, 'string', 3.14
+        """
+        import re
+
+        expr = expr.strip()
+
+        # Handle COALESCE(col1, col2, ..., default)
+        coalesce_match = re.match(r"coalesce\s*\((.+)\)", expr, re.I)
+        if coalesce_match:
+            args_str = coalesce_match.group(1)
+            # Split by comma, but handle nested parentheses
+            args = self._split_args(args_str)
+            ibis_args = [self._parse_operand(table, a) for a in args]
+            return ibis.coalesce(*ibis_args)
+
+        # Handle NULLIF(col, value)
+        nullif_match = re.match(r"nullif\s*\((.+?),\s*(.+)\)", expr, re.I)
+        if nullif_match:
+            col_expr = self._parse_operand(table, nullif_match.group(1).strip())
+            val_expr = self._parse_operand(table, nullif_match.group(2).strip())
+            return col_expr.nullif(val_expr)
+
+        # Handle CONCAT(col1, col2, ...)
+        concat_match = re.match(r"concat\s*\((.+)\)", expr, re.I)
+        if concat_match:
+            args = self._split_args(concat_match.group(1))
+            result = self._parse_operand(table, args[0])
+            for arg in args[1:]:
+                result = result.concat(self._parse_operand(table, arg))
+            return result
+
+        # Handle UPPER(col) and LOWER(col)
+        upper_match = re.match(r"upper\s*\(\s*(\w+)\s*\)", expr, re.I)
+        if upper_match:
+            return table[upper_match.group(1)].upper()
+
+        lower_match = re.match(r"lower\s*\(\s*(\w+)\s*\)", expr, re.I)
+        if lower_match:
+            return table[lower_match.group(1)].lower()
+
+        # Handle TRIM(col)
+        trim_match = re.match(r"trim\s*\(\s*(\w+)\s*\)", expr, re.I)
+        if trim_match:
+            return table[trim_match.group(1)].strip()
+
+        # Handle LENGTH(col)
+        length_match = re.match(r"length\s*\(\s*(\w+)\s*\)", expr, re.I)
+        if length_match:
+            return table[length_match.group(1)].length()
+
+        # Handle ABS(col)
+        abs_match = re.match(r"abs\s*\(\s*(\w+)\s*\)", expr, re.I)
+        if abs_match:
+            return table[abs_match.group(1)].abs()
+
+        # Handle ROUND(col) or ROUND(col, decimals)
+        round_match = re.match(r"round\s*\(\s*(\w+)(?:\s*,\s*(\d+))?\s*\)", expr, re.I)
+        if round_match:
+            col = table[round_match.group(1)]
+            decimals = int(round_match.group(2)) if round_match.group(2) else 0
+            return col.round(decimals)
 
         # Handle arithmetic expressions (e.g., "amount * 2", "price + tax")
         for op_str, op_func in [
@@ -369,11 +511,32 @@ class ETLXEngine:
                     return op_func(left, right)
 
         # Check if it's just a column reference
-        if expr.strip() in table.columns:
-            return table[expr.strip()]
+        if expr in table.columns:
+            return table[expr]
 
         # Try to parse as a literal value
         return ibis.literal(self._parse_value(expr))
+
+    def _split_args(self, args_str: str) -> list[str]:
+        """Split comma-separated arguments, handling nested parentheses."""
+        args = []
+        current = []
+        depth = 0
+        for char in args_str:
+            if char == "(" :
+                depth += 1
+                current.append(char)
+            elif char == ")":
+                depth -= 1
+                current.append(char)
+            elif char == "," and depth == 0:
+                args.append("".join(current).strip())
+                current = []
+            else:
+                current.append(char)
+        if current:
+            args.append("".join(current).strip())
+        return args
 
     def _parse_operand(self, table: ir.Table, operand: str) -> ibis.Expr:
         """Parse an operand (column or literal) into an Ibis expression."""
@@ -541,7 +704,23 @@ class ETLXEngine:
         return table.group_by(group_by).aggregate(**ibis_aggs)
 
     def _parse_agg_expression(self, table: ir.Table, expr: str) -> ibis.Expr:
-        """Parse an aggregation expression like 'sum(amount)' into Ibis."""
+        """Parse an aggregation expression like 'sum(amount)' into Ibis.
+
+        Supported functions:
+            - sum(column): Sum of values
+            - avg(column), mean(column): Average of values
+            - min(column): Minimum value
+            - max(column): Maximum value
+            - count(*), count(column): Count of rows/non-null values
+            - count_distinct(column), nunique(column): Count of distinct values
+            - first(column): First value
+            - last(column): Last value
+            - stddev(column), std(column): Standard deviation
+            - variance(column), var(column): Variance
+            - median(column): Median value
+            - any(column): Any value (arbitrary)
+            - collect(column): Collect values into array
+        """
         import re
 
         # Pattern to match function(column) or function(*)
@@ -561,6 +740,7 @@ class ETLXEngine:
 
         col = table[col_name]
         match func_name:
+            # Basic aggregations
             case "sum":
                 return col.sum()
             case "avg" | "mean":
@@ -571,6 +751,26 @@ class ETLXEngine:
                 return col.max()
             case "count":
                 return col.count()
+            # Distinct count
+            case "count_distinct" | "nunique":
+                return col.nunique()
+            # First/Last (NOTE: behavior may vary by backend)
+            case "first":
+                return col.first()
+            case "last":
+                return col.last()
+            # Statistical functions
+            case "stddev" | "std":
+                return col.std()
+            case "variance" | "var":
+                return col.var()
+            case "median":
+                return col.median()
+            # Other aggregations
+            case "any" | "arbitrary":
+                return col.arbitrary()
+            case "collect" | "collect_list":
+                return col.collect()
             case _:
                 raise ValueError(f"Unknown aggregation function: {func_name}")
 
@@ -610,12 +810,14 @@ class ETLXEngine:
         self,
         table: ir.Table,
         transform: TransformStep,
+        context: dict[str, ir.Table] | None = None,
     ) -> ir.Table:
         """Apply a single transform step.
 
         Args:
             table: Input table
             transform: Transform configuration
+            context: Optional dict of named tables for join/union operations
 
         Returns:
             Transformed table
@@ -641,6 +843,27 @@ class ETLXEngine:
                 return self.aggregate(table, gb, aggs)
             case LimitTransform(n=n):
                 return self.limit(table, n)
+            case JoinTransform(right=right_name, on=on, how=how):
+                if context is None or right_name not in context:
+                    raise ValueError(
+                        f"Join requires table '{right_name}' in context. "
+                        f"Available: {list(context.keys()) if context else []}"
+                    )
+                right_table = context[right_name]
+                return self.join(table, right_table, on, how)
+            case UnionTransform(sources=source_names):
+                if context is None:
+                    raise ValueError("Union requires tables in context")
+                # Start with current table, union with named sources
+                tables = [table]
+                for name in source_names:
+                    if name not in context:
+                        raise ValueError(
+                            f"Union requires table '{name}' in context. "
+                            f"Available: {list(context.keys())}"
+                        )
+                    tables.append(context[name])
+                return self.union(tables)
             case _:
                 raise NotImplementedError(f"Transform not implemented: {type(transform)}")
 
@@ -648,18 +871,20 @@ class ETLXEngine:
         self,
         table: ir.Table,
         transforms: list[TransformStep],
+        context: dict[str, ir.Table] | None = None,
     ) -> ir.Table:
         """Apply a sequence of transforms.
 
         Args:
             table: Input table
             transforms: List of transform configurations
+            context: Optional dict of named tables for join/union operations
 
         Returns:
             Transformed table
         """
         for transform in transforms:
-            table = self.apply_transform(table, transform)
+            table = self.apply_transform(table, transform, context)
         return table
 
     # =========================================================================

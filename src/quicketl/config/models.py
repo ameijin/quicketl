@@ -159,9 +159,9 @@ class DatabaseSink(BaseModel):
         description="Connection string or environment variable reference",
     )
     table: str = Field(..., description="Target table name")
-    mode: Literal["append", "truncate", "upsert"] = Field(
+    mode: Literal["append", "truncate", "replace", "upsert"] = Field(
         default="append",
-        description="Write mode",
+        description="Write mode: append (add rows), truncate (clear then insert), replace (drop and recreate), upsert (insert or update)",
     )
     upsert_keys: list[str] = Field(
         default_factory=list,
@@ -184,7 +184,7 @@ SinkConfig = Annotated[
 class PipelineConfig(BaseModel):
     """Complete pipeline configuration.
 
-    Example YAML:
+    Example YAML (single source):
         name: daily_sales_etl
         description: Extract sales, compute revenue, aggregate by region
         engine: duckdb
@@ -208,6 +208,26 @@ class PipelineConfig(BaseModel):
         sink:
           type: file
           path: s3://bucket/output/
+
+    Example YAML (multi-source with join):
+        name: orders_with_customers
+        sources:
+          orders:
+            type: file
+            path: data/orders.parquet
+          customers:
+            type: file
+            path: data/customers.parquet
+
+        transforms:
+          - op: join
+            right: customers
+            on: [customer_id]
+            how: left
+
+        sink:
+          type: file
+          path: output/enriched_orders.parquet
     """
 
     name: str = Field(..., description="Pipeline name")
@@ -216,7 +236,14 @@ class PipelineConfig(BaseModel):
         default="duckdb",
         description="Compute engine to use",
     )
-    source: SourceConfig = Field(..., description="Data source configuration")
+    source: SourceConfig | None = Field(
+        default=None,
+        description="Data source configuration (for single-source pipelines)",
+    )
+    sources: dict[str, SourceConfig] = Field(
+        default_factory=dict,
+        description="Named sources for multi-source pipelines (join/union)",
+    )
     transforms: list[TransformStep] = Field(
         default_factory=list,
         description="Transform steps to apply",
@@ -230,6 +257,22 @@ class PipelineConfig(BaseModel):
     model_config = {
         "extra": "forbid",
     }
+
+    def get_primary_source(self) -> SourceConfig:
+        """Get the primary source for the pipeline.
+
+        For single-source pipelines, returns the `source` field.
+        For multi-source pipelines, returns the first source in `sources`.
+
+        Raises:
+            ValueError: If no source is configured
+        """
+        if self.source is not None:
+            return self.source
+        if self.sources:
+            # First source is the primary/main source
+            return next(iter(self.sources.values()))
+        raise ValueError("Pipeline has no source configured")
 
 
 # Rebuild models to resolve forward references

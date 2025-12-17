@@ -88,6 +88,58 @@ class TestDeriveColumnTransform:
 
         assert "id_plus_amount" in result.columns
 
+    def test_derive_upper(self, engine, sample_data):
+        """Derive column with UPPER function."""
+        result = engine.derive_column(sample_data, "upper_name", "upper(name)")
+
+        assert "upper_name" in result.columns
+        df = result.limit(1).execute()
+        assert df["upper_name"].iloc[0] == "ALICE"
+
+    def test_derive_round(self, engine, sample_data):
+        """Derive column with ROUND function."""
+        result = engine.derive_column(sample_data, "rounded", "round(amount)")
+
+        assert "rounded" in result.columns
+
+    def test_derive_abs(self, engine, sample_data):
+        """Derive column with ABS function."""
+        result = engine.derive_column(sample_data, "abs_amount", "abs(amount)")
+
+        assert "abs_amount" in result.columns
+
+
+class TestFilterPredicates:
+    """Tests for enhanced filter predicates."""
+
+    def test_filter_in_operator(self, engine, sample_data):
+        """Filter with IN operator."""
+        result = engine.filter(sample_data, "region IN ('North', 'South')")
+
+        count = result.count().execute()
+        assert count == 4  # Alice, Bob, Charlie, Eve
+
+    def test_filter_not_in_operator(self, engine, sample_data):
+        """Filter with NOT IN operator."""
+        result = engine.filter(sample_data, "region NOT IN ('North', 'South')")
+
+        count = result.count().execute()
+        assert count == 1  # Diana (East)
+
+    def test_filter_is_null(self, engine, sample_data_with_nulls):
+        """Filter with IS NULL."""
+        result = engine.filter(sample_data_with_nulls, "name IS NULL")
+
+        count = result.count().execute()
+        assert count == 2  # Bob and Eve have null names
+
+    def test_filter_is_not_null(self, engine, sample_data_with_nulls):
+        """Filter with IS NOT NULL."""
+        result = engine.filter(sample_data_with_nulls, "name IS NOT NULL")
+
+        count = result.count().execute()
+        assert count == 3  # Alice, Charlie, Diana
+
 
 class TestCastTransform:
     """Tests for cast transform."""
@@ -191,6 +243,62 @@ class TestAggregateTransform:
 
         assert "total_amount" in result.columns
         assert "row_count" in result.columns
+
+    def test_aggregate_count_distinct(self, engine, sample_data):
+        """Aggregate with count_distinct."""
+        result = engine.aggregate(
+            sample_data,
+            group_by=["region"],
+            aggs={"unique_names": "count_distinct(name)"},
+        )
+
+        assert "unique_names" in result.columns
+        count = result.count().execute()
+        assert count == 3  # North, South, East
+
+    def test_aggregate_stddev(self, engine, sample_data):
+        """Aggregate with standard deviation."""
+        result = engine.aggregate(
+            sample_data,
+            group_by=["region"],
+            aggs={"amount_std": "stddev(amount)"},
+        )
+
+        assert "amount_std" in result.columns
+
+    def test_aggregate_variance(self, engine, sample_data):
+        """Aggregate with variance."""
+        result = engine.aggregate(
+            sample_data,
+            group_by=["region"],
+            aggs={"amount_var": "variance(amount)"},
+        )
+
+        assert "amount_var" in result.columns
+
+    def test_aggregate_min_max(self, engine, sample_data):
+        """Aggregate with min and max."""
+        result = engine.aggregate(
+            sample_data,
+            group_by=["region"],
+            aggs={
+                "min_amount": "min(amount)",
+                "max_amount": "max(amount)",
+            },
+        )
+
+        assert "min_amount" in result.columns
+        assert "max_amount" in result.columns
+
+    def test_aggregate_avg(self, engine, sample_data):
+        """Aggregate with average."""
+        result = engine.aggregate(
+            sample_data,
+            group_by=["region"],
+            aggs={"avg_amount": "avg(amount)"},
+        )
+
+        assert "avg_amount" in result.columns
 
 
 class TestUnionTransform:
