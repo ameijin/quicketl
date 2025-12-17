@@ -469,22 +469,45 @@ transform = SortTransform(by=["amount"], descending=True)
 
 Join two datasets on one or more columns.
 
+!!! note "Multi-Source Pipeline Required"
+    Join requires a multi-source pipeline configuration with named `sources`.
+
 ### Usage
 
 ```yaml
-- op: join
-  right: customers
-  on: [customer_id]
-  how: left
+name: orders_with_customers
+engine: duckdb
+
+# Define named sources for join
+sources:
+  orders:
+    type: file
+    path: data/orders.parquet
+  customers:
+    type: file
+    path: data/customers.parquet
+
+transforms:
+  - op: join
+    right: customers
+    "on": [customer_id]  # Note: "on" must be quoted (YAML reserved word)
+    how: left
+
+sink:
+  type: file
+  path: output/enriched_orders.parquet
 ```
 
 ### Parameters
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `right` | Yes | - | Reference to right dataset |
-| `on` | Yes | - | Join key columns |
+| `right` | Yes | - | Name of the source to join with (from `sources` dict) |
+| `on` | Yes | - | Join key columns (must be quoted: `"on"`) |
 | `how` | No | `inner` | Join type: `inner`, `left`, `right`, `outer` |
+
+!!! warning "YAML Reserved Word"
+    The `on` parameter must be quoted as `"on"` because `on` is a reserved word in YAML (parsed as boolean `true`).
 
 ### Join Types
 
@@ -498,17 +521,37 @@ Join two datasets on one or more columns.
 ### Examples
 
 ```yaml
-# Left join with customers
-- op: join
-  right: customers
-  on: [customer_id]
-  how: left
+# Full pipeline with left join
+name: enrich_orders
+engine: duckdb
 
+sources:
+  orders:
+    type: file
+    path: data/orders.parquet
+  customers:
+    type: file
+    path: data/customers.parquet
+
+transforms:
+  - op: join
+    right: customers
+    "on": [customer_id]
+    how: left
+  - op: select
+    columns: [order_id, customer_id, customer_name, amount]
+
+sink:
+  type: file
+  path: output/enriched_orders.parquet
+```
+
+```yaml
 # Multiple join keys
 - op: join
   right: products
-  on: [product_id, region]
-  how: left
+  "on": [product_id, region]
+  how: inner
 ```
 
 ### Python API
@@ -546,11 +589,19 @@ Group data and compute summary statistics.
 | Function | Description | Example |
 |----------|-------------|---------|
 | `sum(col)` | Sum of values | `sum(amount)` |
-| `avg(col)` | Average (mean) | `avg(amount)` |
+| `avg(col)` / `mean(col)` | Average (mean) | `avg(amount)` |
 | `min(col)` | Minimum value | `min(amount)` |
 | `max(col)` | Maximum value | `max(amount)` |
 | `count(*)` | Count all rows | `count(*)` |
 | `count(col)` | Count non-null | `count(customer_id)` |
+| `count_distinct(col)` / `nunique(col)` | Count unique values | `count_distinct(user_id)` |
+| `first(col)` | First value in group | `first(name)` |
+| `last(col)` | Last value in group | `last(status)` |
+| `stddev(col)` / `std(col)` | Standard deviation | `stddev(amount)` |
+| `variance(col)` / `var(col)` | Variance | `variance(amount)` |
+| `median(col)` | Median value | `median(amount)` |
+| `any(col)` / `arbitrary(col)` | Any value from group | `any(category)` |
+| `collect(col)` / `collect_list(col)` | Collect values into list | `collect(tag)` |
 
 ### Examples
 
@@ -594,29 +645,73 @@ transform = AggregateTransform(
 
 Vertically combine multiple datasets.
 
+!!! note "Multi-Source Pipeline Required"
+    Union requires a multi-source pipeline configuration with named `sources`.
+
 ### Usage
 
 ```yaml
-- op: union
-  sources: [data1, data2]
+name: combined_sales
+engine: duckdb
+
+# Define named sources for union
+sources:
+  north_sales:
+    type: file
+    path: data/north_sales.parquet
+  south_sales:
+    type: file
+    path: data/south_sales.parquet
+
+transforms:
+  # Transforms before union apply to the first source (north_sales)
+  - op: filter
+    predicate: amount > 0
+  # Union adds rows from the named sources
+  - op: union
+    sources: [south_sales]
+
+sink:
+  type: file
+  path: output/all_sales.parquet
 ```
 
 ### Parameters
 
 | Parameter | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `sources` | Yes | `list[str]` | References to datasets to combine |
+| `sources` | Yes | `list[str]` | Names of sources to union with (from `sources` dict) |
 
 ### Examples
 
 ```yaml
-# Combine two datasets
-- op: union
-  sources: [north_sales, south_sales]
+# Full pipeline combining regional data
+name: combine_regions
+engine: duckdb
 
-# Combine multiple
-- op: union
-  sources: [q1_data, q2_data, q3_data, q4_data]
+sources:
+  north:
+    type: file
+    path: data/north.parquet
+  south:
+    type: file
+    path: data/south.parquet
+  east:
+    type: file
+    path: data/east.parquet
+
+transforms:
+  - op: union
+    sources: [south, east]
+  - op: dedup
+    columns: [order_id]
+  - op: sort
+    by: [created_at]
+    descending: true
+
+sink:
+  type: file
+  path: output/all_regions.parquet
 ```
 
 !!! note "Schema Requirement"
@@ -625,8 +720,8 @@ Vertically combine multiple datasets.
 ### Python API
 
 ```python
-# Use engine directly for union
-combined = engine.union([north, south])
+from quicketl.config.transforms import UnionTransform
+transform = UnionTransform(sources=["south_sales", "east_sales"])
 ```
 
 ---

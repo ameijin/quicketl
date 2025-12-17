@@ -18,7 +18,7 @@ sink:
 | `type` | Yes | - | Must be `database` |
 | `connection` | Yes | - | Database connection string |
 | `table` | Yes | - | Target table name |
-| `mode` | No | `append` | Write mode: `append`, `truncate` |
+| `mode` | No | `append` | Write mode: `append`, `truncate`, `replace` |
 
 ## Write Modes
 
@@ -48,6 +48,21 @@ sink:
 
 !!! warning "Truncate is Destructive"
     Truncate deletes all existing data in the table before inserting new data.
+
+### Replace
+
+Drop and recreate the table with new data:
+
+```yaml
+sink:
+  type: database
+  connection: ${DATABASE_URL}
+  table: sales_summary
+  mode: replace
+```
+
+!!! warning "Replace Drops the Table"
+    Replace will drop the existing table and create a new one. This means any indexes, constraints, or grants on the table will be lost.
 
 ## Connection Strings
 
@@ -157,9 +172,12 @@ sink:
 
 ## Table Requirements
 
-### Table Must Exist
+### Table Creation
 
-QuickETL does not create tables automatically. Create the table first:
+- **`append` and `truncate` modes**: Table must exist. QuickETL will create it if it doesn't exist.
+- **`replace` mode**: Table is dropped and recreated automatically.
+
+For `append` mode with an existing table:
 
 ```sql
 CREATE TABLE sales_summary (
@@ -202,7 +220,7 @@ transforms:
 ```python
 from quicketl.config.models import DatabaseSink
 
-# Basic
+# Basic (append mode)
 sink = DatabaseSink(
     connection="postgresql://localhost/db",
     table="results"
@@ -213,6 +231,13 @@ sink = DatabaseSink(
     connection="${DATABASE_URL}",
     table="sales_summary",
     mode="truncate"
+)
+
+# With replace (drops and recreates table)
+sink = DatabaseSink(
+    connection="${DATABASE_URL}",
+    table="sales_summary",
+    mode="replace"
 )
 ```
 
@@ -302,9 +327,11 @@ Upsert/merge operations are planned for a future release. Currently, use:
 - `append` for incremental loads
 - `truncate` for full refreshes
 
-### No Schema Management
+### Limited Schema Management
 
-QuickETL does not create or modify table schemas. Manage schemas separately.
+- `replace` mode creates tables automatically from the data schema
+- `append` and `truncate` modes will create tables if they don't exist
+- QuickETL does not modify existing table schemas (add/remove columns)
 
 ## Related
 
