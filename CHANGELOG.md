@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.1.0 (2025-12-17)
+
+### Features
+
+- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
+  expressions ([#1](https://github.com/ameijin/quicketl/pull/1),
+  [`870077f`](https://github.com/ameijin/quicketl/commit/870077fa49a0785e1eeb32bc0d7b00c2f02c6e53))
+
+- Add multi-source pipelines (join/union), database sink, partiti…
+  ([#1](https://github.com/ameijin/quicketl/pull/1),
+  [`870077f`](https://github.com/ameijin/quicketl/commit/870077fa49a0785e1eeb32bc0d7b00c2f02c6e53))
+
+
 ## v1.0.3 (2025-12-16)
 
 

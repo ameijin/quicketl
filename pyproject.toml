@@ -1,6 +1,6 @@
 [project]
 name = "quicketl"
-version = "1.0.3"
+version = "1.1.0"
 description = "QuickETL - Fast & Flexible Python ETL Framework with 20+ backend support via Ibis"
 readme = "README.md"
 license = { text = "MIT" }
