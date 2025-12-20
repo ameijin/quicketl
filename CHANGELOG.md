@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v1.2.0 (2025-12-17)
+
+### Bug Fixes
+
+- Cleanup docs for most recent additions ([#2](https://github.com/ameijin/quicketl/pull/2),
+  [`ad76647`](https://github.com/ameijin/quicketl/commit/ad766479d3c9224e7b9a257d2795417345c3284e))
+
+### Features
+
+- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
+  expressions ([#2](https://github.com/ameijin/quicketl/pull/2),
+  [`ad76647`](https://github.com/ameijin/quicketl/commit/ad766479d3c9224e7b9a257d2795417345c3284e))
+
+
 ## v1.1.0 (2025-12-17)
 
 ### Features
