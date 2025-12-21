@@ -8,6 +8,7 @@ Thank you for your interest in contributing to QuickETL! This document provides 
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
 - [Making Changes](#making-changes)
+- [Test-Driven Development](#test-driven-development)
 - [Testing](#testing)
 - [Documentation](#documentation)
 - [Submitting Changes](#submitting-changes)
@@ -144,26 +145,179 @@ fix(cli): correct exit code on validation errors
 docs(api): add examples for Pipeline builder pattern
 ```
 
+## Test-Driven Development
+
+QuickETL follows Test-Driven Development (TDD) practices. This ensures code quality, prevents regressions, and makes the codebase maintainable.
+
+### The TDD Workflow (Red-Green-Refactor)
+
+When fixing bugs, always follow this workflow:
+
+1. **RED**: Write a failing test that reproduces the bug
+   ```bash
+   # Write the test first
+   pytest tests/unit/engines/test_parse_predicate.py::test_predicate_with_null_comparison -v
+   # Confirm it fails (reproduces the bug)
+   ```
+
+2. **GREEN**: Fix the code to make the test pass
+   ```bash
+   # Make the minimal change to fix the bug
+   pytest tests/unit/engines/test_parse_predicate.py::test_predicate_with_null_comparison -v
+   # Confirm it passes
+   ```
+
+3. **REFACTOR**: Clean up without changing behavior
+   ```bash
+   # Run all related tests to ensure no regressions
+   pytest tests/unit/engines/ -v
+   ```
+
+### Test Naming Convention
+
+Use descriptive names that explain what is being tested:
+
+```
+test_<what>_<condition>_<expected_result>
+```
+
+**Examples:**
+- `test_filter_with_null_values_excludes_nulls`
+- `test_parse_predicate_with_invalid_syntax_raises_value_error`
+- `test_cli_run_with_dry_run_flag_writes_no_output`
+- `test_variable_substitution_with_default_uses_fallback`
+
+### Test Types
+
+| Type | Location | Purpose | Speed |
+|------|----------|---------|-------|
+| **Unit** | `tests/unit/` | Isolated component tests, no external deps | Fast (<100ms) |
+| **Integration** | `tests/integration/` | Real databases, full pipelines | Slow (seconds) |
+| **Parity** | `tests/parity/` | Verify behavior consistency across backends | Medium |
+| **Hypothesis** | Mixed | Property-based fuzzing for edge cases | Varies |
+
+**When to use each:**
+
+- **Unit tests**: Default choice. Test individual functions/methods in isolation. Mock external dependencies.
+- **Integration tests**: When testing database connections, file I/O with real files, or end-to-end workflows.
+- **Parity tests**: When adding/modifying transforms to ensure duckdb and polars produce identical results.
+- **Hypothesis tests**: For parsers, validators, and any code with complex input handling. Finds edge cases you wouldn't think of.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run only unit tests (fast)
+pytest tests/unit/
+
+# Run excluding integration tests
+pytest -m "not integration"
+
+# Run with coverage report
+pytest --cov=quicketl --cov-report=html
+
+# Run specific test file
+pytest tests/unit/engines/test_parse_predicate.py
+
+# Run tests matching a pattern
+pytest -k "test_filter"
+
+# Run with verbose output
+pytest -v
+
+# Run hypothesis tests only
+pytest -m hypothesis
+```
+
+### Test Markers
+
+Use pytest markers to categorize tests:
+
+```python
+import pytest
+
+@pytest.mark.slow
+def test_large_dataset_processing():
+    """Tests that take > 5 seconds."""
+    ...
+
+@pytest.mark.integration
+def test_postgres_connection():
+    """Tests requiring external services."""
+    ...
+
+@pytest.mark.parity
+def test_filter_same_across_backends():
+    """Tests verifying backend consistency."""
+    ...
+
+@pytest.mark.hypothesis
+def test_predicate_parsing_with_random_input():
+    """Property-based tests."""
+    ...
+```
+
+### Property-Based Testing with Hypothesis
+
+Use hypothesis for testing parsers and validators:
+
+```python
+from hypothesis import given, strategies as st
+import string
+
+@pytest.mark.hypothesis
+@given(st.integers(min_value=-1000000, max_value=1000000))
+def test_numeric_literal_parsing(value):
+    """Any integer should parse correctly in predicates."""
+    engine = ETLXEngine(backend="duckdb")
+    # Create table and test predicate parsing
+    ...
+
+@pytest.mark.hypothesis
+@given(st.text(alphabet=string.ascii_letters + "_", min_size=1, max_size=50))
+def test_column_name_parsing(col_name):
+    """Valid identifiers should work as column names."""
+    ...
+
+@pytest.mark.hypothesis
+@given(st.text().filter(lambda s: "${" not in s))
+def test_string_without_vars_unchanged(text):
+    """Strings without ${} should pass through unchanged."""
+    result = substitute_variables(text, {})
+    assert result == text
+```
+
 ## Testing
 
 ### Test Requirements
 
 - All new features must have tests
-- All bug fixes should have regression tests
-- Maintain >80% code coverage
-- Tests must pass on all supported Python versions
+- All bug fixes must have regression tests (following TDD workflow)
+- Maintain >75% overall code coverage
+  - Core modules (engines, pipeline, config, quality): aim for >80%
+  - Integration modules (generators, airflow): coverage may be lower
+- Tests must pass on all supported Python versions (3.12, 3.13)
 
 ### Test Structure
 
 ```
 tests/
-├── conftest.py          # Shared fixtures
-├── fixtures/            # Test data files
-├── test_transforms.py   # Transform tests
-├── test_checks.py       # Quality check tests
-├── test_pipeline.py     # Pipeline tests
-├── test_engine.py       # Engine tests
-└── test_cli.py          # CLI tests
+├── conftest.py              # Shared fixtures
+├── fixtures/                # Test data files
+├── unit/                    # Fast, isolated tests
+│   ├── cli/                 # CLI command tests
+│   ├── config/              # Config parsing tests
+│   ├── engines/             # Transform & parser tests
+│   ├── io/                  # Reader/writer tests
+│   ├── pipeline/            # Pipeline execution tests
+│   ├── quality/             # Check implementation tests
+│   └── workflow/            # Workflow orchestration tests
+├── integration/             # Tests with external dependencies
+│   └── conftest.py          # Docker/DB fixtures
+└── parity/                  # Backend parity tests
+    └── conftest.py          # Multi-backend fixtures
 ```
 
 ### Writing Tests
