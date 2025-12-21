@@ -198,8 +198,152 @@ class LimitTransform(BaseModel):
     n: int = Field(..., description="Maximum number of rows", gt=0)
 
 
+class WindowColumn(BaseModel):
+    """Configuration for a single window column.
+
+    Attributes:
+        name: Name for the new column.
+        func: Window function (row_number, rank, dense_rank, lag, lead, sum, avg, min, max).
+        column: Source column for functions that need it (lag, lead, sum, etc.).
+        offset: Offset for lag/lead functions.
+        partition_by: Columns to partition by.
+        order_by: Columns or order specs to order by within partition.
+        default: Default value for lag/lead when no row exists.
+    """
+
+    name: str = Field(..., description="Name for the new column")
+    func: Literal[
+        "row_number", "rank", "dense_rank", "lag", "lead",
+        "sum", "avg", "min", "max", "count", "first", "last"
+    ] = Field(..., description="Window function to apply")
+    column: str | None = Field(default=None, description="Source column for aggregation functions")
+    offset: int = Field(default=1, description="Offset for lag/lead functions")
+    partition_by: list[str] = Field(default_factory=list, description="Columns to partition by")
+    order_by: list[str | dict[str, Any]] = Field(
+        default_factory=list,
+        description="Columns or {column, descending} specs to order by",
+    )
+    default: Any = Field(default=None, description="Default value for lag/lead")
+
+
+class WindowTransform(BaseModel):
+    """Apply window functions over partitions.
+
+    Example YAML:
+        - op: window
+          columns:
+            - name: row_num
+              func: row_number
+              partition_by: [customer_id]
+              order_by: [order_date]
+            - name: prev_amount
+              func: lag
+              column: amount
+              offset: 1
+              partition_by: [customer_id]
+              order_by: [order_date]
+    """
+
+    op: Literal["window"] = "window"
+    columns: list[WindowColumn | dict[str, Any]] = Field(
+        ...,
+        description="Window column specifications",
+    )
+
+
+class PivotTransform(BaseModel):
+    """Pivot (reshape) data from long to wide format.
+
+    Example YAML:
+        - op: pivot
+          index: [region, quarter]
+          columns: product
+          values: revenue
+          aggfunc: sum
+    """
+
+    op: Literal["pivot"] = "pivot"
+    index: list[str] = Field(..., description="Columns to keep as row identifiers")
+    columns: str = Field(..., description="Column whose unique values become new columns")
+    values: str = Field(..., description="Column whose values populate the new columns")
+    aggfunc: str | list[str] = Field(
+        default="first",
+        description="Aggregation function(s) to apply",
+    )
+
+
+class UnpivotTransform(BaseModel):
+    """Unpivot (melt) data from wide to long format.
+
+    Example YAML:
+        - op: unpivot
+          id_vars: [id, name]
+          value_vars: [jan_sales, feb_sales, mar_sales]
+          var_name: month
+          value_name: sales
+    """
+
+    op: Literal["unpivot"] = "unpivot"
+    id_vars: list[str] = Field(..., description="Columns to keep as identifiers")
+    value_vars: list[str] = Field(..., description="Columns to unpivot into rows")
+    var_name: str = Field(default="variable", description="Name for the variable column")
+    value_name: str = Field(default="value", description="Name for the value column")
+
+
+class HashKeyTransform(BaseModel):
+    """Generate a hash key from one or more columns.
+
+    Example YAML:
+        - op: hash_key
+          name: customer_hash
+          columns: [customer_id, order_id]
+          algorithm: md5
+    """
+
+    op: Literal["hash_key"] = "hash_key"
+    name: str = Field(..., description="Name for the new hash column")
+    columns: list[str] = Field(..., description="Columns to include in the hash")
+    algorithm: Literal["md5", "sha256", "sha1"] = Field(
+        default="md5",
+        description="Hash algorithm to use",
+    )
+    separator: str = Field(default="|", description="Separator between column values")
+
+
+class CoalesceTransform(BaseModel):
+    """Return first non-null value from a list of columns.
+
+    Example YAML:
+        - op: coalesce
+          name: email
+          columns: [primary_email, secondary_email, fallback_email]
+          default: "unknown@example.com"
+    """
+
+    op: Literal["coalesce"] = "coalesce"
+    name: str = Field(..., description="Name for the new column")
+    columns: list[str] = Field(..., description="Columns to coalesce, in priority order")
+    default: Any = Field(default=None, description="Default value if all columns are null")
+
+
 # Discriminated union for all transform types
 TransformStep = Annotated[
-    SelectTransform | RenameTransform | FilterTransform | DeriveColumnTransform | CastTransform | FillNullTransform | DedupTransform | SortTransform | JoinTransform | AggregateTransform | UnionTransform | LimitTransform,
+    SelectTransform
+    | RenameTransform
+    | FilterTransform
+    | DeriveColumnTransform
+    | CastTransform
+    | FillNullTransform
+    | DedupTransform
+    | SortTransform
+    | JoinTransform
+    | AggregateTransform
+    | UnionTransform
+    | LimitTransform
+    | WindowTransform
+    | PivotTransform
+    | UnpivotTransform
+    | HashKeyTransform
+    | CoalesceTransform,
     Field(discriminator="op"),
 ]

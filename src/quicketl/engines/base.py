@@ -15,17 +15,23 @@ from quicketl.config.models import DatabaseSource, FileSource, SinkConfig, Sourc
 from quicketl.config.transforms import (
     AggregateTransform,
     CastTransform,
+    CoalesceTransform,
     DedupTransform,
     DeriveColumnTransform,
     FillNullTransform,
     FilterTransform,
+    HashKeyTransform,
     JoinTransform,
     LimitTransform,
+    PivotTransform,
     RenameTransform,
     SelectTransform,
     SortTransform,
     TransformStep,
     UnionTransform,
+    UnpivotTransform,
+    WindowColumn,
+    WindowTransform,
 )
 from quicketl.logging import get_logger
 
@@ -802,6 +808,290 @@ class ETLXEngine:
         """
         return table.limit(n)
 
+    def window(
+        self,
+        table: ir.Table,
+        columns: list[WindowColumn | dict[str, Any]],
+    ) -> ir.Table:
+        """Apply window functions over partitions.
+
+        Args:
+            table: Input table
+            columns: List of window column specifications
+
+        Returns:
+            Table with new window columns added
+        """
+        import ibis
+
+        result = table
+
+        for col_spec in columns:
+            # Convert dict to WindowColumn if needed
+            if isinstance(col_spec, dict):
+                col_spec = WindowColumn.model_validate(col_spec)
+
+            # Build window specification
+            partition_cols = [table[c] for c in col_spec.partition_by] if col_spec.partition_by else []
+
+            # Handle order_by which can be strings or dicts
+            order_cols = []
+            for ob in col_spec.order_by:
+                if isinstance(ob, str):
+                    order_cols.append(table[ob])
+                elif isinstance(ob, dict):
+                    col = table[ob["column"]]
+                    if ob.get("descending", False):
+                        col = col.desc()
+                    order_cols.append(col)
+
+            # Create window specification
+            if partition_cols and order_cols:
+                window = ibis.window(group_by=partition_cols, order_by=order_cols)
+            elif partition_cols:
+                window = ibis.window(group_by=partition_cols)
+            elif order_cols:
+                window = ibis.window(order_by=order_cols)
+            else:
+                window = ibis.window()
+
+            # Apply the window function
+            func_name = col_spec.func
+            source_col = table[col_spec.column] if col_spec.column else None
+
+            match func_name:
+                case "row_number":
+                    # Ibis row_number is 0-based, add 1 for SQL-standard 1-based
+                    expr = ibis.row_number().over(window) + 1
+                case "rank":
+                    # Ibis rank is 0-based, add 1 for SQL-standard 1-based
+                    expr = ibis.rank().over(window) + 1
+                case "dense_rank":
+                    # Ibis dense_rank is 0-based, add 1 for SQL-standard 1-based
+                    expr = ibis.dense_rank().over(window) + 1
+                case "lag":
+                    expr = source_col.lag(col_spec.offset, default=col_spec.default).over(window)
+                case "lead":
+                    expr = source_col.lead(col_spec.offset, default=col_spec.default).over(window)
+                case "sum":
+                    # For running sum, use cumulative frame
+                    cumulative_window = ibis.cumulative_window(
+                        group_by=partition_cols if partition_cols else None,
+                        order_by=order_cols if order_cols else None,
+                    )
+                    expr = source_col.sum().over(cumulative_window)
+                case "avg" | "mean":
+                    cumulative_window = ibis.cumulative_window(
+                        group_by=partition_cols if partition_cols else None,
+                        order_by=order_cols if order_cols else None,
+                    )
+                    expr = source_col.mean().over(cumulative_window)
+                case "min":
+                    cumulative_window = ibis.cumulative_window(
+                        group_by=partition_cols if partition_cols else None,
+                        order_by=order_cols if order_cols else None,
+                    )
+                    expr = source_col.min().over(cumulative_window)
+                case "max":
+                    cumulative_window = ibis.cumulative_window(
+                        group_by=partition_cols if partition_cols else None,
+                        order_by=order_cols if order_cols else None,
+                    )
+                    expr = source_col.max().over(cumulative_window)
+                case "count":
+                    if source_col:
+                        expr = source_col.count().over(window)
+                    else:
+                        expr = table.count().over(window)
+                case "first":
+                    expr = source_col.first().over(window)
+                case "last":
+                    expr = source_col.last().over(window)
+                case _:
+                    raise ValueError(f"Unknown window function: {func_name}")
+
+            result = result.mutate(**{col_spec.name: expr})
+
+        return result
+
+    def pivot(
+        self,
+        table: ir.Table,
+        index: list[str],
+        columns: str,
+        values: str,
+        aggfunc: str | list[str] = "first",
+    ) -> ir.Table:
+        """Pivot data from long to wide format.
+
+        Args:
+            table: Input table
+            index: Columns to keep as row identifiers
+            columns: Column whose unique values become new columns
+            values: Column whose values populate the new columns
+            aggfunc: Aggregation function(s) to apply
+
+        Returns:
+            Pivoted table
+        """
+        # Use Ibis pivot functionality
+        # Note: Ibis pivot API varies by version, using the standard approach
+        return table.pivot_wider(
+            id_cols=index,
+            names_from=columns,
+            values_from=values,
+            values_agg=aggfunc if isinstance(aggfunc, str) else aggfunc[0],
+        )
+
+    def unpivot(
+        self,
+        table: ir.Table,
+        id_vars: list[str],
+        value_vars: list[str],
+        var_name: str = "variable",
+        value_name: str = "value",
+    ) -> ir.Table:
+        """Unpivot (melt) data from wide to long format.
+
+        Args:
+            table: Input table
+            id_vars: Columns to keep as identifiers
+            value_vars: Columns to unpivot into rows
+            var_name: Name for the variable column
+            value_name: Name for the value column
+
+        Returns:
+            Unpivoted table
+        """
+        import ibis.selectors as s
+
+        # Select only the id_vars and value_vars columns
+        cols_to_select = id_vars + value_vars
+        table = table.select(cols_to_select)
+
+        # Use Ibis pivot_longer with selector for multiple columns
+        # col is positional-only, so pass it as first positional arg
+        return table.pivot_longer(
+            s.cols(*value_vars),  # Select the columns to unpivot
+            names_to=var_name,
+            values_to=value_name,
+        )
+
+    def hash_key(
+        self,
+        table: ir.Table,
+        name: str,
+        columns: list[str],
+        algorithm: str = "md5",
+        separator: str = "|",
+    ) -> ir.Table:
+        """Generate a hash key from columns.
+
+        Args:
+            table: Input table
+            name: Name for the new hash column
+            columns: Columns to include in the hash
+            algorithm: Hash algorithm (md5, sha256, sha1)
+            separator: Separator between column values
+
+        Returns:
+            Table with new hash column
+        """
+        import ibis
+
+        # Build concatenated string expression
+        if len(columns) == 1:
+            concat_expr = table[columns[0]].cast("string")
+        else:
+            # Build concatenation with separator using string ops
+            expr = table[columns[0]].cast("string")
+            for col in columns[1:]:
+                expr = expr + ibis.literal(separator) + table[col].cast("string")
+            concat_expr = expr
+
+        # Apply hash function using backend SQL via raw expression
+        # Use the connection's sql method to execute backend-specific hash
+        match algorithm:
+            case "md5":
+                # Use DuckDB's md5 function via scalar UDF or SQL
+                # Create a SQL-based expression
+                hash_expr = concat_expr.hash()  # Ibis hash returns int64
+                # Convert to hex string representation
+                # For proper MD5, we need to use SQL
+            case "sha256":
+                hash_expr = concat_expr.hash()
+            case "sha1":
+                hash_expr = concat_expr.hash()
+            case _:
+                raise ValueError(f"Unknown hash algorithm: {algorithm}")
+
+        # For backends that support md5/sha256 SQL functions, use SQL
+        # Build the concatenation SQL expression
+        concat_parts = []
+        for i, col in enumerate(columns):
+            if i > 0:
+                concat_parts.append(f"'{separator}'")
+            concat_parts.append(f"CAST({col} AS VARCHAR)")
+
+        concat_sql = " || ".join(concat_parts)
+
+        match algorithm:
+            case "md5":
+                hash_sql = f"md5({concat_sql})"
+            case "sha256":
+                hash_sql = f"sha256({concat_sql})"
+            case "sha1":
+                hash_sql = f"sha1({concat_sql})"
+
+        # Use the connection to execute SQL and create the result
+        # Register the input table and execute SQL
+        import uuid
+        temp_name = f"_hash_input_{uuid.uuid4().hex[:8]}"
+        self._con.create_table(temp_name, table, overwrite=True)
+
+        try:
+            # Execute and materialize the result immediately
+            sql = f"SELECT *, {hash_sql} AS {name} FROM {temp_name}"
+            result = self._con.sql(sql)
+            # Create a new in-memory table from the result to avoid lazy execution issues
+            result_name = f"_hash_result_{uuid.uuid4().hex[:8]}"
+            self._con.create_table(result_name, result, overwrite=True)
+            return self._con.table(result_name)
+        finally:
+            # Clean up temp input table
+            try:
+                self._con.drop_table(temp_name, force=True)
+            except Exception:
+                pass
+
+    def coalesce(
+        self,
+        table: ir.Table,
+        name: str,
+        columns: list[str],
+        default: Any = None,
+    ) -> ir.Table:
+        """Return first non-null value from columns.
+
+        Args:
+            table: Input table
+            name: Name for the new column
+            columns: Columns to coalesce, in priority order
+            default: Default value if all columns are null
+
+        Returns:
+            Table with new coalesced column
+        """
+        import ibis
+
+        # Build coalesce expression
+        col_exprs = [table[col] for col in columns]
+        if default is not None:
+            col_exprs.append(ibis.literal(default))
+
+        coalesce_expr = ibis.coalesce(*col_exprs)
+        return table.mutate(**{name: coalesce_expr})
+
     # =========================================================================
     # Transform Dispatch
     # =========================================================================
@@ -864,6 +1154,16 @@ class ETLXEngine:
                         )
                     tables.append(context[name])
                 return self.union(tables)
+            case WindowTransform(columns=cols):
+                return self.window(table, cols)
+            case PivotTransform(index=index, columns=cols, values=vals, aggfunc=agg):
+                return self.pivot(table, index, cols, vals, agg)
+            case UnpivotTransform(id_vars=id_vars, value_vars=val_vars, var_name=var, value_name=val):
+                return self.unpivot(table, id_vars, val_vars, var, val)
+            case HashKeyTransform(name=name, columns=cols, algorithm=algo, separator=sep):
+                return self.hash_key(table, name, cols, algo, sep)
+            case CoalesceTransform(name=name, columns=cols, default=default):
+                return self.coalesce(table, name, cols, default)
             case _:
                 raise NotImplementedError(f"Transform not implemented: {type(transform)}")
 
