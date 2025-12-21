@@ -180,12 +180,98 @@ def load_yaml_with_variables(
     )
 
 
+def _resolve_profiles(
+    config_dict: dict[str, Any],
+    profiles: dict[str, dict[str, Any]],
+    *,
+    secrets_provider: str | None = None,
+    secrets_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Resolve profile references in source/sink configurations.
+
+    When source or sink has a 'profile' key, look up the profile and merge
+    its values into the config. Profile values provide defaults; explicit
+    source/sink values take precedence.
+
+    Args:
+        config_dict: The pipeline configuration dictionary.
+        profiles: Dictionary of profile name to profile config.
+        secrets_provider: Secrets provider for resolving profile secrets.
+        secrets_config: Secrets provider configuration.
+
+    Returns:
+        The config dict with profiles resolved.
+    """
+    result = dict(config_dict)
+
+    # Resolve source profile
+    if "source" in result and isinstance(result["source"], dict):
+        result["source"] = _resolve_profile_in_config(
+            result["source"],
+            profiles,
+            secrets_provider=secrets_provider,
+            secrets_config=secrets_config,
+        )
+
+    # Resolve sink profile
+    if "sink" in result and isinstance(result["sink"], dict):
+        result["sink"] = _resolve_profile_in_config(
+            result["sink"],
+            profiles,
+            secrets_provider=secrets_provider,
+            secrets_config=secrets_config,
+        )
+
+    return result
+
+
+def _resolve_profile_in_config(
+    config: dict[str, Any],
+    profiles: dict[str, dict[str, Any]],
+    *,
+    secrets_provider: str | None = None,
+    secrets_config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Resolve a profile reference in a source/sink config.
+
+    Args:
+        config: The source or sink configuration.
+        profiles: Dictionary of profile name to profile config.
+        secrets_provider: Secrets provider for resolving profile secrets.
+        secrets_config: Secrets provider configuration.
+
+    Returns:
+        The config with profile values merged in.
+    """
+    profile_name = config.get("profile")
+    if not profile_name or profile_name not in profiles:
+        return config
+
+    # Get and resolve secrets in the profile
+    profile = profiles[profile_name]
+    resolved_profile = substitute_variables(
+        profile,
+        {},
+        secrets_provider=secrets_provider,
+        secrets_config=secrets_config,
+    )
+
+    # Merge: profile values are defaults, explicit config values take precedence
+    result = dict(resolved_profile)
+    for key, value in config.items():
+        if key != "profile":  # Don't include the profile key itself
+            result[key] = value
+
+    return result
+
+
 def load_pipeline_config(
     path: Path | str,
     variables: dict[str, str] | None = None,
     *,
     secrets_provider: str | None = None,
     secrets_config: dict[str, Any] | None = None,
+    profiles: dict[str, dict[str, Any]] | None = None,
 ) -> PipelineConfig:
     """Load and validate a pipeline configuration from YAML.
 
@@ -194,6 +280,7 @@ def load_pipeline_config(
         variables: Optional mapping of variable names to values
         secrets_provider: Secrets provider type ('env', 'aws', 'azure')
         secrets_config: Configuration options for the secrets provider
+        profiles: Connection profiles to resolve 'profile' references
 
     Returns:
         A validated PipelineConfig instance
@@ -218,6 +305,16 @@ def load_pipeline_config(
         secrets_provider=secrets_provider,
         secrets_config=secrets_config,
     )
+
+    # Resolve profile references in source/sink
+    if profiles:
+        config_dict = _resolve_profiles(
+            config_dict,
+            profiles,
+            secrets_provider=secrets_provider,
+            secrets_config=secrets_config,
+        )
+
     return PipelineConfig.model_validate(config_dict)
 
 
