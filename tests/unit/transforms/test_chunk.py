@@ -270,11 +270,12 @@ class TestChunkStrategies:
         from quicketl.transforms.ai.strategies import RecursiveChunkStrategy
 
         strategy = RecursiveChunkStrategy(
-            chunk_size=30,
+            chunk_size=20,
             overlap=0,
             separators=["\n\n", "\n", " "],
         )
 
+        # Text is 26 chars, chunk_size is 20, so should split
         text = "Para 1.\n\nPara 2.\n\nPara 3."
         chunks = strategy.chunk(text)
 

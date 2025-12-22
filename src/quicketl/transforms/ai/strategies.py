@@ -91,10 +91,14 @@ class FixedChunkStrategy(ChunkStrategy):
         while start < text_len:
             end = min(start + self.chunk_size, text_len)
             chunks.append(text[start:end])
-            start = end - self.overlap if self.overlap > 0 else end
 
-            # Prevent infinite loop if overlap >= chunk_size
-            if self.overlap >= self.chunk_size:
+            # Calculate next start position
+            if self.overlap > 0 and end < text_len:
+                # Only apply overlap if not at end of text
+                next_start = end - self.overlap
+                # Ensure we always advance
+                start = max(next_start, start + 1)
+            else:
                 start = end
 
         return chunks
@@ -112,10 +116,14 @@ class FixedChunkStrategy(ChunkStrategy):
             end = min(start + self.chunk_size, total_tokens)
             chunk_tokens = tokens[start:end]
             chunks.append(encoder.decode(chunk_tokens))
-            start = end - self.overlap if self.overlap > 0 else end
 
-            # Prevent infinite loop
-            if self.overlap >= self.chunk_size:
+            # Calculate next start position
+            if self.overlap > 0 and end < total_tokens:
+                # Only apply overlap if not at end
+                next_start = end - self.overlap
+                # Ensure we always advance
+                start = max(next_start, start + 1)
+            else:
                 start = end
 
         return chunks
