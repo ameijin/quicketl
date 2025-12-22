@@ -1,8 +1,10 @@
 # Transform Operations
 
-This page documents all 12 transform operations available in QuickETL.
+This page documents all transform operations available in QuickETL.
 
 ## Quick Reference
+
+### Core Transforms
 
 | Transform | Purpose | Example |
 |-----------|---------|---------|
@@ -18,6 +20,23 @@ This page documents all 12 transform operations available in QuickETL.
 | [`aggregate`](#aggregate) | Group and summarize | `aggs: {total: sum(amount)}` |
 | [`union`](#union) | Combine datasets | `sources: [data1, data2]` |
 | [`limit`](#limit) | Limit rows | `n: 1000` |
+
+### Advanced Transforms
+
+| Transform | Purpose | Example |
+|-----------|---------|---------|
+| [`window`](#window) | Window functions | `func: row_number, partition_by: [id]` |
+| [`pivot`](#pivot) | Reshape long to wide | `columns: category, values: amount` |
+| [`unpivot`](#unpivot) | Reshape wide to long | `value_vars: [jan, feb, mar]` |
+| [`hash_key`](#hash_key) | Generate hash keys | `columns: [id, name], algorithm: md5` |
+| [`coalesce`](#coalesce) | First non-null value | `columns: [email1, email2]` |
+
+### AI Transforms
+
+| Transform | Purpose | Example |
+|-----------|---------|---------|
+| [`chunk`](#chunk) | Split text into chunks | `strategy: recursive, chunk_size: 512` |
+| [`embed`](#embed) | Generate embeddings | `provider: openai, model: text-embedding-3-small` |
 
 ---
 
@@ -816,8 +835,373 @@ transforms:
       total_net: sum(net_amount)
 ```
 
+---
+
+## window {#window}
+
+Apply window functions over partitions.
+
+### Usage
+
+```yaml
+- op: window
+  columns:
+    - name: row_num
+      func: row_number
+      partition_by: [customer_id]
+      order_by: [order_date]
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `columns` | Yes | `list` | Window column specifications |
+
+Each column specification:
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | Yes | `str` | Output column name |
+| `func` | Yes | `str` | Window function |
+| `column` | No | `str` | Source column (for aggregates) |
+| `partition_by` | No | `list[str]` | Partition columns |
+| `order_by` | No | `list` | Order columns |
+| `offset` | No | `int` | Offset for lag/lead (default: 1) |
+| `default` | No | `any` | Default for lag/lead |
+
+### Supported Functions
+
+| Function | Description | Requires `column` |
+|----------|-------------|-------------------|
+| `row_number` | Sequential row number | No |
+| `rank` | Rank with gaps | No |
+| `dense_rank` | Rank without gaps | No |
+| `lag` | Previous row value | Yes |
+| `lead` | Next row value | Yes |
+| `sum` | Running sum | Yes |
+| `avg` | Running average | Yes |
+| `min` | Running minimum | Yes |
+| `max` | Running maximum | Yes |
+| `count` | Running count | No |
+| `first` | First value in partition | Yes |
+| `last` | Last value in partition | Yes |
+
+### Examples
+
+```yaml
+# Row numbering
+- op: window
+  columns:
+    - name: row_num
+      func: row_number
+      partition_by: [customer_id]
+      order_by: [order_date]
+
+# Previous value (lag)
+- op: window
+  columns:
+    - name: prev_amount
+      func: lag
+      column: amount
+      offset: 1
+      partition_by: [customer_id]
+      order_by: [order_date]
+      default: 0
+
+# Running total
+- op: window
+  columns:
+    - name: running_total
+      func: sum
+      column: amount
+      partition_by: [customer_id]
+      order_by: [order_date]
+
+# Multiple window columns
+- op: window
+  columns:
+    - name: row_num
+      func: row_number
+      partition_by: [category]
+      order_by: [sales desc]
+    - name: pct_of_category
+      func: sum
+      column: sales
+      partition_by: [category]
+```
+
+---
+
+## pivot {#pivot}
+
+Reshape data from long to wide format.
+
+### Usage
+
+```yaml
+- op: pivot
+  index: [region]
+  columns: product
+  values: revenue
+  aggfunc: sum
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `index` | Yes | `list[str]` | Row identifier columns |
+| `columns` | Yes | `str` | Column to pivot |
+| `values` | Yes | `str` | Values to aggregate |
+| `aggfunc` | No | `str` | Aggregation function (default: `first`) |
+
+### Examples
+
+```yaml
+# Basic pivot
+- op: pivot
+  index: [region, quarter]
+  columns: product
+  values: revenue
+  aggfunc: sum
+
+# Result: Columns become region, quarter, product_A, product_B, ...
+```
+
+---
+
+## unpivot {#unpivot}
+
+Reshape data from wide to long format (melt).
+
+### Usage
+
+```yaml
+- op: unpivot
+  id_vars: [id, name]
+  value_vars: [jan_sales, feb_sales, mar_sales]
+  var_name: month
+  value_name: sales
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `id_vars` | Yes | `list[str]` | Columns to keep as identifiers |
+| `value_vars` | Yes | `list[str]` | Columns to unpivot |
+| `var_name` | No | `str` | Name for variable column (default: `variable`) |
+| `value_name` | No | `str` | Name for value column (default: `value`) |
+
+### Examples
+
+```yaml
+# Unpivot monthly columns
+- op: unpivot
+  id_vars: [customer_id, name]
+  value_vars: [jan, feb, mar, apr, may, jun]
+  var_name: month
+  value_name: sales
+
+# Before: customer_id, name, jan, feb, mar, ...
+# After:  customer_id, name, month, sales
+```
+
+---
+
+## hash_key {#hash_key}
+
+Generate a hash key from one or more columns.
+
+### Usage
+
+```yaml
+- op: hash_key
+  name: customer_hash
+  columns: [customer_id, email]
+  algorithm: md5
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | Yes | `str` | Output column name |
+| `columns` | Yes | `list[str]` | Columns to hash |
+| `algorithm` | No | `str` | Hash algorithm: `md5`, `sha256`, `sha1` (default: `md5`) |
+| `separator` | No | `str` | Separator between values (default: `\|`) |
+
+### Examples
+
+```yaml
+# MD5 hash key
+- op: hash_key
+  name: row_hash
+  columns: [id, name, email]
+  algorithm: md5
+
+# SHA-256 for security
+- op: hash_key
+  name: secure_hash
+  columns: [ssn, dob]
+  algorithm: sha256
+  separator: "::"
+```
+
+---
+
+## coalesce {#coalesce}
+
+Return the first non-null value from a list of columns.
+
+### Usage
+
+```yaml
+- op: coalesce
+  name: email
+  columns: [primary_email, secondary_email, fallback_email]
+  default: "unknown@example.com"
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `name` | Yes | `str` | Output column name |
+| `columns` | Yes | `list[str]` | Columns to check, in priority order |
+| `default` | No | `any` | Default if all columns are null |
+
+### Examples
+
+```yaml
+# Email fallback
+- op: coalesce
+  name: contact_email
+  columns: [work_email, personal_email, alt_email]
+  default: "no-email@example.com"
+
+# Phone number priority
+- op: coalesce
+  name: phone
+  columns: [mobile, home, work]
+```
+
+---
+
+## chunk {#chunk}
+
+Split text into smaller chunks for RAG pipelines.
+
+!!! note "Requires Installation"
+    `pip install "quicketl[chunking]"`
+
+### Usage
+
+```yaml
+- op: chunk
+  column: document_text
+  strategy: recursive
+  chunk_size: 512
+  overlap: 50
+  output_column: chunk_text
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `column` | Yes | `str` | Text column to chunk |
+| `strategy` | No | `str` | `fixed`, `sentence`, `recursive` (default: `fixed`) |
+| `chunk_size` | No | `int` | Maximum chunk size (default: 500) |
+| `overlap` | No | `int` | Overlap between chunks (default: 0) |
+| `output_column` | No | `str` | Output column name (default: `chunk_text`) |
+| `add_chunk_index` | No | `bool` | Add chunk index column (default: false) |
+| `count_tokens` | No | `bool` | Count tokens instead of chars (default: false) |
+| `tokenizer` | No | `str` | Tokenizer name (default: `cl100k_base`) |
+| `separators` | No | `list[str]` | Custom separators for recursive |
+
+### Examples
+
+```yaml
+# Fixed-size chunks
+- op: chunk
+  column: content
+  strategy: fixed
+  chunk_size: 1000
+  overlap: 100
+
+# Recursive with custom separators
+- op: chunk
+  column: markdown_content
+  strategy: recursive
+  chunk_size: 512
+  overlap: 50
+  separators: ["\n## ", "\n\n", "\n", ". ", " "]
+  add_chunk_index: true
+```
+
+See [AI Data Preparation](../ai-data-prep.md) for complete RAG pipeline examples.
+
+---
+
+## embed {#embed}
+
+Generate vector embeddings from text.
+
+!!! note "Requires Installation"
+    `pip install "quicketl[embeddings-openai]"` or `pip install "quicketl[embeddings-huggingface]"`
+
+### Usage
+
+```yaml
+- op: embed
+  provider: openai
+  model: text-embedding-3-small
+  input_columns: [text]
+  output_column: embedding
+  api_key: ${secret:openai/api_key}
+```
+
+### Parameters
+
+| Parameter | Required | Type | Description |
+|-----------|----------|------|-------------|
+| `provider` | Yes | `str` | `openai` or `huggingface` |
+| `model` | Yes | `str` | Model name |
+| `input_columns` | Yes | `list[str]` | Columns to embed (concatenated) |
+| `output_column` | No | `str` | Output column (default: `embedding`) |
+| `batch_size` | No | `int` | Texts per API call (default: 100) |
+| `api_key` | No | `str` | API key for OpenAI |
+| `max_retries` | No | `int` | Retry attempts (default: 3) |
+
+### Examples
+
+```yaml
+# OpenAI embeddings
+- op: embed
+  provider: openai
+  model: text-embedding-3-small
+  input_columns: [title, description]
+  output_column: embedding
+  batch_size: 100
+  api_key: ${secret:openai/api_key}
+
+# Local HuggingFace model
+- op: embed
+  provider: huggingface
+  model: all-MiniLM-L6-v2
+  input_columns: [chunk_text]
+  output_column: embedding
+```
+
+See [AI Data Preparation](../ai-data-prep.md) for complete RAG pipeline examples.
+
+---
+
 ## Related
 
 - [Expression Language](../../reference/expressions.md) - Full expression syntax
 - [Data Types](../../reference/data-types.md) - Type reference
 - [Quality Checks](../quality/index.md) - Validate transformed data
+- [AI Data Preparation](../ai-data-prep.md) - RAG pipeline guide

@@ -198,8 +198,231 @@ class LimitTransform(BaseModel):
     n: int = Field(..., description="Maximum number of rows", gt=0)
 
 
+class WindowColumn(BaseModel):
+    """Configuration for a single window column.
+
+    Attributes:
+        name: Name for the new column.
+        func: Window function (row_number, rank, dense_rank, lag, lead, sum, avg, min, max).
+        column: Source column for functions that need it (lag, lead, sum, etc.).
+        offset: Offset for lag/lead functions.
+        partition_by: Columns to partition by.
+        order_by: Columns or order specs to order by within partition.
+        default: Default value for lag/lead when no row exists.
+    """
+
+    name: str = Field(..., description="Name for the new column")
+    func: Literal[
+        "row_number", "rank", "dense_rank", "lag", "lead",
+        "sum", "avg", "min", "max", "count", "first", "last"
+    ] = Field(..., description="Window function to apply")
+    column: str | None = Field(default=None, description="Source column for aggregation functions")
+    offset: int = Field(default=1, description="Offset for lag/lead functions")
+    partition_by: list[str] = Field(default_factory=list, description="Columns to partition by")
+    order_by: list[str | dict[str, Any]] = Field(
+        default_factory=list,
+        description="Columns or {column, descending} specs to order by",
+    )
+    default: Any = Field(default=None, description="Default value for lag/lead")
+
+
+class WindowTransform(BaseModel):
+    """Apply window functions over partitions.
+
+    Example YAML:
+        - op: window
+          columns:
+            - name: row_num
+              func: row_number
+              partition_by: [customer_id]
+              order_by: [order_date]
+            - name: prev_amount
+              func: lag
+              column: amount
+              offset: 1
+              partition_by: [customer_id]
+              order_by: [order_date]
+    """
+
+    op: Literal["window"] = "window"
+    columns: list[WindowColumn | dict[str, Any]] = Field(
+        ...,
+        description="Window column specifications",
+    )
+
+
+class PivotTransform(BaseModel):
+    """Pivot (reshape) data from long to wide format.
+
+    Example YAML:
+        - op: pivot
+          index: [region, quarter]
+          columns: product
+          values: revenue
+          aggfunc: sum
+    """
+
+    op: Literal["pivot"] = "pivot"
+    index: list[str] = Field(..., description="Columns to keep as row identifiers")
+    columns: str = Field(..., description="Column whose unique values become new columns")
+    values: str = Field(..., description="Column whose values populate the new columns")
+    aggfunc: str | list[str] = Field(
+        default="first",
+        description="Aggregation function(s) to apply",
+    )
+
+
+class UnpivotTransform(BaseModel):
+    """Unpivot (melt) data from wide to long format.
+
+    Example YAML:
+        - op: unpivot
+          id_vars: [id, name]
+          value_vars: [jan_sales, feb_sales, mar_sales]
+          var_name: month
+          value_name: sales
+    """
+
+    op: Literal["unpivot"] = "unpivot"
+    id_vars: list[str] = Field(..., description="Columns to keep as identifiers")
+    value_vars: list[str] = Field(..., description="Columns to unpivot into rows")
+    var_name: str = Field(default="variable", description="Name for the variable column")
+    value_name: str = Field(default="value", description="Name for the value column")
+
+
+class HashKeyTransform(BaseModel):
+    """Generate a hash key from one or more columns.
+
+    Example YAML:
+        - op: hash_key
+          name: customer_hash
+          columns: [customer_id, order_id]
+          algorithm: md5
+    """
+
+    op: Literal["hash_key"] = "hash_key"
+    name: str = Field(..., description="Name for the new hash column")
+    columns: list[str] = Field(..., description="Columns to include in the hash")
+    algorithm: Literal["md5", "sha256", "sha1"] = Field(
+        default="md5",
+        description="Hash algorithm to use",
+    )
+    separator: str = Field(default="|", description="Separator between column values")
+
+
+class CoalesceTransform(BaseModel):
+    """Return first non-null value from a list of columns.
+
+    Example YAML:
+        - op: coalesce
+          name: email
+          columns: [primary_email, secondary_email, fallback_email]
+          default: "unknown@example.com"
+    """
+
+    op: Literal["coalesce"] = "coalesce"
+    name: str = Field(..., description="Name for the new column")
+    columns: list[str] = Field(..., description="Columns to coalesce, in priority order")
+    default: Any = Field(default=None, description="Default value if all columns are null")
+
+
+class ChunkTransformConfig(BaseModel):
+    """Split text into chunks for RAG pipelines.
+
+    This transform explodes each row into multiple rows, one per chunk.
+    Metadata columns are preserved across all chunks from the same source row.
+
+    Requires: quicketl[chunking] for sentence strategy, or tiktoken for token counting.
+
+    Example YAML:
+        - op: chunk
+          column: document_text
+          strategy: recursive
+          chunk_size: 512
+          overlap: 50
+          output_column: chunk_text
+    """
+
+    op: Literal["chunk"] = "chunk"
+    column: str = Field(..., description="Text column to chunk")
+    strategy: Literal["fixed", "sentence", "recursive"] = Field(
+        default="fixed",
+        description="Chunking strategy",
+    )
+    chunk_size: int = Field(default=500, description="Maximum chunk size", gt=0)
+    overlap: int = Field(default=0, description="Overlap between chunks", ge=0)
+    output_column: str = Field(
+        default="chunk_text",
+        description="Name for the output chunk column",
+    )
+    add_chunk_index: bool = Field(
+        default=False,
+        description="Add a chunk_index column",
+    )
+    count_tokens: bool = Field(
+        default=False,
+        description="Count tokens instead of characters (requires tiktoken)",
+    )
+    tokenizer: str = Field(
+        default="cl100k_base",
+        description="Tokenizer for token counting",
+    )
+    separators: list[str] | None = Field(
+        default=None,
+        description="Separators for recursive strategy",
+    )
+
+
+class EmbedTransformConfig(BaseModel):
+    """Generate embeddings for text columns.
+
+    Supports OpenAI and HuggingFace embedding providers.
+
+    Requires: quicketl[embeddings-openai] or quicketl[embeddings-huggingface]
+
+    Example YAML:
+        - op: embed
+          provider: openai
+          model: text-embedding-3-small
+          input_columns: [title, description]
+          output_column: embedding
+          batch_size: 100
+          api_key: ${secret:openai/api_key}
+    """
+
+    op: Literal["embed"] = "embed"
+    provider: Literal["openai", "huggingface"] = Field(
+        ...,
+        description="Embedding provider",
+    )
+    model: str = Field(..., description="Model name")
+    input_columns: list[str] = Field(..., description="Columns to embed")
+    output_column: str = Field(default="embedding", description="Output column name")
+    batch_size: int = Field(default=100, description="Batch size for API calls", gt=0)
+    api_key: str | None = Field(default=None, description="API key if required")
+    max_retries: int = Field(default=3, description="Max retry attempts", ge=0)
+
+
 # Discriminated union for all transform types
 TransformStep = Annotated[
-    SelectTransform | RenameTransform | FilterTransform | DeriveColumnTransform | CastTransform | FillNullTransform | DedupTransform | SortTransform | JoinTransform | AggregateTransform | UnionTransform | LimitTransform,
+    SelectTransform
+    | RenameTransform
+    | FilterTransform
+    | DeriveColumnTransform
+    | CastTransform
+    | FillNullTransform
+    | DedupTransform
+    | SortTransform
+    | JoinTransform
+    | AggregateTransform
+    | UnionTransform
+    | LimitTransform
+    | WindowTransform
+    | PivotTransform
+    | UnpivotTransform
+    | HashKeyTransform
+    | CoalesceTransform
+    | ChunkTransformConfig
+    | EmbedTransformConfig,
     Field(discriminator="op"),
 ]
