@@ -6,6 +6,7 @@ exposing a simplified, ETL-focused API.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -997,33 +998,9 @@ class ETLXEngine:
         Returns:
             Table with new hash column
         """
-        import ibis
-
-        # Build concatenated string expression
-        if len(columns) == 1:
-            concat_expr = table[columns[0]].cast("string")
-        else:
-            # Build concatenation with separator using string ops
-            expr = table[columns[0]].cast("string")
-            for col in columns[1:]:
-                expr = expr + ibis.literal(separator) + table[col].cast("string")
-            concat_expr = expr
-
-        # Apply hash function using backend SQL via raw expression
-        # Use the connection's sql method to execute backend-specific hash
-        match algorithm:
-            case "md5":
-                # Use DuckDB's md5 function via scalar UDF or SQL
-                # Create a SQL-based expression
-                hash_expr = concat_expr.hash()  # Ibis hash returns int64
-                # Convert to hex string representation
-                # For proper MD5, we need to use SQL
-            case "sha256":
-                hash_expr = concat_expr.hash()
-            case "sha1":
-                hash_expr = concat_expr.hash()
-            case _:
-                raise ValueError(f"Unknown hash algorithm: {algorithm}")
+        # Validate algorithm
+        if algorithm not in ("md5", "sha256", "sha1"):
+            raise ValueError(f"Unknown hash algorithm: {algorithm}")
 
         # For backends that support md5/sha256 SQL functions, use SQL
         # Build the concatenation SQL expression
@@ -1059,10 +1036,8 @@ class ETLXEngine:
             return self._con.table(result_name)
         finally:
             # Clean up temp input table
-            try:
+            with contextlib.suppress(Exception):
                 self._con.drop_table(temp_name, force=True)
-            except Exception:
-                pass
 
     def coalesce(
         self,

@@ -9,10 +9,6 @@ Provides different strategies for splitting text into chunks:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    pass
 
 
 class ChunkStrategy(ABC):
@@ -276,10 +272,7 @@ class RecursiveChunkStrategy(ChunkStrategy):
 
         for part in parts:
             # Add separator back (except for first part)
-            if current_chunk:
-                test_chunk = current_chunk + separator + part
-            else:
-                test_chunk = part
+            test_chunk = current_chunk + separator + part if current_chunk else part
 
             if len(test_chunk) <= self.chunk_size:
                 current_chunk = test_chunk

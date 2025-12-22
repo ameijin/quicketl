@@ -5,14 +5,12 @@ Requires: pip install quicketl[secrets-azure]
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
 from quicketl.secrets.base import AbstractSecretsProvider
 
 try:
+    from azure.core.exceptions import ResourceNotFoundError
     from azure.identity import DefaultAzureCredential
     from azure.keyvault.secrets import SecretClient
-    from azure.core.exceptions import ResourceNotFoundError
 
     HAS_AZURE = True
 except ImportError:
@@ -59,14 +57,14 @@ class AzureSecretsProvider(AbstractSecretsProvider):
         self,
         path: str,
         *,
-        key: str | None = None,
+        _key: str | None = None,
         default: str | None = None,
     ) -> str:
         """Get a secret from Azure Key Vault.
 
         Args:
             path: The secret name in Key Vault.
-            key: Ignored for Azure provider (secrets are strings).
+            _key: Ignored for Azure provider (interface compatibility).
             default: Default value if secret not found.
 
         Returns:

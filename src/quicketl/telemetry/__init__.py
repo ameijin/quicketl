@@ -12,14 +12,17 @@ __all__ = [
 
 # Conditional imports for optional dependencies
 try:
-    from quicketl.telemetry.opentelemetry import MetricsContext, TracingContext
+    from quicketl.telemetry.opentelemetry import (  # noqa: F401
+        MetricsContext,
+        TracingContext,
+    )
 
     __all__.extend(["TracingContext", "MetricsContext"])
 except ImportError:
     pass
 
 try:
-    from quicketl.telemetry import openlineage
+    from quicketl.telemetry import openlineage as openlineage  # noqa: F401
 
     __all__.append("openlineage")
 except ImportError:

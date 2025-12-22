@@ -17,14 +17,14 @@ class OpenAIEmbeddingProvider(AbstractEmbeddingProvider):
         self,
         model: str,
         api_key: str | None = None,
-        **kwargs,
+        **_kwargs,
     ) -> None:
         """Initialize OpenAI embedding provider.
 
         Args:
             model: OpenAI model name.
             api_key: OpenAI API key. If None, uses OPENAI_API_KEY env var.
-            **kwargs: Additional arguments (ignored).
+            **_kwargs: Additional arguments (interface compatibility).
         """
         from openai import OpenAI
 

@@ -95,10 +95,7 @@ def find_project_config(start_path: Path | str | None = None) -> Path | None:
         >>> if path:
         ...     print(f"Found project config at: {path}")
     """
-    if start_path is None:
-        start_path = Path.cwd()
-    else:
-        start_path = Path(start_path)
+    start_path = Path.cwd() if start_path is None else Path(start_path)
 
     current = start_path.resolve()
 

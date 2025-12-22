@@ -6,7 +6,7 @@ Requires: quicketl[openlineage]
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -106,7 +106,7 @@ class LineageContext:
 
         if column_lineage:
             col_lineage_fields = []
-            for output_col, input_cols in column_lineage.items():
+            for _output_col, input_cols in column_lineage.items():
                 input_fields = [
                     column_lineage_dataset.InputField(
                         namespace=self.namespace,
@@ -131,7 +131,7 @@ class LineageContext:
         """Emit job start event."""
         event = RunEvent(
             eventType=RunState.START,
-            eventTime=datetime.now(timezone.utc).isoformat(),
+            eventTime=datetime.now(UTC).isoformat(),
             run=self._create_run(),
             job=self._create_job(),
             inputs=self._inputs,
@@ -143,7 +143,7 @@ class LineageContext:
         """Emit job complete event."""
         event = RunEvent(
             eventType=RunState.COMPLETE,
-            eventTime=datetime.now(timezone.utc).isoformat(),
+            eventTime=datetime.now(UTC).isoformat(),
             run=self._create_run(),
             job=self._create_job(),
             inputs=self._inputs,
@@ -151,15 +151,15 @@ class LineageContext:
         )
         self._client.emit(event)
 
-    def emit_fail(self, error_message: str | None = None) -> None:
+    def emit_fail(self, error_message: str | None = None) -> None:  # noqa: ARG002
         """Emit job fail event.
 
         Args:
-            error_message: Optional error message.
+            error_message: Optional error message (reserved for future use).
         """
         event = RunEvent(
             eventType=RunState.FAIL,
-            eventTime=datetime.now(timezone.utc).isoformat(),
+            eventTime=datetime.now(UTC).isoformat(),
             run=self._create_run(),
             job=self._create_job(),
             inputs=self._inputs,

@@ -8,11 +8,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from quicketl.secrets.base import AbstractSecretsProvider
 from quicketl.secrets.env import EnvSecretsProvider
 
 if TYPE_CHECKING:
-    pass
+    from quicketl.secrets.base import AbstractSecretsProvider
 
 
 class SecretsProviderRegistry:
@@ -49,9 +48,6 @@ class SecretsProviderRegistry:
         Raises:
             ValueError: If the provider type is unknown.
         """
-        # Create cache key from type and config
-        cache_key = (provider_type, tuple(sorted(config.items())))
-
         # Check cache first (simple caching without config)
         if provider_type in self._providers and not config:
             return self._providers[provider_type]

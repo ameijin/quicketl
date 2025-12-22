@@ -6,7 +6,7 @@ Requires: pip install quicketl[secrets-aws]
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from quicketl.secrets.base import AbstractSecretsProvider
 

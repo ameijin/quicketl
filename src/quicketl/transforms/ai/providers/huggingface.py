@@ -17,13 +17,13 @@ class HuggingFaceEmbeddingProvider(AbstractEmbeddingProvider):
     def __init__(
         self,
         model: str,
-        **kwargs,
+        **_kwargs,
     ) -> None:
         """Initialize HuggingFace embedding provider.
 
         Args:
             model: Model name (e.g., 'all-MiniLM-L6-v2').
-            **kwargs: Additional arguments (ignored).
+            **_kwargs: Additional arguments (interface compatibility).
         """
         from sentence_transformers import SentenceTransformer
 

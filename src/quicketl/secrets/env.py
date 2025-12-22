@@ -44,14 +44,14 @@ class EnvSecretsProvider(AbstractSecretsProvider):
         self,
         path: str,
         *,
-        key: str | None = None,
+        _key: str | None = None,
         default: str | None = None,
     ) -> str:
         """Get a secret from environment variables.
 
         Args:
             path: The environment variable name (without prefix).
-            key: Ignored for env provider (no JSON support).
+            _key: Ignored for env provider (interface compatibility).
             default: Default value if variable not set.
 
         Returns:
