@@ -68,9 +68,9 @@ transforms:
         order: desc
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [region, total_revenue]
-  - check: row_count
+  - type: row_count
     min: 1
 
 sink:

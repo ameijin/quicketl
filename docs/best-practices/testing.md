@@ -120,9 +120,9 @@ transforms:
     expr: amount * 1.1
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [id, customer_id, amount]
-  - check: unique
+  - type: unique
     columns: [id]
 
 sink:

@@ -204,14 +204,14 @@ transforms:
 ```yaml
 checks:
   # Critical: Pipeline fails if these don't pass
-  - check: not_null
+  - type: not_null
     columns: [id, amount]
 
-  - check: unique
+  - type: unique
     columns: [id]
 
   # Warning: Log but don't fail (95% threshold)
-  - check: expression
+  - type: expression
     expr: amount > 0
     threshold: 0.95
 ```
@@ -221,19 +221,19 @@ checks:
 ```yaml
 checks:
   # Check data freshness
-  - check: expression
+  - type: expression
     expr: date >= current_date - interval '2 days'
 
   # Check referential integrity
-  - check: expression
+  - type: expression
     expr: customer_id IS NOT NULL
 
   # Check business rules
-  - check: expression
+  - type: expression
     expr: quantity > 0 AND quantity < 1000
 
   # Check for expected volume
-  - check: row_count
+  - type: row_count
     min: 100
     max: 1000000
 ```
@@ -348,9 +348,9 @@ sink:
 
 # Good: Validate before writing
 checks:
-  - check: not_null
+  - type: not_null
     columns: [id]
-  - check: row_count
+  - type: row_count
     min: 1
 sink:
   type: database

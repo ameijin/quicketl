@@ -50,18 +50,18 @@ Quality Checks: FAILED (2/3 passed)
 ```yaml
 checks:
   # Critical: Must pass 100%
-  - check: not_null
+  - type: not_null
     columns: [id, customer_id]
 
-  - check: unique
+  - type: unique
     columns: [id]
 
   # Non-critical: Warning only (use threshold)
-  - check: expression
+  - type: expression
     expr: email LIKE '%@%.%'
     threshold: 0.95  # 95% must pass
 
-  - check: expression
+  - type: expression
     expr: amount > 0
     threshold: 0.99  # 99% must pass
 ```

@@ -81,15 +81,15 @@ transforms:
 # Validate data quality
 checks:
   # Ensure required fields are present
-  - check: not_null
+  - type: not_null
     columns: [id, customer_name, total_amount]
 
   # Verify we have data
-  - check: row_count
+  - type: row_count
     min: 1
 
   # Business rule: totals must be positive
-  - check: expression
+  - type: expression
     expr: total_amount > 0
 
 # Write output
@@ -248,11 +248,11 @@ source:
 
 ```yaml
 checks:
-  - check: not_null
+  - type: not_null
     columns: [id, customer_name, total_amount]
-  - check: row_count
+  - type: row_count
     min: 1
-  - check: expression
+  - type: expression
     expr: total_amount > 0
 ```
 

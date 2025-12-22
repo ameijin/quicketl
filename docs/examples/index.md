@@ -107,6 +107,30 @@ def process_daily(**context):
     return {"DATE": context["ds"]}
 ```
 
+## AI & RAG Examples
+
+### [RAG Pipeline](rag-pipeline.md)
+
+Complete Retrieval-Augmented Generation pipeline: chunking, embeddings, and vector store.
+
+```yaml
+transforms:
+  - op: chunk
+    column: content
+    strategy: recursive
+    chunk_size: 512
+
+  - op: embed
+    provider: openai
+    model: text-embedding-3-small
+    input_columns: [chunk_text]
+
+sink:
+  type: vector_store
+  provider: pinecone
+  index: knowledge-base
+```
+
 ## Example Categories
 
 | Category | Examples | Description |
@@ -116,6 +140,7 @@ def process_daily(**context):
 | **Analytics** | [Aggregation](aggregation.md) | Metrics and summaries |
 | **Workflows** | [Medallion Workflow](medallion-workflow.md) | Multi-pipeline orchestration |
 | **Cloud** | [Cloud ETL](cloud-etl.md) | Production cloud pipelines |
+| **AI/RAG** | [RAG Pipeline](rag-pipeline.md) | Embeddings and vector stores |
 | **Orchestration** | [Airflow DAG](airflow-dag.md) | Airflow integration |
 
 ## Running Examples
@@ -166,7 +191,7 @@ Have a useful pattern? Contribute an example:
 3. Add sample input/output data
 4. Document each step
 
-See [Contributing Guide](https://github.com/ameijin/quicketl/blob/mahttps://github.com/ameijin/quicketl/blob/main/CONTRIBUTING.md) for details.
+See [Contributing Guide](https://github.com/ameijin/quicketl/blob/main/CONTRIBUTING.md) for details.
 
 ## Related
 

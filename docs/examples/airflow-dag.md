@@ -313,9 +313,9 @@ transforms:
       order_count: count(distinct order_id)
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [category, total_revenue]
-  - check: row_count
+  - type: row_count
     min: 1
 
 sink:
@@ -342,9 +342,9 @@ transforms:
     expr: current_timestamp()
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [category, total_revenue, loaded_at]
-  - check: expression
+  - type: expression
     expr: total_revenue >= 0
 
 sink:
