@@ -78,10 +78,10 @@ transforms:
     expr: date('${DATE}')
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [order_id, customer_id, total_amount]
 
-  - check: row_count
+  - type: row_count
     min: 1
 
 sink:
@@ -141,10 +141,10 @@ transforms:
       - extracted_at
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [customer_id, region]
 
-  - check: unique
+  - type: unique
     columns: [customer_id]
 
 sink:
@@ -192,7 +192,7 @@ transforms:
     expr: timestamp('${CURRENT_EXTRACT}')
 
 checks:
-  - check: not_null
+  - type: not_null
     columns: [order_id, cdc_operation]
 
 sink:

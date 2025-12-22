@@ -128,16 +128,16 @@ transforms:
 
 # Data quality checks
 checks:
-  - check: not_null
+  - type: not_null
     columns: [event_date, event_type, event_count]
 
-  - check: row_count
+  - type: row_count
     min: 1
 
-  - check: expression
+  - type: expression
     expr: total_revenue >= 0
 
-  - check: accepted_values
+  - type: accepted_values
     column: event_type
     values: [purchase, view, click]
 

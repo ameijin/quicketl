@@ -161,6 +161,7 @@ nav:
       - Cloud Storage: guides/io/cloud-storage.md
       - File Sinks: guides/io/file-sinks.md
       - Database Sinks: guides/io/database-sinks.md
+      - Vector Store Sinks: guides/io/vector-sinks.md
     - Transforms:
       - guides/transforms/index.md
       - All Operations: guides/transforms/operations.md
@@ -177,6 +178,9 @@ nav:
       - guides/workflows/index.md
       - Workflow YAML: guides/workflows/workflow-yaml.md
       - DAG Generation: guides/workflows/dag-generation.md
+    - AI Data Preparation: guides/ai-data-prep.md
+    - Secrets Management: guides/secrets.md
+    - Observability: guides/observability.md
     - Airflow Integration: integrations/airflow.md
     - Best Practices:
       - Pipeline Design: best-practices/pipeline-design.md
@@ -187,6 +191,7 @@ nav:
 
   - Reference:
     - reference/index.md
+    - Architecture: ARCHITECTURE.md
     - CLI Commands: reference/cli.md
     - Python API:
       - api/index.md
@@ -207,6 +212,7 @@ nav:
     - Medallion Workflow: examples/medallion-workflow.md
     - Cloud ETL: examples/cloud-etl.md
     - Database to Data Lake: examples/db-to-lake.md
+    - RAG Pipeline: examples/rag-pipeline.md
     - Airflow DAG: examples/airflow-dag.md
 
 # Extra Configuration

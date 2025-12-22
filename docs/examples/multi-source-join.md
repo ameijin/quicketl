@@ -135,13 +135,13 @@ transforms:
 
 # Quality checks
 checks:
-  - check: not_null
+  - type: not_null
     columns: [order_id, customer_id, product_id, line_total]
 
-  - check: expression
+  - type: expression
     expr: line_total > 0
 
-  - check: expression
+  - type: expression
     expr: profit_margin >= 0 AND profit_margin <= 1
 
 # Write enriched data
