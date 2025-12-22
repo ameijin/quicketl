@@ -167,6 +167,15 @@ ignore = [
     "B008",   # do not perform function calls in argument defaults (needed for typer)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ARG001",  # Unused function argument (fixtures often unused)
+    "ARG002",  # Unused method argument (fixtures often unused)
+    "ARG005",  # Unused lambda argument (mock patterns)
+    "TCH002",  # Move third-party import into type-checking block (used at runtime in tests)
+    "TCH003",  # Move standard library import into type-checking block (used at runtime in tests)
+]
+
 [tool.ruff.lint.isort]
 known-first-party = ["quicketl"]
 

@@ -144,9 +144,8 @@ class TestOpenTelemetryIntegration:
 
             ctx = TracingContext(service_name="quicketl-test")
 
-            with pytest.raises(ValueError):
-                with ctx.span("failing_transform"):
-                    raise ValueError("Test error")
+            with pytest.raises(ValueError), ctx.span("failing_transform"):
+                raise ValueError("Test error")
 
             # Verify error was recorded
             mock_span.record_exception.assert_called_once()

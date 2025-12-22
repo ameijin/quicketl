@@ -9,6 +9,7 @@ This module tests:
 
 from __future__ import annotations
 
+import pandas as pd
 import pytest
 
 from quicketl.engines import ETLXEngine
@@ -72,10 +73,10 @@ class TestWindowTransform:
 
     def test_rank_over_partition(self, engine: ETLXEngine, sample_orders):
         """Rank with ties assigns same rank, skips next."""
-        from quicketl.config.transforms import WindowTransform
-
         # Add duplicate amounts to test rank behavior
         import ibis
+
+        from quicketl.config.transforms import WindowTransform
 
         data = {
             "id": [1, 2, 3, 4],
@@ -103,9 +104,9 @@ class TestWindowTransform:
 
     def test_dense_rank_over_partition(self, engine: ETLXEngine):
         """Dense rank with ties assigns same rank, doesn't skip."""
-        from quicketl.config.transforms import WindowTransform
-
         import ibis
+
+        from quicketl.config.transforms import WindowTransform
 
         data = {
             "id": [1, 2, 3, 4],
@@ -269,5 +270,3 @@ class TestWindowTransform:
         assert "prev_amount" in df.columns
 
 
-# Import pandas for None checks
-import pandas as pd

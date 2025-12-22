@@ -5,13 +5,12 @@ This module tests the Workflow class and workflow orchestration.
 
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from quicketl.config.workflow import PipelineRef, WorkflowConfig, WorkflowStage
-from quicketl.pipeline.result import PipelineResult, PipelineStatus, WorkflowStatus
+from quicketl.pipeline.result import PipelineResult, WorkflowStatus
 from quicketl.workflow.workflow import Workflow, run_workflow
 
 
@@ -264,7 +263,7 @@ sink:
             mock_result.failed = False
             mock_pipeline.from_yaml.return_value.run.return_value = mock_result
 
-            result = workflow.run(dry_run=True)
+            workflow.run(dry_run=True)
 
             # Verify dry_run was passed
             mock_pipeline.from_yaml.return_value.run.assert_called_with(dry_run=True)
@@ -524,7 +523,7 @@ class TestContinueOnFailure:
                 mock_result_success,
             ]
 
-            result = workflow.run()
+            workflow.run()
 
             # Both pipelines should have run
             assert mock_pipeline.from_yaml.return_value.run.call_count == 2
@@ -573,7 +572,7 @@ stages:
             mock_result.failed = False
             mock_pipeline.from_yaml.return_value.run.return_value = mock_result
 
-            result = run_workflow(
+            run_workflow(
                 yaml_file,
                 variables={"VAR": "val"},
                 dry_run=True,

@@ -10,8 +10,6 @@ This module tests the pluggable secrets management system including:
 
 from __future__ import annotations
 
-import os
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,10 +18,6 @@ from quicketl.secrets import get_provider, get_secret
 from quicketl.secrets.base import AbstractSecretsProvider
 from quicketl.secrets.env import EnvSecretsProvider
 from quicketl.secrets.registry import SecretsProviderRegistry
-
-if TYPE_CHECKING:
-    pass
-
 
 # ============================================================================
 # Abstract Provider Interface Tests
@@ -181,7 +175,7 @@ class TestAWSSecretsProvider:
             mock_session.return_value.client.return_value = MagicMock()
             from quicketl.secrets.aws import AWSSecretsProvider
 
-            provider = AWSSecretsProvider(region_name="eu-west-1")
+            AWSSecretsProvider(region_name="eu-west-1")
 
         mock_session.return_value.client.assert_called_with(
             "secretsmanager", region_name="eu-west-1"
@@ -248,11 +242,13 @@ class TestAzureSecretsProvider:
         """Azure provider uses managed identity by default."""
         pytest.importorskip("azure.identity")
 
-        with patch("quicketl.secrets.azure.SecretClient") as mock_client_cls:
-            with patch("quicketl.secrets.azure.DefaultAzureCredential") as mock_cred:
-                from quicketl.secrets.azure import AzureSecretsProvider
+        with (
+            patch("quicketl.secrets.azure.SecretClient") as mock_client_cls,
+            patch("quicketl.secrets.azure.DefaultAzureCredential") as mock_cred,
+        ):
+            from quicketl.secrets.azure import AzureSecretsProvider
 
-                provider = AzureSecretsProvider(vault_url="https://myvault.vault.azure.net")
+            AzureSecretsProvider(vault_url="https://myvault.vault.azure.net")
 
         mock_cred.assert_called_once()
         mock_client_cls.assert_called_once()

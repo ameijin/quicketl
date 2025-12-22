@@ -6,7 +6,6 @@ import json
 import re
 from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from quicketl.cli.main import app
@@ -86,7 +85,7 @@ class TestSchemaCommand:
         assert result.exit_code == 0
         # With indent 4, lines should have 4-space indentation
         lines = result.output.split("\n")
-        indented_lines = [l for l in lines if l.startswith("    ") and not l.startswith("        ")]
+        indented_lines = [line for line in lines if line.startswith("    ") and not line.startswith("        ")]
         assert len(indented_lines) > 0
 
     def test_schema_output_file_message(

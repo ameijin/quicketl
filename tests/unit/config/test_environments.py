@@ -9,25 +9,19 @@ This module tests:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from quicketl.config.environments import (
-    EnvironmentConfig,
     load_environment,
     merge_configs,
 )
 from quicketl.config.profiles import (
-    ConnectionProfile,
     ProfileRegistry,
     load_profiles,
 )
 from quicketl.config.project import (
-    ProjectConfig,
     load_project_config,
 )
-
 
 # ============================================================================
 # Environment Inheritance Tests

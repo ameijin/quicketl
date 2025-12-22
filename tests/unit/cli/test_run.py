@@ -143,7 +143,7 @@ class TestRunCommand:
         assert result.exit_code in [0, 2]
         # Try to parse the output as JSON (filter out non-JSON lines)
         lines = result.output.strip().split('\n')
-        json_lines = [l for l in lines if l.strip().startswith('{') or l.strip().startswith('"')]
+        json_lines = [line for line in lines if line.strip().startswith('{') or line.strip().startswith('"')]
         if json_lines:
             output_data = json.loads('\n'.join(lines))
             assert "pipeline_name" in output_data or "status" in output_data

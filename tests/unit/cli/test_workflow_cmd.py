@@ -123,7 +123,7 @@ stages:
             mock_instance._stages = []
             mock_workflow.from_yaml.return_value = mock_instance
 
-            result = cli_runner.invoke(app, ["run", str(workflow_file), "--dry-run"])
+            _result = cli_runner.invoke(app, ["run", str(workflow_file), "--dry-run"])
 
             mock_instance.run.assert_called_with(dry_run=True, max_workers=None)
 
@@ -154,7 +154,7 @@ stages:
             mock_instance._stages = []
             mock_workflow.from_yaml.return_value = mock_instance
 
-            result = cli_runner.invoke(
+            _result = cli_runner.invoke(
                 app, ["run", str(workflow_file), "--var", "KEY=value"]
             )
 
@@ -205,7 +205,7 @@ class TestWorkflowValidateCommand:
         pipeline_file = tmp_path / "pipeline.yml"
         pipeline_file.write_text("name: test\nengine: duckdb\nsource:\n  type: file\n  path: x\n  format: csv\nsink:\n  type: file\n  path: y\n  format: parquet")
 
-        workflow_content = f"""
+        workflow_content = """
 name: valid_workflow
 stages:
   - name: stage1

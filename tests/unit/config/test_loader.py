@@ -5,13 +5,11 @@ This module tests YAML loading and ${VAR} variable substitution.
 
 from __future__ import annotations
 
-import os
 import string
-import tempfile
-from pathlib import Path
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from quicketl.config.loader import (
     load_pipeline_config,
@@ -334,7 +332,7 @@ class TestSubstituteVariablesWithHypothesis:
         result = substitute_variables(strings, {})
         assert len(result) == len(strings)
         # All non-variable strings should be unchanged
-        for orig, res in zip(strings, result):
+        for orig, res in zip(strings, result, strict=True):
             if "${" not in orig:
                 assert res == orig
 
