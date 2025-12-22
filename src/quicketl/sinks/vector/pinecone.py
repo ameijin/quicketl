@@ -75,7 +75,7 @@ class PineconeSink(BaseModel, AbstractVectorSink):
         # Upsert in batches
         for i in range(0, len(vectors), self.batch_size):
             batch = vectors[i : i + self.batch_size]
-            kwargs = {"vectors": batch}
+            kwargs: dict[str, Any] = {"vectors": batch}
             if self.namespace:
                 kwargs["namespace"] = self.namespace
             index.upsert(**kwargs)

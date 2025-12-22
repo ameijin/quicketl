@@ -17,8 +17,8 @@ try:
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
-    boto3 = None  # type: ignore[assignment]
-    ClientError = Exception  # type: ignore[assignment, misc]
+    boto3 = None
+    ClientError = Exception
 
 
 class AWSSecretsProvider(AbstractSecretsProvider):

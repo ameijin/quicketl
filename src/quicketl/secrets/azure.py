@@ -15,9 +15,9 @@ try:
     HAS_AZURE = True
 except ImportError:
     HAS_AZURE = False
-    DefaultAzureCredential = None  # type: ignore[assignment, misc]
-    SecretClient = None  # type: ignore[assignment, misc]
-    ResourceNotFoundError = Exception  # type: ignore[assignment, misc]
+    DefaultAzureCredential = None
+    SecretClient = None
+    ResourceNotFoundError = Exception
 
 
 class AzureSecretsProvider(AbstractSecretsProvider):

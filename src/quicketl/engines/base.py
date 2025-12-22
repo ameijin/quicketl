@@ -871,10 +871,16 @@ class ETLXEngine:
                     # Ibis dense_rank is 0-based, add 1 for SQL-standard 1-based
                     expr = ibis.dense_rank().over(window) + 1
                 case "lag":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     expr = source_col.lag(col_spec.offset, default=col_spec.default).over(window)
                 case "lead":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     expr = source_col.lead(col_spec.offset, default=col_spec.default).over(window)
                 case "sum":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     # For running sum, use cumulative frame
                     cumulative_window = ibis.cumulative_window(
                         group_by=partition_cols if partition_cols else None,
@@ -882,31 +888,41 @@ class ETLXEngine:
                     )
                     expr = source_col.sum().over(cumulative_window)
                 case "avg" | "mean":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     cumulative_window = ibis.cumulative_window(
                         group_by=partition_cols if partition_cols else None,
                         order_by=order_cols if order_cols else None,
                     )
                     expr = source_col.mean().over(cumulative_window)
                 case "min":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     cumulative_window = ibis.cumulative_window(
                         group_by=partition_cols if partition_cols else None,
                         order_by=order_cols if order_cols else None,
                     )
                     expr = source_col.min().over(cumulative_window)
                 case "max":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     cumulative_window = ibis.cumulative_window(
                         group_by=partition_cols if partition_cols else None,
                         order_by=order_cols if order_cols else None,
                     )
                     expr = source_col.max().over(cumulative_window)
                 case "count":
-                    if source_col:
+                    if source_col is not None:
                         expr = source_col.count().over(window)
                     else:
                         expr = table.count().over(window)
                 case "first":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     expr = source_col.first().over(window)
                 case "last":
+                    if source_col is None:
+                        raise ValueError(f"Window function '{func_name}' requires a source column")
                     expr = source_col.last().over(window)
                 case _:
                     raise ValueError(f"Unknown window function: {func_name}")
