@@ -2,6 +2,36 @@
 
 <!-- version list -->
 
+## v1.3.0 (2025-12-22)
+
+### Bug Fixes
+
+- Cleanup docs for most recent additions ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+- Mypy type checking errors ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+- Resolve ruff linting errors ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+### Features
+
+- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
+  expressions ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+- **secrets**: Add pluggable secrets provider system
+  ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+### Testing
+
+- Add unit test infrastructure and additional test coverage
+  ([#3](https://github.com/ameijin/quicketl/pull/3),
+  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
+
+
 ## v1.2.0 (2025-12-17)
 
 ### Bug Fixes
