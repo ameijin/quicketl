@@ -326,6 +326,83 @@ class CoalesceTransform(BaseModel):
     default: Any = Field(default=None, description="Default value if all columns are null")
 
 
+class ChunkTransformConfig(BaseModel):
+    """Split text into chunks for RAG pipelines.
+
+    This transform explodes each row into multiple rows, one per chunk.
+    Metadata columns are preserved across all chunks from the same source row.
+
+    Requires: quicketl[chunking] for sentence strategy, or tiktoken for token counting.
+
+    Example YAML:
+        - op: chunk
+          column: document_text
+          strategy: recursive
+          chunk_size: 512
+          overlap: 50
+          output_column: chunk_text
+    """
+
+    op: Literal["chunk"] = "chunk"
+    column: str = Field(..., description="Text column to chunk")
+    strategy: Literal["fixed", "sentence", "recursive"] = Field(
+        default="fixed",
+        description="Chunking strategy",
+    )
+    chunk_size: int = Field(default=500, description="Maximum chunk size", gt=0)
+    overlap: int = Field(default=0, description="Overlap between chunks", ge=0)
+    output_column: str = Field(
+        default="chunk_text",
+        description="Name for the output chunk column",
+    )
+    add_chunk_index: bool = Field(
+        default=False,
+        description="Add a chunk_index column",
+    )
+    count_tokens: bool = Field(
+        default=False,
+        description="Count tokens instead of characters (requires tiktoken)",
+    )
+    tokenizer: str = Field(
+        default="cl100k_base",
+        description="Tokenizer for token counting",
+    )
+    separators: list[str] | None = Field(
+        default=None,
+        description="Separators for recursive strategy",
+    )
+
+
+class EmbedTransformConfig(BaseModel):
+    """Generate embeddings for text columns.
+
+    Supports OpenAI and HuggingFace embedding providers.
+
+    Requires: quicketl[embeddings-openai] or quicketl[embeddings-huggingface]
+
+    Example YAML:
+        - op: embed
+          provider: openai
+          model: text-embedding-3-small
+          input_columns: [title, description]
+          output_column: embedding
+          batch_size: 100
+          api_key: ${secret:openai/api_key}
+    """
+
+    op: Literal["embed"] = "embed"
+    provider: Literal["openai", "huggingface"] = Field(
+        ...,
+        description="Embedding provider",
+    )
+    model: str = Field(..., description="Model name")
+    input_columns: list[str] = Field(..., description="Columns to embed")
+    output_column: str = Field(default="embedding", description="Output column name")
+    batch_size: int = Field(default=100, description="Batch size for API calls", gt=0)
+    api_key: str | None = Field(default=None, description="API key if required")
+    max_retries: int = Field(default=3, description="Max retry attempts", ge=0)
+
+
 # Discriminated union for all transform types
 TransformStep = Annotated[
     SelectTransform
@@ -344,6 +421,8 @@ TransformStep = Annotated[
     | PivotTransform
     | UnpivotTransform
     | HashKeyTransform
-    | CoalesceTransform,
+    | CoalesceTransform
+    | ChunkTransformConfig
+    | EmbedTransformConfig,
     Field(discriminator="op"),
 ]
