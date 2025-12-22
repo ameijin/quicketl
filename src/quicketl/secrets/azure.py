@@ -57,14 +57,14 @@ class AzureSecretsProvider(AbstractSecretsProvider):
         self,
         path: str,
         *,
-        _key: str | None = None,
+        key: str | None = None,  # noqa: ARG002
         default: str | None = None,
     ) -> str:
         """Get a secret from Azure Key Vault.
 
         Args:
             path: The secret name in Key Vault.
-            _key: Ignored for Azure provider (interface compatibility).
+            key: Ignored for Azure provider (interface compatibility).
             default: Default value if secret not found.
 
         Returns:

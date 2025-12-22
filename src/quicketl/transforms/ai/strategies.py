@@ -192,6 +192,10 @@ class SentenceChunkStrategy(ChunkStrategy):
                 if self.overlap > 0:
                     current_chunk = current_chunk[-self.overlap :]
                     current_size = sum(len(s) for s in current_chunk)
+                    # Prevent infinite loop if overlap exceeds chunk_size
+                    if current_size >= self.chunk_size:
+                        current_chunk = []
+                        current_size = 0
                 else:
                     current_chunk = []
                     current_size = 0
