@@ -70,8 +70,9 @@ def quicketl_task(
             result = func(*args, **kwargs)
 
             # Determine how to run the pipeline
-            if isinstance(result, Pipeline):
-                # Function returned a Pipeline object
+            # Use duck typing: check for run method (works with mocks and Pipeline subclasses)
+            if hasattr(result, 'run') and callable(getattr(result, 'run', None)) and not isinstance(result, dict):
+                # Function returned a Pipeline-like object
                 pipeline = result
                 if engine:
                     pipeline.engine_name = engine

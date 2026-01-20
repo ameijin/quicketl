@@ -7,6 +7,7 @@ from quicketl.quality.checks import (
     CheckResult,
     run_accepted_values_check,
     run_check,
+    run_contract_check,
     run_expression_check,
     run_not_null_check,
     run_row_count_check,
@@ -24,6 +25,7 @@ __all__ = [
     "run_row_count_check",
     "run_accepted_values_check",
     "run_expression_check",
+    "run_contract_check",
     "run_check",
     # Runner
     "CheckRunner",
