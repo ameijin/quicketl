@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import io
 import logging
 import sys
 from unittest.mock import patch
@@ -224,7 +223,7 @@ class TestLoggingIntegration:
 
     def test_logging_to_stderr(self):
         """Test that logs go to stderr."""
-        from quicketl.logging import configure_logging, get_logger
+        from quicketl.logging import configure_logging
 
         configure_logging(level="INFO", format="json")
 

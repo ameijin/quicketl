@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 from quicketl.config.checks import (
     AcceptedValuesCheck,
     CheckConfig,
+    ContractCheck,
     ExpressionCheck,
     NotNullCheck,
     RowCountCheck,
@@ -339,6 +340,64 @@ def _parse_value(val_str: str) -> Any:
         return val_str
 
 
+def run_contract_check(table: ir.Table, config: ContractCheck) -> CheckResult:
+    """Run Pandera contract validation.
+
+    Args:
+        table: Ibis Table expression
+        config: ContractCheck configuration
+
+    Returns:
+        CheckResult with validation details
+    """
+    try:
+        from quicketl.quality.contracts.pandera_adapter import PanderaContractValidator
+
+        # Merge schema config with strict setting
+        schema_config = dict(config.contract_schema)
+        if "strict" not in schema_config:
+            schema_config["strict"] = config.strict
+
+        validator = PanderaContractValidator(schema_config)
+        result = validator.validate(table)
+
+        if result.passed:
+            return CheckResult(
+                check_type="contract",
+                passed=True,
+                message=f"Contract validation passed for {result.validated_rows} rows",
+                details={
+                    "validated_rows": result.validated_rows,
+                    "schema_name": result.schema_name,
+                },
+            )
+        else:
+            return CheckResult(
+                check_type="contract",
+                passed=False,
+                message="Contract validation failed",
+                details={
+                    "validated_rows": result.validated_rows,
+                    "errors": result.errors,
+                    "schema_name": result.schema_name,
+                },
+            )
+    except ImportError as e:
+        return CheckResult(
+            check_type="contract",
+            passed=False,
+            message=str(e),
+            details={"error": "pandera_not_installed"},
+        )
+    except Exception as e:
+        return CheckResult(
+            check_type="contract",
+            passed=False,
+            message=f"Contract validation error: {e}",
+            details={"error": str(e)},
+        )
+
+
 def run_check(table: ir.Table, config: CheckConfig) -> CheckResult:
     """Run a quality check based on its configuration.
 
@@ -360,6 +419,8 @@ def run_check(table: ir.Table, config: CheckConfig) -> CheckResult:
             return run_accepted_values_check(table, config)
         case ExpressionCheck():
             return run_expression_check(table, config)
+        case ContractCheck():
+            return run_contract_check(table, config)
         case _:
             return CheckResult(
                 check_type="unknown",

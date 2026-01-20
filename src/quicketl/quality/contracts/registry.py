@@ -7,14 +7,10 @@ data contracts stored as YAML files.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import yaml
 
 from quicketl.quality.contracts.schema import DataContract
-
-if TYPE_CHECKING:
-    pass
 
 
 class ContractRegistry:
@@ -73,7 +69,7 @@ class ContractRegistry:
                 contracts.add(file.stem)
         return sorted(contracts)
 
-    def get_contract(self, name: str, version: str | None = None) -> DataContract:
+    def get_contract(self, name: str, _version: str | None = None) -> DataContract:
         """Load contract by name.
 
         Args:
@@ -108,7 +104,7 @@ class ContractRegistry:
             ValueError: If YAML is invalid or missing required fields.
         """
         try:
-            with open(path) as f:
+            with path.open() as f:
                 data = yaml.safe_load(f)
 
             if data is None:
