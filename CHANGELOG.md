@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-01-20)
+
+### Bug Fixes
+
+- Remove unused type ignore comments in pandera_adapter
+  ([`6409749`](https://github.com/ameijin/quicketl/commit/6409749e73cc9752b8dc55c64694e13bd139432b))
+
+
 ## v1.4.0 (2026-01-20)
 
 ### Bug Fixes
