@@ -106,8 +106,47 @@ class ExpressionCheck(BaseModel):
     )
 
 
+class ContractCheck(BaseModel):
+    """Data contract validation using Pandera schema.
+
+    Validates data against a Pandera schema definition with column types,
+    nullability, uniqueness, and custom checks.
+
+    Requires: pip install quicketl[contracts]
+
+    Example YAML:
+        - type: contract
+          contract_schema:
+            columns:
+              id: {dtype: int64, nullable: false, unique: true}
+              email: {dtype: str, checks: ["str_matches('^[^@]+@[^@]+$')"]}
+              amount: {dtype: float64, checks: ["ge(0)"]}
+            strict: false
+
+    Supported checks:
+        - ge(n): Greater than or equal to n
+        - le(n): Less than or equal to n
+        - gt(n): Greater than n
+        - lt(n): Less than n
+        - between(min, max): Value in range
+        - isin([...]): Value in list
+        - str_matches(pattern): Regex pattern match
+        - str_length(min, max): String length bounds
+    """
+
+    type: Literal["contract"] = "contract"
+    contract_schema: dict[str, Any] = Field(
+        ...,
+        description="Pandera schema definition with columns and checks",
+    )
+    strict: bool = Field(
+        default=False,
+        description="If true, reject columns not defined in schema",
+    )
+
+
 # Discriminated union for all check types
 CheckConfig = Annotated[
-    NotNullCheck | UniqueCheck | RowCountCheck | AcceptedValuesCheck | ExpressionCheck,
+    NotNullCheck | UniqueCheck | RowCountCheck | AcceptedValuesCheck | ExpressionCheck | ContractCheck,
     Field(discriminator="type"),
 ]

@@ -73,6 +73,7 @@ def configure_logging(
         format="%(message)s",
         stream=sys.stderr,
         level=getattr(logging, level.upper()),
+        force=True,
     )
 
 
