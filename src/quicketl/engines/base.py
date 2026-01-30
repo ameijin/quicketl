@@ -1032,46 +1032,43 @@ class ETLXEngine:
         Returns:
             Table with new hash column
         """
+        import re
+        import uuid
+
         # Validate algorithm
         if algorithm not in ("md5", "sha256", "sha1"):
             raise ValueError(f"Unknown hash algorithm: {algorithm}")
 
-        # For backends that support md5/sha256 SQL functions, use SQL
-        # Build the concatenation SQL expression
+        # Validate column names and output name to prevent SQL injection
+        identifier_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+        for col in [name, *columns]:
+            if not identifier_re.match(col):
+                raise ValueError(f"Invalid identifier: {col!r}")
+
+        # Build the concatenation SQL expression with quoted identifiers
         concat_parts = []
         for i, col in enumerate(columns):
             if i > 0:
                 concat_parts.append(f"'{separator}'")
-            concat_parts.append(f"CAST({col} AS VARCHAR)")
+            concat_parts.append(f'CAST("{col}" AS VARCHAR)')
 
         concat_sql = " || ".join(concat_parts)
+        hash_sql = f"{algorithm}({concat_sql})"
 
-        match algorithm:
-            case "md5":
-                hash_sql = f"md5({concat_sql})"
-            case "sha256":
-                hash_sql = f"sha256({concat_sql})"
-            case "sha1":
-                hash_sql = f"sha1({concat_sql})"
-
-        # Use the connection to execute SQL and create the result
-        # Register the input table and execute SQL
-        import uuid
+        # Register input as temp table, run SQL, materialize, then clean up
         temp_name = f"_hash_input_{uuid.uuid4().hex[:8]}"
         self._con.create_table(temp_name, table, overwrite=True)
 
         try:
-            # Execute and materialize the result immediately
-            sql = f"SELECT *, {hash_sql} AS {name} FROM {temp_name}"
-            result = self._con.sql(sql)
-            # Create a new in-memory table from the result to avoid lazy execution issues
-            result_name = f"_hash_result_{uuid.uuid4().hex[:8]}"
-            self._con.create_table(result_name, result, overwrite=True)
-            return self._con.table(result_name)
+            sql = f'SELECT *, {hash_sql} AS "{name}" FROM "{temp_name}"'
+            arrow_result = self._con.sql(sql).to_pyarrow()
         finally:
-            # Clean up temp input table
             with contextlib.suppress(Exception):
                 self._con.drop_table(temp_name, force=True)
+
+        # Load the materialized result back into the engine
+        result_table_name = f"_hash_result_{uuid.uuid4().hex[:8]}"
+        return self._con.create_table(result_table_name, arrow_result, overwrite=True)
 
     def coalesce(
         self,
