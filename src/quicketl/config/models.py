@@ -128,7 +128,7 @@ class FileSink(BaseModel):
 
     type: Literal["file"] = "file"
     path: str = Field(..., description="Output path (local or cloud URI)")
-    format: Literal["parquet", "csv"] = Field(
+    format: Literal["parquet", "csv", "json"] = Field(
         default="parquet",
         description="Output format",
     )
