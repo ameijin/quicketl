@@ -69,66 +69,70 @@ def write_database(
     # Connect to database
     con = ibis.connect(connection, **options)
 
-    # Handle different modes
-    match mode:
-        case "replace":
-            # Drop existing table if exists, then create from Arrow
-            with contextlib.suppress(Exception):
-                con.drop_table(target_table, force=True)
-            con.create_table(target_table, arrow_table)
-
-        case "truncate":
-            # Check if table exists first
-            try:
-                con.table(target_table)  # Raises if table doesn't exist
-                # Table exists - use raw SQL to truncate since not all backends support truncate_table
+    try:
+        # Handle different modes
+        match mode:
+            case "replace":
+                # Drop existing table if exists, then create from Arrow
                 with contextlib.suppress(Exception):
-                    con.raw_sql(f"DELETE FROM {target_table}")
-                con.insert(target_table, arrow_table)
-            except Exception:
-                # Table doesn't exist, create it
+                    con.drop_table(target_table, force=True)
                 con.create_table(target_table, arrow_table)
 
-        case "append":
-            # Insert into existing table (create if not exists)
-            try:
-                con.insert(target_table, arrow_table)
-            except Exception:
-                # Table might not exist, create it
-                con.create_table(target_table, arrow_table)
-
-        case "upsert":
-            # Delete matching rows by key columns, then insert all new data.
-            # If the table doesn't exist yet, just create it.
-            assert upsert_keys is not None  # validated above
-            try:
-                existing = con.table(target_table)
-                # Build delete condition: match on all upsert keys
-                # Load new data into a temp table, delete matches, then insert
-                _temp_name = f"_upsert_staging_{target_table}"
-                con.create_table(_temp_name, arrow_table, overwrite=True)
+            case "truncate":
+                # Check if table exists first
                 try:
-                    # Delete rows from target where keys match the incoming data
-                    key_conditions = " AND ".join(
-                        f'"{target_table}"."{k}" = "{_temp_name}"."{k}"'
-                        for k in upsert_keys
-                    )
-                    delete_sql = (
-                        f"DELETE FROM \"{target_table}\" WHERE EXISTS "
-                        f"(SELECT 1 FROM \"{_temp_name}\" WHERE {key_conditions})"
-                    )
-                    con.raw_sql(delete_sql)
-                    # Insert all new rows
-                    con.insert(target_table, arrow_table)
-                finally:
+                    con.table(target_table)  # Raises if table doesn't exist
+                    # Table exists - use raw SQL to truncate since not all backends support truncate_table
                     with contextlib.suppress(Exception):
-                        con.drop_table(_temp_name, force=True)
-            except Exception:
-                # Table doesn't exist yet, create it
-                con.create_table(target_table, arrow_table)
+                        con.raw_sql(f"DELETE FROM {target_table}")
+                    con.insert(target_table, arrow_table)
+                except Exception:
+                    # Table doesn't exist, create it
+                    con.create_table(target_table, arrow_table)
 
-        case _:
-            raise ValueError(f"Unsupported write mode: {mode}")
+            case "append":
+                # Insert into existing table (create if not exists)
+                try:
+                    con.insert(target_table, arrow_table)
+                except Exception:
+                    # Table might not exist, create it
+                    con.create_table(target_table, arrow_table)
+
+            case "upsert":
+                # Delete matching rows by key columns, then insert all new data.
+                # If the table doesn't exist yet, just create it.
+                assert upsert_keys is not None  # validated above
+                try:
+                    con.table(target_table)
+                    # Build delete condition: match on all upsert keys
+                    # Load new data into a temp table, delete matches, then insert
+                    _temp_name = f"_upsert_staging_{target_table}"
+                    con.create_table(_temp_name, arrow_table, overwrite=True)
+                    try:
+                        # Delete rows from target where keys match the incoming data
+                        key_conditions = " AND ".join(
+                            f'"{target_table}"."{k}" = "{_temp_name}"."{k}"'
+                            for k in upsert_keys
+                        )
+                        delete_sql = (
+                            f"DELETE FROM \"{target_table}\" WHERE EXISTS "
+                            f"(SELECT 1 FROM \"{_temp_name}\" WHERE {key_conditions})"
+                        )
+                        con.raw_sql(delete_sql)
+                        # Insert all new rows
+                        con.insert(target_table, arrow_table)
+                    finally:
+                        with contextlib.suppress(Exception):
+                            con.drop_table(_temp_name, force=True)
+                except Exception:
+                    # Table doesn't exist yet, create it
+                    con.create_table(target_table, arrow_table)
+
+            case _:
+                raise ValueError(f"Unsupported write mode: {mode}")
+    finally:
+        with contextlib.suppress(Exception):
+            con.disconnect()
 
     duration = (time.perf_counter() - start) * 1000
 

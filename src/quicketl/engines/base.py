@@ -184,15 +184,29 @@ class ETLXEngine:
         """
         log.debug("reading_database", has_query=query is not None, table=table)
 
-        # For database reads, we may need a separate connection
-        db_con = ibis.connect(connection)
-
-        if query:
-            return db_con.sql(query)
-        elif table:
-            return db_con.table(table)
-        else:
+        if not query and not table:
             raise ValueError("Either query or table must be provided")
+
+        # Connect to source database, materialize data, then disconnect.
+        # We load data into the engine's own backend so the external
+        # connection can be released immediately.
+        db_con = ibis.connect(connection)
+        try:
+            if query:
+                result = db_con.sql(query)
+            else:
+                result = db_con.table(table)
+
+            # Materialize to PyArrow so the result is independent of db_con
+            arrow_data = result.to_pyarrow()
+        finally:
+            with contextlib.suppress(Exception):
+                db_con.disconnect()
+
+        # Load into the engine's own backend
+        return self._con.create_table(
+            f"_db_read_{id(arrow_data)}", arrow_data, overwrite=True
+        )
 
     def write_sink(
         self,
