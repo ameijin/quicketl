@@ -242,6 +242,7 @@ exclude_lines = [
 # Semantic Release configuration
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/quicketl/_version.py:__version__"]
 commit_parser = "conventional"
 
 [tool.semantic_release.changelog]
