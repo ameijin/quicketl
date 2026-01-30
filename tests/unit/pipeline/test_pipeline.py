@@ -225,6 +225,75 @@ class TestPipelineResult:
         assert "Duration" in summary
 
 
+class TestPipelineBuilderExtended:
+    """Tests for additional builder methods."""
+
+    def test_transforms_batch(self):
+        """Add multiple transforms at once."""
+        pipeline = Pipeline("test").transforms([
+            FilterTransform(predicate="amount > 0"),
+            SelectTransform(columns=["id"]),
+        ])
+        assert len(pipeline._transforms) == 2
+
+    def test_checks_batch(self):
+        """Add multiple checks at once."""
+        pipeline = Pipeline("test").checks([
+            NotNullCheck(columns=["id"]),
+            RowCountCheck(min=1),
+        ])
+        assert len(pipeline._checks) == 2
+
+    def test_with_variables(self):
+        """Set runtime variables."""
+        pipeline = Pipeline("test").with_variables({"A": "1", "B": "2"})
+        assert pipeline._variables == {"A": "1", "B": "2"}
+
+    def test_with_variables_merges(self):
+        """Variables merge rather than replace."""
+        pipeline = Pipeline("test").with_variables({"A": "1"}).with_variables({"B": "2"})
+        assert pipeline._variables == {"A": "1", "B": "2"}
+
+    def test_run_no_source_raises(self):
+        """Pipeline without source raises ValueError."""
+        pipeline = Pipeline("test").sink(FileSink(path="out.parquet", format="parquet"))
+        result = pipeline.run()
+        assert result.status == PipelineStatus.FAILED
+        assert "source not configured" in result.error.lower()
+
+    def test_run_no_sink_raises(self):
+        """Pipeline without sink raises ValueError (non-dry-run)."""
+        pipeline = Pipeline("test").source(FileSource(path="in.parquet", format="parquet"))
+        result = pipeline.run()
+        assert result.status == PipelineStatus.FAILED
+        assert "sink not configured" in result.error.lower()
+
+    def test_run_no_sink_ok_dry_run(self, sample_parquet):
+        """Pipeline without sink succeeds in dry-run mode."""
+        pipeline = Pipeline("test").source(
+            FileSource(path=str(sample_parquet), format="parquet")
+        )
+        result = pipeline.run(dry_run=True)
+        assert result.status == PipelineStatus.SUCCESS
+
+
+class TestRunPipelineFunction:
+    """Tests for run_pipeline convenience function."""
+
+    def test_run_pipeline(self, sample_pipeline_yaml):
+        from quicketl.pipeline.pipeline import run_pipeline
+
+        result = run_pipeline(sample_pipeline_yaml, dry_run=True)
+        assert isinstance(result, PipelineResult)
+        assert result.status in [PipelineStatus.SUCCESS, PipelineStatus.PARTIAL]
+
+    def test_run_pipeline_with_engine_override(self, sample_pipeline_yaml):
+        from quicketl.pipeline.pipeline import run_pipeline
+
+        result = run_pipeline(sample_pipeline_yaml, engine="duckdb", dry_run=True)
+        assert result.metadata.get("engine") == "duckdb"
+
+
 class TestPipelineInfo:
     """Tests for pipeline inspection."""
 
