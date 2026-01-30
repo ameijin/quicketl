@@ -347,6 +347,44 @@ OpenLineage integration captures data provenance including source files/tables, 
 
 ---
 
+## Integration Enhancements
+
+### 🟡 dbt Staging Sink
+
+**Status**: Not implemented
+
+**Problem**: No built-in way to write QuickETL output to staging tables that dbt can consume.
+
+**Solution**: Add `dbt_staging` sink type that writes to a database with metadata columns (`_loaded_at`, `_source_file`) and generates `sources.yml` for dbt.
+
+**Desired syntax**:
+```yaml
+sink:
+  type: dbt_staging
+  connection: ${WAREHOUSE_CONNECTION}
+  schema: staging
+  table: stg_orders
+  include_metadata: true
+```
+
+---
+
+### 🟢 Data Profiling Module
+
+**Status**: Not implemented
+
+**Problem**: No way to quickly inspect data structure, null rates, and value distributions.
+
+**Solution**: Add a `DataProfiler` class and `quicketl profile` CLI command that produces column-level statistics (nulls, distinct counts, min/max, sample values).
+
+**Desired syntax**:
+```bash
+quicketl profile data.parquet
+quicketl profile data.parquet --format json -o profile.json
+```
+
+---
+
 ## Contributing
 
 To contribute to these enhancements:

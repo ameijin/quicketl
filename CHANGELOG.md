@@ -12,45 +12,7 @@
 
 ## v1.4.0 (2026-01-20)
 
-### Bug Fixes
-
-- Cleanup docs for most recent additions ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Mypy type checking errors ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Resolve all ruff linting errors in tests ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Resolve correctness blockers for release readiness
-  ([#5](https://github.com/ameijin/quicketl/pull/5),
-  [`b93f874`](https://github.com/ameijin/quicketl/commit/b93f874f5e3e0ff56ca39c181654099592d49c5a))
-
-- Resolve infinite loop in chunking strategies ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Resolve ruff linting errors ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Resolve test failures and potential infinite loops
-  ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-- Update the documentation ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
-### Documentation
-
-- Add guides for secrets, AI data prep, and observability
-  ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
 ### Features
-
-- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
-  expressions ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
 
 - **ai**: Add text chunking and embeddings transforms
   ([#4](https://github.com/ameijin/quicketl/pull/4),
@@ -64,15 +26,31 @@
   ([#4](https://github.com/ameijin/quicketl/pull/4),
   [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
 
-- **secrets**: Add pluggable secrets provider system
-  ([#4](https://github.com/ameijin/quicketl/pull/4),
-  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
-
 - **telemetry**: Add OpenTelemetry and OpenLineage integration
   ([#4](https://github.com/ameijin/quicketl/pull/4),
   [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
 
 - **transforms**: Add window, pivot, unpivot, hash_key, coalesce transforms
+  ([#4](https://github.com/ameijin/quicketl/pull/4),
+  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
+
+### Bug Fixes
+
+- Resolve correctness blockers for release readiness
+  ([#5](https://github.com/ameijin/quicketl/pull/5),
+  [`b93f874`](https://github.com/ameijin/quicketl/commit/b93f874f5e3e0ff56ca39c181654099592d49c5a))
+
+- Resolve infinite loop in chunking strategies
+  ([#4](https://github.com/ameijin/quicketl/pull/4),
+  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
+
+- Fix mypy type checking errors and ruff linting errors
+  ([#4](https://github.com/ameijin/quicketl/pull/4),
+  [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
+
+### Documentation
+
+- Add guides for secrets, AI data prep, and observability
   ([#4](https://github.com/ameijin/quicketl/pull/4),
   [`4e57e18`](https://github.com/ameijin/quicketl/commit/4e57e18b3c647ff86faed6596ce84f6ff0d73aa1))
 
@@ -85,30 +63,15 @@
 
 ## v1.3.0 (2025-12-22)
 
-### Bug Fixes
-
-- Cleanup docs for most recent additions ([#3](https://github.com/ameijin/quicketl/pull/3),
-  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
-
-- Mypy type checking errors ([#3](https://github.com/ameijin/quicketl/pull/3),
-  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
-
-- Resolve ruff linting errors ([#3](https://github.com/ameijin/quicketl/pull/3),
-  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
-
 ### Features
-
-- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
-  expressions ([#3](https://github.com/ameijin/quicketl/pull/3),
-  [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
 
 - **secrets**: Add pluggable secrets provider system
   ([#3](https://github.com/ameijin/quicketl/pull/3),
   [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
 
-### Testing
+### Bug Fixes
 
-- Add unit test infrastructure and additional test coverage
+- Fix mypy type checking and ruff linting errors
   ([#3](https://github.com/ameijin/quicketl/pull/3),
   [`7a6805c`](https://github.com/ameijin/quicketl/commit/7a6805cd98a7389ac8e2e43d6c4e8d2ec7856fc8))
 
@@ -117,13 +80,8 @@
 
 ### Bug Fixes
 
-- Cleanup docs for most recent additions ([#2](https://github.com/ameijin/quicketl/pull/2),
-  [`ad76647`](https://github.com/ameijin/quicketl/commit/ad766479d3c9224e7b9a257d2795417345c3284e))
-
-### Features
-
-- Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
-  expressions ([#2](https://github.com/ameijin/quicketl/pull/2),
+- Cleanup docs for most recent additions
+  ([#2](https://github.com/ameijin/quicketl/pull/2),
   [`ad76647`](https://github.com/ameijin/quicketl/commit/ad766479d3c9224e7b9a257d2795417345c3284e))
 
 
@@ -132,10 +90,7 @@
 ### Features
 
 - Add multi-source pipelines (join/union), database sink, partitioned writes, and enhanced
-  expressions ([#1](https://github.com/ameijin/quicketl/pull/1),
-  [`870077f`](https://github.com/ameijin/quicketl/commit/870077fa49a0785e1eeb32bc0d7b00c2f02c6e53))
-
-- Add multi-source pipelines (join/union), database sink, partiti…
+  expressions
   ([#1](https://github.com/ameijin/quicketl/pull/1),
   [`870077f`](https://github.com/ameijin/quicketl/commit/870077fa49a0785e1eeb32bc0d7b00c2f02c6e53))
 
