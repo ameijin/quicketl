@@ -1,0 +1,24 @@
+name: clean_sales
+engine: duckdb
+
+source:
+  type: file
+  path: data/raw_sales.csv
+  format: csv
+
+transforms:
+  - op: filter
+    predicate: amount > 0
+  - op: fill_null
+    columns:
+      region: "unknown"
+  - op: dedup
+
+checks:
+  - type: not_null
+    columns: [id, amount]
+
+sink:
+  type: file
+  path: data/silver/sales.parquet
+  format: parquet

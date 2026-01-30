@@ -1,0 +1,17 @@
+name: clean_regions
+engine: duckdb
+
+source:
+  type: file
+  path: data/regions.csv
+  format: csv
+
+transforms:
+  - op: derive_column
+    name: region_upper
+    expr: UPPER(region)
+
+sink:
+  type: file
+  path: data/silver/regions.parquet
+  format: parquet

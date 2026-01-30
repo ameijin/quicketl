@@ -1,0 +1,38 @@
+name: validated_pipeline
+description: Pipeline with comprehensive quality checks
+engine: duckdb
+
+source:
+  type: file
+  path: data/transactions.csv
+  format: csv
+
+transforms:
+  - op: cast
+    columns:
+      amount: float64
+      id: int64
+  - op: fill_null
+    columns:
+      category: "unknown"
+  - op: dedup
+    columns: [id]
+
+checks:
+  - type: not_null
+    columns: [id, amount]
+  - type: unique
+    columns: [id]
+  - type: row_count
+    min: 1
+    max: 10000
+  - type: accepted_values
+    column: category
+    values: [electronics, clothing, food, unknown]
+  - type: expression
+    expr: amount >= 0
+
+sink:
+  type: file
+  path: output/validated.parquet
+  format: parquet

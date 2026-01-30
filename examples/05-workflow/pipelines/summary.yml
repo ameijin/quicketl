@@ -1,0 +1,19 @@
+name: sales_summary
+engine: duckdb
+
+source:
+  type: file
+  path: data/silver/sales.parquet
+  format: parquet
+
+transforms:
+  - op: aggregate
+    group_by: [region]
+    aggs:
+      total_sales: sum(amount)
+      order_count: count(*)
+
+sink:
+  type: file
+  path: data/gold/summary.parquet
+  format: parquet

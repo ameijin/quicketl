@@ -1,0 +1,29 @@
+name: file_to_database
+description: Read a file and write to a database table
+engine: duckdb
+
+source:
+  type: file
+  path: data/users.csv
+  format: csv
+
+transforms:
+  - op: derive_column
+    name: username
+    expr: LOWER(name)
+  - op: select
+    columns: [id, name, username, email]
+
+# To use this example with a real database, update the connection string:
+#
+# sink:
+#   type: database
+#   connection: postgresql://user:pass@localhost:5432/mydb
+#   table: users
+#   mode: upsert           # append | truncate | replace | upsert
+#   upsert_keys: [id]      # required for upsert mode
+
+sink:
+  type: file
+  path: output/users.parquet
+  format: parquet
