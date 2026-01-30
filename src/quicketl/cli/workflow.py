@@ -51,6 +51,21 @@ def run(
             help="Set variable (KEY=VALUE), can be repeated",
         ),
     ] = None,
+    env: Annotated[
+        str | None,
+        typer.Option(
+            "--env",
+            help="Environment name from quicketl.yml (dev, staging, prod)",
+        ),
+    ] = None,
+    profile: Annotated[
+        str | None,
+        typer.Option(
+            "--profile",
+            "-p",
+            help="Connection profile name from quicketl.yml",
+        ),
+    ] = None,
     dry_run: Annotated[
         bool,
         typer.Option(
@@ -91,11 +106,15 @@ def run(
     Examples:
         quicketl workflow run workflows/medallion.yml
         quicketl workflow run workflows/etl.yml --var DATE=2025-01-01
+        quicketl workflow run workflows/etl.yml --env prod
         quicketl workflow run workflows/etl.yml --dry-run
         quicketl workflow run workflows/etl.yml --workers 4
     """
     configure_logging(level="DEBUG" if verbose else "INFO")
     variables = parse_variables(var or [])
+
+    # Load project config for --env and --profile
+    _resolve_project_config(env, profile, variables)
 
     try:
         workflow = Workflow.from_yaml(config_file, variables=variables)
@@ -430,6 +449,56 @@ def _display_result(result) -> None:
 
     if result.error:
         console.print(f"\n[red]Error:[/red] {result.error}")
+
+
+def _resolve_project_config(
+    env: str | None,
+    profile: str | None,
+    variables: dict[str, str],
+) -> None:
+    """Load project config and resolve --env/--profile flags.
+
+    Mutates `variables` dict to inject profile fields.
+    """
+    if env is None and profile is None:
+        return
+
+    from quicketl.config.project import find_project_config, load_project_config
+
+    project_path = find_project_config()
+    if project_path is None:
+        console.print(
+            "[yellow]Warning:[/yellow] quicketl.yml not found. "
+            "--env and --profile require a project config file."
+        )
+        return
+
+    project = load_project_config(project_path)
+
+    # Resolve environment
+    if env is not None:
+        from quicketl.config.environments import load_environment
+
+        try:
+            load_environment(project.model_dump(), env)
+        except KeyError:
+            console.print(f"[red]Error:[/red] Environment '{env}' not found in {project_path}")
+            raise typer.Exit(1) from None
+
+    # Resolve profile
+    if profile is not None:
+        from quicketl.config.profiles import load_profiles
+
+        try:
+            registry = load_profiles(project.model_dump())
+            conn_profile = registry.get(profile)
+            variables["PROFILE_TYPE"] = conn_profile.type
+            if conn_profile.model_extra:
+                for key, value in conn_profile.model_extra.items():
+                    variables[f"PROFILE_{key.upper()}"] = str(value)
+        except KeyError:
+            console.print(f"[red]Error:[/red] Profile '{profile}' not found in {project_path}")
+            raise typer.Exit(1) from None
 
 
 if __name__ == "__main__":

@@ -57,6 +57,21 @@ def run(
             help="Set variable (KEY=VALUE), can be repeated",
         ),
     ] = None,
+    env: Annotated[
+        str | None,
+        typer.Option(
+            "--env",
+            help="Environment name from quicketl.yml (dev, staging, prod)",
+        ),
+    ] = None,
+    profile: Annotated[
+        str | None,
+        typer.Option(
+            "--profile",
+            "-p",
+            help="Connection profile name from quicketl.yml",
+        ),
+    ] = None,
     dry_run: Annotated[
         bool,
         typer.Option(
@@ -94,6 +109,8 @@ def run(
         quicketl run pipeline.yml
         quicketl run pipeline.yml --engine duckdb
         quicketl run pipeline.yml --var DATE=2025-01-01 --var ENV=prod
+        quicketl run pipeline.yml --env prod
+        quicketl run pipeline.yml --profile warehouse
         quicketl run pipeline.yml --dry-run
     """
     # Configure logging
@@ -102,13 +119,18 @@ def run(
     # Parse variables
     variables = parse_variables(var or [])
 
+    # Load project config for --env and --profile
+    env_engine = _resolve_project_config(env, profile, variables)
+
     try:
         # Load pipeline
         pipeline = Pipeline.from_yaml(config_file, variables=variables)
 
-        # Override engine if specified
+        # Override engine: explicit --engine takes priority, then env engine
         if engine:
             pipeline.engine_name = engine
+        elif env_engine:
+            pipeline.engine_name = env_engine
 
         if not json_output:
             console.print(f"\nRunning pipeline: [bold]{pipeline.name}[/bold]")
@@ -204,6 +226,64 @@ def _display_result(result) -> None:
 
     if result.error:
         console.print(f"\n[red]Error:[/red] {result.error}")
+
+
+def _resolve_project_config(
+    env: str | None,
+    profile: str | None,
+    variables: dict[str, str],
+) -> str | None:
+    """Load project config and resolve --env/--profile flags.
+
+    Mutates `variables` dict to inject profile fields.
+
+    Returns:
+        Engine name from environment config, or None.
+    """
+    if env is None and profile is None:
+        return None
+
+    from quicketl.config.project import find_project_config, load_project_config
+
+    project_path = find_project_config()
+    if project_path is None:
+        console.print(
+            "[yellow]Warning:[/yellow] quicketl.yml not found. "
+            "--env and --profile require a project config file."
+        )
+        return None
+
+    project = load_project_config(project_path)
+    env_engine: str | None = None
+
+    # Resolve environment
+    if env is not None:
+        from quicketl.config.environments import load_environment
+
+        try:
+            env_config = load_environment(project.model_dump(), env)
+            env_engine = env_config.engine
+        except KeyError:
+            console.print(f"[red]Error:[/red] Environment '{env}' not found in {project_path}")
+            raise typer.Exit(1) from None
+
+    # Resolve profile
+    if profile is not None:
+        from quicketl.config.profiles import load_profiles
+
+        try:
+            registry = load_profiles(project.model_dump())
+            conn_profile = registry.get(profile)
+            # Inject profile fields as PROFILE_* variables
+            variables["PROFILE_TYPE"] = conn_profile.type
+            if conn_profile.model_extra:
+                for key, value in conn_profile.model_extra.items():
+                    variables[f"PROFILE_{key.upper()}"] = str(value)
+        except KeyError:
+            console.print(f"[red]Error:[/red] Profile '{profile}' not found in {project_path}")
+            raise typer.Exit(1) from None
+
+    return env_engine
 
 
 if __name__ == "__main__":
