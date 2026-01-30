@@ -349,108 +349,10 @@ class ETLXEngine:
         Returns:
             Filtered table
         """
-        # Parse simple predicates into Ibis expressions
-        expr = self._parse_predicate(table, predicate)
+        from quicketl.engines.parsing import parse_predicate
+
+        expr = parse_predicate(table, predicate)
         return table.filter(expr)
-
-    def _parse_predicate(self, table: ir.Table, predicate: str) -> ibis.Expr:
-        """Parse a simple SQL-like predicate into an Ibis expression.
-
-        Supported predicates:
-            - Comparison: col > 100, col == 'value', col != 0
-            - IN: col IN ('a', 'b', 'c'), col IN (1, 2, 3)
-            - NOT IN: col NOT IN ('x', 'y')
-            - NULL checks: col IS NULL, col IS NOT NULL
-            - Boolean: active, NOT active
-        """
-        import re
-
-        predicate = predicate.strip()
-        predicate_lower = predicate.lower()
-
-        # Handle IS NULL and IS NOT NULL
-        is_null_match = re.match(r"(\w+)\s+IS\s+NULL", predicate, re.I)
-        if is_null_match:
-            return table[is_null_match.group(1)].isnull()
-
-        is_not_null_match = re.match(r"(\w+)\s+IS\s+NOT\s+NULL", predicate, re.I)
-        if is_not_null_match:
-            return table[is_not_null_match.group(1)].notnull()
-
-        # Handle NOT IN (col NOT IN (val1, val2, ...))
-        not_in_match = re.match(r"(\w+)\s+NOT\s+IN\s*\((.+)\)", predicate, re.I)
-        if not_in_match:
-            col_name = not_in_match.group(1)
-            values_str = not_in_match.group(2)
-            values = [self._parse_value(v.strip()) for v in values_str.split(",")]
-            return ~table[col_name].isin(values)
-
-        # Handle IN (col IN (val1, val2, ...))
-        in_match = re.match(r"(\w+)\s+IN\s*\((.+)\)", predicate, re.I)
-        if in_match:
-            col_name = in_match.group(1)
-            values_str = in_match.group(2)
-            values = [self._parse_value(v.strip()) for v in values_str.split(",")]
-            return table[col_name].isin(values)
-
-        # Handle LIKE pattern matching
-        like_match = re.match(r"(\w+)\s+LIKE\s+'(.+)'", predicate, re.I)
-        if like_match:
-            col_name = like_match.group(1)
-            pattern = like_match.group(2)
-            return table[col_name].like(pattern)
-
-        # Handle comparison operators (check longest operators first to avoid partial matches)
-        for op_str, op_func in [
-            (">=", lambda col, val: col >= val),
-            ("<=", lambda col, val: col <= val),
-            ("!=", lambda col, val: col != val),
-            ("<>", lambda col, val: col != val),  # SQL not equal
-            ("==", lambda col, val: col == val),
-            (">", lambda col, val: col > val),
-            ("<", lambda col, val: col < val),
-            ("=", lambda col, val: col == val),  # Single = must be last
-        ]:
-            if op_str in predicate:
-                # Split only once to handle the operator correctly
-                parts = predicate.split(op_str, 1)
-                if len(parts) == 2:
-                    col_name = parts[0].strip()
-                    val_str = parts[1].strip()
-
-                    # Parse the value
-                    val = self._parse_value(val_str)
-                    return op_func(table[col_name], val)
-
-        # Handle boolean column references (e.g., "active" or "NOT active")
-        if predicate_lower.startswith("not "):
-            col_name = predicate[4:].strip()
-            return ~table[col_name]
-        elif predicate in table.columns:
-            return table[predicate]
-
-        raise ValueError(f"Unable to parse predicate: {predicate}")
-
-    def _parse_value(self, val_str: str) -> Any:
-        """Parse a string value into the appropriate Python type."""
-        val_str = val_str.strip()
-
-        # Handle quoted strings
-        if (val_str.startswith("'") and val_str.endswith("'")) or \
-           (val_str.startswith('"') and val_str.endswith('"')):
-            return val_str[1:-1]
-
-        # Handle booleans
-        if val_str.lower() in ("true", "false"):
-            return val_str.lower() == "true"
-
-        # Handle numbers
-        try:
-            if "." in val_str:
-                return float(val_str)
-            return int(val_str)
-        except ValueError:
-            return val_str
 
     def _parse_expression(self, table: ir.Table, expr: str) -> ibis.Expr:
         """Parse a simple SQL-like expression into an Ibis expression.
@@ -463,13 +365,14 @@ class ETLXEngine:
         """
         import re
 
+        from quicketl.engines.parsing import parse_value
+
         expr = expr.strip()
 
         # Handle COALESCE(col1, col2, ..., default)
         coalesce_match = re.match(r"coalesce\s*\((.+)\)", expr, re.I)
         if coalesce_match:
             args_str = coalesce_match.group(1)
-            # Split by comma, but handle nested parentheses
             args = self._split_args(args_str)
             ibis_args = [self._parse_operand(table, a) for a in args]
             return ibis.coalesce(*ibis_args)
@@ -540,7 +443,7 @@ class ETLXEngine:
             return table[expr]
 
         # Try to parse as a literal value
-        return ibis.literal(self._parse_value(expr))
+        return ibis.literal(parse_value(expr))
 
     def _split_args(self, args_str: str) -> list[str]:
         """Split comma-separated arguments, handling nested parentheses."""
@@ -548,7 +451,7 @@ class ETLXEngine:
         current = []
         depth = 0
         for char in args_str:
-            if char == "(" :
+            if char == "(":
                 depth += 1
                 current.append(char)
             elif char == ")":
@@ -565,6 +468,8 @@ class ETLXEngine:
 
     def _parse_operand(self, table: ir.Table, operand: str) -> ibis.Expr:
         """Parse an operand (column or literal) into an Ibis expression."""
+        from quicketl.engines.parsing import parse_value
+
         operand = operand.strip()
 
         # Check if it's a column reference
@@ -572,7 +477,7 @@ class ETLXEngine:
             return table[operand]
 
         # Otherwise, parse as a literal
-        return ibis.literal(self._parse_value(operand))
+        return ibis.literal(parse_value(operand))
 
     def derive_column(
         self,

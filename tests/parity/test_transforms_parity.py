@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 
 from quicketl.engines import ETLXEngine
+from quicketl.engines.parsing import parse_predicate
 
 
 class TestFilterParity:
@@ -18,7 +19,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_numeric_comparison(self, parity_engine, parity_sample_data):
         """Test that numeric filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "amount > 150")
+        predicate = parse_predicate(parity_sample_data, "amount > 150")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -28,7 +29,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_string_comparison(self, parity_engine, parity_sample_data):
         """Test that string filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "region = 'North'")
+        predicate = parse_predicate(parity_sample_data, "region = 'North'")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -38,7 +39,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_boolean_column(self, parity_engine, parity_sample_data):
         """Test that boolean column filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "active")
+        predicate = parse_predicate(parity_sample_data, "active")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -48,7 +49,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_in_operator(self, parity_engine, parity_sample_data):
         """Test that IN operator is consistent."""
-        predicate = parity_engine._parse_predicate(
+        predicate = parse_predicate(
             parity_sample_data, "region IN ('North', 'East')"
         )
         result = parity_sample_data.filter(predicate)
@@ -232,7 +233,7 @@ class TestNullHandlingParity:
         df = pd.DataFrame(data)
         table = parity_engine.connection.create_table("null_test2", df, overwrite=True)
 
-        predicate = parity_engine._parse_predicate(table, "val IS NULL")
+        predicate = parse_predicate(table, "val IS NULL")
         result = table.filter(predicate)
         df_result = parity_engine.to_pandas(result)
 
@@ -264,7 +265,7 @@ class TestMultiBackendComparison:
         # Apply chain of transforms
         def apply_transforms(engine, table):
             # Filter
-            pred = engine._parse_predicate(table, "value > 15")
+            pred = parse_predicate(table, "value > 15")
             filtered = table.filter(pred)
 
             # Derive column
