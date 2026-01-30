@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from quicketl.config.transforms import TransformStep
 
 from quicketl.config.loader import load_pipeline_config
-from quicketl.engines import ETLXEngine
+from quicketl.engines import QuickETLEngine
 from quicketl.logging import get_logger
 from quicketl.pipeline.context import ExecutionContext
 from quicketl.pipeline.result import (
@@ -255,7 +255,7 @@ class Pipeline:
                 raise ValueError("Pipeline sink not configured")
 
             # Initialize engine
-            engine = ETLXEngine(backend=self.engine_name)
+            engine = QuickETLEngine(backend=self.engine_name)
 
             # Load all sources into context
             if has_multi_source:
@@ -315,7 +315,7 @@ class Pipeline:
 
     def _run_read_step(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         builder: PipelineResultBuilder,
     ) -> ir.Table:
         """Execute the source read step."""
@@ -339,7 +339,7 @@ class Pipeline:
 
     def _run_transform_steps(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         table: ir.Table,
         builder: PipelineResultBuilder,
         context: dict[str, ir.Table] | None = None,
@@ -445,7 +445,7 @@ class Pipeline:
 
     def _run_write_step(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         table: ir.Table,
         builder: PipelineResultBuilder,
     ) -> Any:

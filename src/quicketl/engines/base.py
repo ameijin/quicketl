@@ -1,4 +1,4 @@
-"""ETLXEngine - Core engine wrapper around Ibis.
+"""QuickETLEngine - Core engine wrapper around Ibis.
 
 This module provides the main abstraction layer that wraps Ibis backends,
 exposing a simplified, ETL-focused API.
@@ -54,14 +54,14 @@ class WriteResult:
     duration_ms: float = 0.0
 
 
-class ETLXEngine:
-    """ETLX engine wrapper around Ibis.
+class QuickETLEngine:
+    """QuickETL engine wrapper around Ibis.
 
     Provides a simplified, ETL-focused API for data processing with support
     for 20+ backends via Ibis.
 
     Example:
-        >>> engine = ETLXEngine(backend="duckdb")
+        >>> engine = QuickETLEngine(backend="duckdb")
         >>> table = engine.read_file("data.parquet", "parquet")
         >>> filtered = engine.filter(table, "amount > 100")
         >>> result = engine.to_polars(filtered)
@@ -1185,3 +1185,7 @@ class ETLXEngine:
             return str(ibis.to_sql(table))
         except Exception:
             return "<SQL compilation not supported for this backend>"
+
+
+# Deprecated alias — use QuickETLEngine instead
+ETLXEngine = QuickETLEngine

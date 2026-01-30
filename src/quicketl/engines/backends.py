@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from quicketl.engines.base import ETLXEngine
+from quicketl.engines.base import QuickETLEngine
 
 
 @dataclass
@@ -19,9 +19,9 @@ class BackendConfig:
     connection_string: str | None = None
     options: dict[str, Any] | None = None
 
-    def to_engine(self) -> ETLXEngine:
-        """Create an ETLXEngine from this configuration."""
-        return ETLXEngine(
+    def to_engine(self) -> QuickETLEngine:
+        """Create an QuickETLEngine from this configuration."""
+        return QuickETLEngine(
             backend=self.name,
             connection_string=self.connection_string,
             **(self.options or {}),
@@ -137,8 +137,8 @@ def get_backend(
     name: str,
     connection_string: str | None = None,
     **kwargs: Any,
-) -> ETLXEngine:
-    """Get an ETLXEngine for the specified backend.
+) -> QuickETLEngine:
+    """Get an QuickETLEngine for the specified backend.
 
     Args:
         name: Backend name (duckdb, polars, etc.)
@@ -146,7 +146,7 @@ def get_backend(
         **kwargs: Additional connection options
 
     Returns:
-        Configured ETLXEngine
+        Configured QuickETLEngine
 
     Raises:
         ValueError: If backend is not supported
@@ -159,7 +159,7 @@ def get_backend(
         supported = ", ".join(BACKENDS.keys())
         raise ValueError(f"Unknown backend: {name}. Supported: {supported}")
 
-    return ETLXEngine(
+    return QuickETLEngine(
         backend=name,
         connection_string=connection_string,
         **kwargs,

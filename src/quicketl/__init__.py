@@ -10,18 +10,15 @@ Example:
 """
 
 from quicketl._version import __version__, __version_info__
-from quicketl.engines.base import ETLXEngine
+from quicketl.engines.base import ETLXEngine, QuickETLEngine
 from quicketl.pipeline.pipeline import Pipeline
 from quicketl.pipeline.result import PipelineResult
-
-# Alias for the new package name
-QuickETLEngine = ETLXEngine
 
 __all__ = [
     "__version__",
     "__version_info__",
     "Pipeline",
     "PipelineResult",
-    "ETLXEngine",
     "QuickETLEngine",
+    "ETLXEngine",  # Deprecated alias
 ]
