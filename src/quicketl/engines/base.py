@@ -213,8 +213,8 @@ class ETLXEngine:
         match config:
             case FileSink(path=path, format=fmt, partition_by=parts):
                 return self.write_file(table, path, fmt, partition_by=parts)
-            case DatabaseSink(connection=conn, table=target_table, mode=mode):
-                return self.write_database(table, conn, target_table, mode=mode)
+            case DatabaseSink(connection=conn, table=target_table, mode=mode, upsert_keys=ukeys):
+                return self.write_database(table, conn, target_table, mode=mode, upsert_keys=ukeys)
             case _:
                 raise NotImplementedError(f"Sink type not supported: {type(config)}")
 
@@ -254,6 +254,7 @@ class ETLXEngine:
         connection: str,
         target_table: str,
         mode: Literal["append", "truncate", "replace", "upsert"] = "append",
+        upsert_keys: list[str] | None = None,
     ) -> WriteResult:
         """Write data to a database table.
 
@@ -261,7 +262,8 @@ class ETLXEngine:
             table: Ibis Table expression
             connection: Database connection string
             target_table: Target table name (can include schema, e.g., 'gold.revenue')
-            mode: Write mode - 'append', 'truncate', or 'replace'
+            mode: Write mode - 'append', 'truncate', 'replace', or 'upsert'
+            upsert_keys: Primary key columns for upsert mode
 
         Returns:
             WriteResult with operation details
@@ -271,7 +273,8 @@ class ETLXEngine:
             ...     table,
             ...     "postgresql://user:pass@localhost/db",
             ...     "gold.revenue_summary",
-            ...     mode="truncate"
+            ...     mode="upsert",
+            ...     upsert_keys=["id"],
             ... )
         """
         from quicketl.io.writers.database import write_database
@@ -283,6 +286,7 @@ class ETLXEngine:
             connection=connection,
             target_table=target_table,
             mode=mode,
+            upsert_keys=upsert_keys,
         )
 
         return WriteResult(

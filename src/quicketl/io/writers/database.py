@@ -28,6 +28,7 @@ def write_database(
     connection: str,
     target_table: str,
     mode: Literal["append", "truncate", "replace", "upsert"] = "append",
+    upsert_keys: list[str] | None = None,
     **options: Any,
 ) -> DatabaseWriteResult:
     """Write data to a database table.
@@ -40,15 +41,24 @@ def write_database(
             - 'append': Add rows to existing table
             - 'truncate': Clear table and insert
             - 'replace': Drop and recreate table
+            - 'upsert': Delete matching rows by key, then insert
+        upsert_keys: Primary key columns for upsert mode (required when mode='upsert')
         **options: Additional connection options
 
     Returns:
         DatabaseWriteResult with operation details
 
+    Raises:
+        ValueError: If mode is 'upsert' but upsert_keys not provided
+
     Examples:
         >>> write_database(table, "postgresql://localhost/db", "output_table")
         >>> write_database(table, conn, "table", mode="replace")
+        >>> write_database(table, conn, "table", mode="upsert", upsert_keys=["id"])
     """
+    if mode == "upsert" and not upsert_keys:
+        raise ValueError("upsert_keys are required when mode is 'upsert'")
+
     start = time.perf_counter()
 
     # Materialize the data to PyArrow for cross-backend compatibility
@@ -85,6 +95,36 @@ def write_database(
                 con.insert(target_table, arrow_table)
             except Exception:
                 # Table might not exist, create it
+                con.create_table(target_table, arrow_table)
+
+        case "upsert":
+            # Delete matching rows by key columns, then insert all new data.
+            # If the table doesn't exist yet, just create it.
+            assert upsert_keys is not None  # validated above
+            try:
+                existing = con.table(target_table)
+                # Build delete condition: match on all upsert keys
+                # Load new data into a temp table, delete matches, then insert
+                _temp_name = f"_upsert_staging_{target_table}"
+                con.create_table(_temp_name, arrow_table, overwrite=True)
+                try:
+                    # Delete rows from target where keys match the incoming data
+                    key_conditions = " AND ".join(
+                        f'"{target_table}"."{k}" = "{_temp_name}"."{k}"'
+                        for k in upsert_keys
+                    )
+                    delete_sql = (
+                        f"DELETE FROM \"{target_table}\" WHERE EXISTS "
+                        f"(SELECT 1 FROM \"{_temp_name}\" WHERE {key_conditions})"
+                    )
+                    con.raw_sql(delete_sql)
+                    # Insert all new rows
+                    con.insert(target_table, arrow_table)
+                finally:
+                    with contextlib.suppress(Exception):
+                        con.drop_table(_temp_name, force=True)
+            except Exception:
+                # Table doesn't exist yet, create it
                 con.create_table(target_table, arrow_table)
 
         case _:
