@@ -9,7 +9,6 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    import ibis
     import ibis.expr.types as ir
 
 from quicketl.config.checks import (
@@ -248,8 +247,10 @@ def run_expression_check(table: ir.Table, config: ExpressionCheck) -> CheckResul
         CheckResult with failing row count
     """
     try:
+        from quicketl.engines.parsing import parse_predicate
+
         # Parse the expression into an Ibis expression
-        expr = _parse_predicate(table, config.expr)
+        expr = parse_predicate(table, config.expr)
 
         # Count rows where expression is NOT true
         failing_rows = table.filter(~expr)
@@ -283,61 +284,6 @@ def run_expression_check(table: ir.Table, config: ExpressionCheck) -> CheckResul
             message=f"Failed to evaluate expression: {config.expr}",
             details={"expression": config.expr, "error": str(e)},
         )
-
-
-def _parse_predicate(table: ir.Table, predicate: str) -> ibis.Expr:
-    """Parse a simple SQL-like predicate into an Ibis expression."""
-
-    # Handle comparison operators
-    for op_str, op_func in [
-        (">=", lambda col, val: col >= val),
-        ("<=", lambda col, val: col <= val),
-        ("!=", lambda col, val: col != val),
-        ("=", lambda col, val: col == val),
-        (">", lambda col, val: col > val),
-        ("<", lambda col, val: col < val),
-    ]:
-        if op_str in predicate:
-            parts = predicate.split(op_str)
-            if len(parts) == 2:
-                col_name = parts[0].strip()
-                val_str = parts[1].strip()
-
-                # Parse the value
-                val = _parse_value(val_str)
-                return op_func(table[col_name], val)
-
-    # Handle boolean column references (e.g., "active" or "NOT active")
-    predicate_lower = predicate.strip().lower()
-    if predicate_lower.startswith("not "):
-        col_name = predicate.strip()[4:].strip()
-        return ~table[col_name]
-    elif predicate.strip() in table.columns:
-        return table[predicate.strip()]
-
-    raise ValueError(f"Unable to parse predicate: {predicate}")
-
-
-def _parse_value(val_str: str) -> Any:
-    """Parse a string value into the appropriate Python type."""
-    val_str = val_str.strip()
-
-    # Handle quoted strings
-    if (val_str.startswith("'") and val_str.endswith("'")) or \
-       (val_str.startswith('"') and val_str.endswith('"')):
-        return val_str[1:-1]
-
-    # Handle booleans
-    if val_str.lower() in ("true", "false"):
-        return val_str.lower() == "true"
-
-    # Handle numbers
-    try:
-        if "." in val_str:
-            return float(val_str)
-        return int(val_str)
-    except ValueError:
-        return val_str
 
 
 def run_contract_check(table: ir.Table, config: ContractCheck) -> CheckResult:

@@ -3665,7 +3665,7 @@ wheels = [
 
 [[package]]
 name = "quicketl"
-version = "1.4.0"
+version = "1.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "fsspec" },
@@ -3696,7 +3696,6 @@ all = [
     { name = "boto3" },
     { name = "gcsfs" },
     { name = "google-cloud-storage" },
-    { name = "hypothesis" },
     { name = "ibis-framework", extra = ["bigquery", "clickhouse", "datafusion", "mysql", "postgres", "pyspark", "snowflake", "trino"] },
     { name = "mkdocs" },
     { name = "mkdocs-gen-files" },
@@ -3704,8 +3703,6 @@ all = [
     { name = "mkdocs-material" },
     { name = "mkdocs-section-index" },
     { name = "mkdocstrings", extra = ["python"] },
-    { name = "moto" },
-    { name = "mypy" },
     { name = "nltk" },
     { name = "openai" },
     { name = "openlineage-python" },
@@ -3716,17 +3713,9 @@ all = [
     { name = "pandera", extra = ["polars"] },
     { name = "pgvector" },
     { name = "pinecone-client" },
-    { name = "pre-commit" },
     { name = "psycopg2-binary" },
     { name = "pymdown-extensions" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
     { name = "qdrant-client" },
-    { name = "responses" },
-    { name = "ruff" },
     { name = "s3fs" },
     { name = "sentence-transformers" },
     { name = "setuptools" },
@@ -3755,19 +3744,6 @@ contracts = [
 ]
 datafusion = [
     { name = "ibis-framework", extra = ["datafusion"] },
-]
-dev = [
-    { name = "hypothesis" },
-    { name = "moto" },
-    { name = "mypy" },
-    { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "responses" },
-    { name = "ruff" },
 ]
 docs = [
     { name = "mkdocs" },
@@ -3848,9 +3824,18 @@ vector-qdrant = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "hypothesis" },
+    { name = "moto" },
+    { name = "mypy" },
+    { name = "pre-commit" },
     { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
     { name = "pytest-cov" },
+    { name = "pytest-mock" },
     { name = "python-semantic-release" },
+    { name = "responses" },
+    { name = "ruff" },
     { name = "twine" },
 ]
 
@@ -3865,7 +3850,6 @@ requires-dist = [
     { name = "fsspec", specifier = ">=2024.6" },
     { name = "gcsfs", marker = "extra == 'gcp'", specifier = ">=2024.6" },
     { name = "google-cloud-storage", marker = "extra == 'gcp'", specifier = ">=2.14" },
-    { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.100" },
     { name = "ibis-framework", extras = ["bigquery"], marker = "extra == 'bigquery'", specifier = ">=9.0" },
     { name = "ibis-framework", extras = ["clickhouse"], marker = "extra == 'clickhouse'", specifier = ">=9.0" },
     { name = "ibis-framework", extras = ["datafusion"], marker = "extra == 'datafusion'", specifier = ">=9.0" },
@@ -3881,8 +3865,6 @@ requires-dist = [
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5" },
     { name = "mkdocs-section-index", marker = "extra == 'docs'", specifier = ">=0.3" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'", specifier = ">=0.25" },
-    { name = "moto", marker = "extra == 'dev'", specifier = ">=5.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "nltk", marker = "extra == 'chunking'", specifier = ">=3.8" },
     { name = "openai", marker = "extra == 'embeddings-openai'", specifier = ">=1.0" },
     { name = "openlineage-python", marker = "extra == 'openlineage'", specifier = ">=1.8" },
@@ -3893,24 +3875,16 @@ requires-dist = [
     { name = "pandera", extras = ["polars"], marker = "extra == 'contracts'", specifier = ">=0.20" },
     { name = "pgvector", marker = "extra == 'vector-pgvector'", specifier = ">=0.2" },
     { name = "pinecone-client", marker = "extra == 'vector-pinecone'", specifier = ">=3.0" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
     { name = "psycopg2-binary", marker = "extra == 'vector-pgvector'", specifier = ">=2.9" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pymdown-extensions", marker = "extra == 'docs'", specifier = ">=10.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
-    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
-    { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.12" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "qdrant-client", marker = "extra == 'vector-qdrant'", specifier = ">=1.7" },
     { name = "quicketl", extras = ["chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant"], marker = "extra == 'ai'" },
     { name = "quicketl", extras = ["contracts"], marker = "extra == 'quality'" },
     { name = "quicketl", extras = ["secrets-aws", "secrets-azure", "opentelemetry", "openlineage"], marker = "extra == 'enterprise'" },
-    { name = "quicketl", extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "ai", "enterprise", "quality", "dev", "docs"], marker = "extra == 'all'" },
-    { name = "responses", marker = "extra == 'dev'", specifier = ">=0.25" },
+    { name = "quicketl", extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "ai", "enterprise", "quality", "docs"], marker = "extra == 'all'" },
     { name = "rich", specifier = ">=13.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
     { name = "s3fs", marker = "extra == 'aws'", specifier = ">=2024.6" },
     { name = "sentence-transformers", marker = "extra == 'embeddings-huggingface'", specifier = ">=2.2" },
     { name = "setuptools", marker = "extra == 'spark'", specifier = ">=60.0" },
@@ -3919,13 +3893,22 @@ requires-dist = [
     { name = "tiktoken", marker = "extra == 'embeddings-openai'", specifier = ">=0.5" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "secrets-aws", "secrets-azure", "chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant", "opentelemetry", "openlineage", "dev", "contracts", "quality", "docs", "ai", "enterprise", "all"]
+provides-extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "secrets-aws", "secrets-azure", "chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant", "opentelemetry", "openlineage", "contracts", "quality", "docs", "ai", "enterprise", "all"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "hypothesis", specifier = ">=6.100" },
+    { name = "moto", specifier = ">=5.0" },
+    { name = "mypy", specifier = ">=1.10" },
+    { name = "pre-commit", specifier = ">=3.7" },
     { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-asyncio", specifier = ">=0.23" },
+    { name = "pytest-benchmark", specifier = ">=4.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "pytest-mock", specifier = ">=3.12" },
     { name = "python-semantic-release", specifier = ">=10.0.0" },
+    { name = "responses", specifier = ">=0.25" },
+    { name = "ruff", specifier = ">=0.5" },
     { name = "twine", specifier = ">=6.2.0" },
 ]
 

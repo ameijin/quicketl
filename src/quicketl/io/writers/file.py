@@ -30,10 +30,13 @@ def write_file(
 ) -> WriteResult:
     """Write data to a file.
 
+    Cloud paths (s3://, gs://, az://) are automatically retried with
+    exponential backoff on transient I/O failures.
+
     Args:
         table: Ibis Table expression
         path: Output path (local or cloud URI)
-        format: Output format (parquet, csv)
+        format: Output format (parquet, csv, json)
         partition_by: Columns to partition by (if supported)
         **options: Format-specific write options
 
@@ -50,19 +53,33 @@ def write_file(
     row_count = table.count().execute()
     partitions = 0
 
-    match format.lower():
-        case "parquet" | "pq":
-            if partition_by:
-                partitions = _write_partitioned_parquet(table, path, partition_by, **options)
-            else:
-                table.to_parquet(path, **options)
-        case "csv":
-            if partition_by:
-                partitions = _write_partitioned_csv(table, path, partition_by, **options)
-            else:
-                table.to_csv(path, **options)
-        case _:
-            raise ValueError(f"Unsupported output format: {format}")
+    def _do_write() -> int:
+        nonlocal partitions
+        match format.lower():
+            case "parquet" | "pq":
+                if partition_by:
+                    partitions = _write_partitioned_parquet(table, path, partition_by, **options)
+                else:
+                    table.to_parquet(path, **options)
+            case "csv":
+                if partition_by:
+                    partitions = _write_partitioned_csv(table, path, partition_by, **options)
+                else:
+                    table.to_csv(path, **options)
+            case "json" | "jsonl" | "ndjson":
+                if partition_by:
+                    raise ValueError("Partitioned writes are not supported for JSON format")
+                table.to_pandas().to_json(path, orient="records", lines=True)
+            case _:
+                raise ValueError(f"Unsupported output format: {format}")
+        return 0
+
+    from quicketl.io.retry import is_cloud_path, with_retry
+
+    if is_cloud_path(path):
+        with_retry(_do_write)
+    else:
+        _do_write()
 
     duration = (time.perf_counter() - start) * 1000
 

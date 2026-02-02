@@ -103,8 +103,9 @@ class IcebergSource(BaseModel):
 
 
 # Discriminated union for all source types
+# Note: IcebergSource is defined but excluded from the union until implemented
 SourceConfig = Annotated[
-    FileSource | DatabaseSource | IcebergSource,
+    FileSource | DatabaseSource,
     Field(discriminator="type"),
 ]
 
@@ -127,7 +128,7 @@ class FileSink(BaseModel):
 
     type: Literal["file"] = "file"
     path: str = Field(..., description="Output path (local or cloud URI)")
-    format: Literal["parquet", "csv"] = Field(
+    format: Literal["parquet", "csv", "json"] = Field(
         default="parquet",
         description="Output format",
     )
@@ -252,7 +253,10 @@ class PipelineConfig(BaseModel):
         default_factory=list,
         description="Quality checks to run",
     )
-    sink: SinkConfig = Field(..., description="Data sink configuration")
+    sink: SinkConfig | None = Field(
+        default=None,
+        description="Data sink configuration (optional for dry-run/validation pipelines)",
+    )
 
     model_config = {
         "extra": "forbid",

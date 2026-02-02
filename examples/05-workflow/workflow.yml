@@ -1,0 +1,14 @@
+name: medallion_workflow
+description: Bronze -> Silver -> Gold medallion architecture
+engine: duckdb
+
+stages:
+  - name: silver
+    parallel: true
+    pipelines:
+      - path: pipelines/clean_sales.yml
+      - path: pipelines/clean_regions.yml
+
+  - name: gold
+    pipelines:
+      - path: pipelines/summary.yml

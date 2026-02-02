@@ -21,6 +21,9 @@ def read_file(
 ) -> ir.Table:
     """Read data from a file.
 
+    Cloud paths (s3://, gs://, az://) are automatically retried with
+    exponential backoff on transient I/O failures.
+
     Args:
         path: File path (local or cloud URI like s3://, gs://, abfss://)
         format: File format (parquet, csv, json)
@@ -37,15 +40,22 @@ def read_file(
     if backend is None:
         backend = ibis.duckdb.connect()
 
-    match format.lower():
-        case "parquet" | "pq":
-            return backend.read_parquet(path, **options)
-        case "csv":
-            return backend.read_csv(path, **options)
-        case "json" | "jsonl" | "ndjson":
-            return backend.read_json(path, **options)
-        case _:
-            raise ValueError(f"Unsupported file format: {format}")
+    def _do_read() -> ir.Table:
+        match format.lower():
+            case "parquet" | "pq":
+                return backend.read_parquet(path, **options)
+            case "csv":
+                return backend.read_csv(path, **options)
+            case "json" | "jsonl" | "ndjson":
+                return backend.read_json(path, **options)
+            case _:
+                raise ValueError(f"Unsupported file format: {format}")
+
+    from quicketl.io.retry import is_cloud_path, with_retry
+
+    if is_cloud_path(path):
+        return with_retry(_do_read)
+    return _do_read()
 
 
 def read_parquet(

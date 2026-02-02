@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 
 from quicketl.engines import ETLXEngine
+from quicketl.engines.parsing import parse_predicate
 
 
 class TestFilterParity:
@@ -18,7 +19,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_numeric_comparison(self, parity_engine, parity_sample_data):
         """Test that numeric filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "amount > 150")
+        predicate = parse_predicate(parity_sample_data, "amount > 150")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -28,7 +29,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_string_comparison(self, parity_engine, parity_sample_data):
         """Test that string filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "region = 'North'")
+        predicate = parse_predicate(parity_sample_data, "region = 'North'")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -38,7 +39,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_boolean_column(self, parity_engine, parity_sample_data):
         """Test that boolean column filtering is consistent."""
-        predicate = parity_engine._parse_predicate(parity_sample_data, "active")
+        predicate = parse_predicate(parity_sample_data, "active")
         result = parity_sample_data.filter(predicate)
         df = parity_engine.to_pandas(result)
 
@@ -48,7 +49,7 @@ class TestFilterParity:
     @pytest.mark.parity
     def test_filter_in_operator(self, parity_engine, parity_sample_data):
         """Test that IN operator is consistent."""
-        predicate = parity_engine._parse_predicate(
+        predicate = parse_predicate(
             parity_sample_data, "region IN ('North', 'East')"
         )
         result = parity_sample_data.filter(predicate)
@@ -232,7 +233,7 @@ class TestNullHandlingParity:
         df = pd.DataFrame(data)
         table = parity_engine.connection.create_table("null_test2", df, overwrite=True)
 
-        predicate = parity_engine._parse_predicate(table, "val IS NULL")
+        predicate = parse_predicate(table, "val IS NULL")
         result = table.filter(predicate)
         df_result = parity_engine.to_pandas(result)
 
@@ -264,7 +265,7 @@ class TestMultiBackendComparison:
         # Apply chain of transforms
         def apply_transforms(engine, table):
             # Filter
-            pred = engine._parse_predicate(table, "value > 15")
+            pred = parse_predicate(table, "value > 15")
             filtered = table.filter(pred)
 
             # Derive column
@@ -319,3 +320,72 @@ class TestMultiBackendComparison:
         polars_df = polars_engine.to_pandas(polars_agg).sort_values("region").reset_index(drop=True)
 
         pd.testing.assert_frame_equal(duck_df, polars_df)
+
+
+class TestCastParity:
+    """Verify cast operations produce identical results across backends."""
+
+    @pytest.mark.parity
+    def test_cast_int_to_float(self, parity_engine, parity_sample_data):
+        result = parity_engine.cast(parity_sample_data, {"id": "float64"})
+        df = parity_engine.to_pandas(result)
+        assert df["id"].dtype == "float64"
+        assert df["id"].tolist() == [1.0, 2.0, 3.0, 4.0, 5.0]
+
+    @pytest.mark.parity
+    def test_cast_float_to_string(self, parity_engine, parity_sample_data):
+        result = parity_engine.cast(parity_sample_data, {"amount": "string"})
+        df = parity_engine.to_pandas(result)
+        assert all(isinstance(v, str) for v in df["amount"].tolist())
+
+
+class TestFillNullParity:
+    """Verify fill_null operations produce identical results across backends."""
+
+    @pytest.mark.parity
+    def test_fill_null_string(self, parity_engine):
+        data = {"id": [1, 2, 3], "name": ["Alice", None, "Charlie"]}
+        df = pd.DataFrame(data)
+        table = parity_engine.connection.create_table("fn_test", df, overwrite=True)
+
+        result = parity_engine.fill_null(table, {"name": "UNKNOWN"})
+        result_df = parity_engine.to_pandas(result)
+        assert result_df["name"].tolist() == ["Alice", "UNKNOWN", "Charlie"]
+
+    @pytest.mark.parity
+    def test_fill_null_numeric(self, parity_engine):
+        data = {"id": [1, 2, 3], "val": [10.0, None, 30.0]}
+        df = pd.DataFrame(data)
+        table = parity_engine.connection.create_table("fn_num_test", df, overwrite=True)
+
+        result = parity_engine.fill_null(table, {"val": 0.0})
+        result_df = parity_engine.to_pandas(result)
+        assert result_df["val"].tolist() == [10.0, 0.0, 30.0]
+
+
+class TestDedupParity:
+    """Verify dedup operations produce identical results across backends."""
+
+    @pytest.mark.parity
+    def test_dedup_all_columns(self, parity_engine):
+        data = {
+            "id": [1, 2, 2, 3, 3],
+            "val": ["a", "b", "b", "c", "c"],
+        }
+        df = pd.DataFrame(data)
+        table = parity_engine.connection.create_table("dedup_test", df, overwrite=True)
+
+        result = parity_engine.dedup(table)
+        assert parity_engine.row_count(result) == 3
+
+    @pytest.mark.parity
+    def test_dedup_specific_columns(self, parity_engine):
+        data = {
+            "id": [1, 1, 2, 2, 3],
+            "name": ["a", "b", "c", "d", "e"],
+        }
+        df = pd.DataFrame(data)
+        table = parity_engine.connection.create_table("dedup_col_test", df, overwrite=True)
+
+        result = parity_engine.dedup(table, columns=["id"])
+        assert parity_engine.row_count(result) == 3

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from quicketl.config.transforms import TransformStep
 
 from quicketl.config.loader import load_pipeline_config
-from quicketl.engines import ETLXEngine
+from quicketl.engines import QuickETLEngine
 from quicketl.logging import get_logger
 from quicketl.pipeline.context import ExecutionContext
 from quicketl.pipeline.result import (
@@ -231,10 +231,10 @@ class Pipeline:
             self._variables.update(variables)
 
         # Create execution context
-        ExecutionContext(variables=self._variables)
+        ctx = ExecutionContext(variables=self._variables)
         builder = PipelineResultBuilder(
             pipeline_name=self.name,
-            metadata={"engine": self.engine_name, "dry_run": dry_run},
+            metadata={"engine": self.engine_name, "dry_run": dry_run, "run_id": ctx.run_id},
         )
 
         logger.info(
@@ -255,18 +255,16 @@ class Pipeline:
                 raise ValueError("Pipeline sink not configured")
 
             # Initialize engine
-            engine = ETLXEngine(backend=self.engine_name)
+            engine = QuickETLEngine(backend=self.engine_name)
 
             # Load all sources into context
-            table_context: dict[str, ir.Table] = {}
-
             if has_multi_source:
                 # Multi-source mode: load all named sources
                 primary_name = next(iter(self._sources.keys()))
                 for name, source_config in self._sources.items():
                     start = time.perf_counter()
                     logger.debug("reading_source", source_name=name, source_type=source_config.type)
-                    table_context[name] = engine.read_source(source_config)
+                    ctx.store_table(name, engine.read_source(source_config))
                     duration_ms = (time.perf_counter() - start) * 1000
                     builder.add_step(
                         StepResult(
@@ -277,13 +275,13 @@ class Pipeline:
                         )
                     )
                 # Primary table is the first named source
-                table = table_context[primary_name]
+                table = ctx.get_table(primary_name)
             else:
                 # Single-source mode (backward compatible)
                 table = self._run_read_step(engine, builder)
 
             # Step 2: Run transforms (with context for join/union)
-            table = self._run_transform_steps(engine, table, builder, table_context)
+            table = self._run_transform_steps(engine, table, builder, ctx.tables)
 
             # Get row count after transforms
             builder.rows_processed = table.count().execute()
@@ -317,7 +315,7 @@ class Pipeline:
 
     def _run_read_step(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         builder: PipelineResultBuilder,
     ) -> ir.Table:
         """Execute the source read step."""
@@ -341,7 +339,7 @@ class Pipeline:
 
     def _run_transform_steps(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         table: ir.Table,
         builder: PipelineResultBuilder,
         context: dict[str, ir.Table] | None = None,
@@ -447,7 +445,7 @@ class Pipeline:
 
     def _run_write_step(
         self,
-        engine: ETLXEngine,
+        engine: QuickETLEngine,
         table: ir.Table,
         builder: PipelineResultBuilder,
     ) -> Any:

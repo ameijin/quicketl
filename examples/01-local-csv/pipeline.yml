@@ -1,0 +1,31 @@
+name: csv_to_parquet
+description: Read a CSV file, apply basic transforms, write to Parquet
+engine: duckdb
+
+source:
+  type: file
+  path: data/sales.csv
+  format: csv
+
+transforms:
+  - op: filter
+    predicate: amount > 0
+  - op: derive_column
+    name: amount_usd
+    expr: amount * 1.0
+  - op: sort
+    by: [amount]
+    descending: true
+  - op: select
+    columns: [id, name, region, amount, amount_usd]
+
+checks:
+  - type: not_null
+    columns: [id, name]
+  - type: row_count
+    min: 1
+
+sink:
+  type: file
+  path: output/sales.parquet
+  format: parquet

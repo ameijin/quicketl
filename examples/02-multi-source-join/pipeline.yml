@@ -1,0 +1,32 @@
+name: orders_with_customers
+description: Join orders with customer data
+engine: duckdb
+
+sources:
+  orders:
+    type: file
+    path: data/orders.csv
+    format: csv
+  customers:
+    type: file
+    path: data/customers.csv
+    format: csv
+
+transforms:
+  - op: join
+    right: customers
+    "on": [customer_id]
+    how: left
+  - op: derive_column
+    name: total
+    expr: quantity * price
+  - op: select
+    columns: [order_id, customer_name, product, quantity, price, total]
+  - op: sort
+    by: [total]
+    descending: true
+
+sink:
+  type: file
+  path: output/enriched_orders.parquet
+  format: parquet

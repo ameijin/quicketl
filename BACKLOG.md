@@ -138,6 +138,7 @@ transforms:
 - `append` - Add rows to existing table
 - `truncate` - Clear table then insert new data
 - `replace` - Drop and recreate table
+- `upsert` - Delete matching rows by key, then insert (requires `upsert_keys`)
 
 **Example**:
 ```yaml
@@ -192,13 +193,14 @@ output/
 
 ### 🟡 Iceberg Source Implementation
 
-**Status**: Config defined, not implemented
+**Status**: Not yet implemented
 
-**Problem**: `IcebergSource` is defined in models but not handled in `read_source`.
+**Problem**: Iceberg is a popular lakehouse table format. Config model exists (`IcebergSource`) but was removed from the active source union pending implementation.
 
-**Solution**: Add Iceberg support via pyiceberg or Spark.
+**Solution**: Add Iceberg support via pyiceberg or Spark, then re-add `IcebergSource` to the `SourceConfig` union.
 
 **Files to modify**:
+- `src/quicketl/config/models.py` - Re-add `IcebergSource` to `SourceConfig` union
 - `src/quicketl/engines/base.py` - Add Iceberg case to `read_source`
 
 ---
@@ -289,19 +291,19 @@ stages:
 
 ## Infrastructure
 
-### 🟡 Secrets Management Integration
+### ✅ Secrets Management Integration
 
-**Status**: Not implemented
+**Status**: IMPLEMENTED
 
-**Problem**: Connection strings with credentials shouldn't be stored in YAML or env vars.
+**Location**: `src/quicketl/secrets/`
 
-**Solution**: Support secrets managers:
-- AWS Secrets Manager
-- Azure Key Vault
-- GCP Secret Manager
-- HashiCorp Vault
+**Supported providers**:
+- AWS Secrets Manager (`aws.py`)
+- Azure Key Vault (`azure.py`)
+- Environment variables (`env.py`)
+- Pluggable registry for custom providers (`registry.py`)
 
-**Desired syntax**:
+**Usage**:
 ```yaml
 source:
   type: database
@@ -310,30 +312,26 @@ source:
 
 ---
 
-### 🟢 Data Lineage Tracking
+### ✅ Data Lineage Tracking
 
-**Status**: Not implemented
+**Status**: IMPLEMENTED
 
-**Problem**: No way to track data provenance through the pipeline.
+**Location**: `src/quicketl/telemetry/openlineage.py`
 
-**Solution**: Capture and store lineage metadata:
-- Source files/tables read
-- Transforms applied
-- Row counts at each step
-- Output location
+OpenLineage integration captures data provenance including source files/tables, transforms applied, and output locations. Pipeline results also include step-by-step timings and row counts.
 
 ---
 
-### 🟢 Metrics/Observability
+### ✅ Metrics/Observability
 
-**Status**: Basic logging only
+**Status**: IMPLEMENTED
 
-**Problem**: No structured metrics for monitoring pipeline performance.
+**Location**: `src/quicketl/telemetry/`
 
-**Solution**: Add optional metrics export to:
-- Prometheus
-- OpenTelemetry
-- Datadog/New Relic
+**Supported integrations**:
+- OpenTelemetry (`opentelemetry.py`) - tracing and metrics
+- OpenLineage (`openlineage.py`) - data lineage tracking
+- Structured JSON logging via structlog
 
 ---
 
@@ -346,6 +344,44 @@ source:
 **Enhancement**: Generate complete JSON Schema for IDE autocomplete and validation.
 
 **Command**: `quicketl schema pipeline > pipeline.schema.json`
+
+---
+
+## Integration Enhancements
+
+### 🟡 dbt Staging Sink
+
+**Status**: Not implemented
+
+**Problem**: No built-in way to write QuickETL output to staging tables that dbt can consume.
+
+**Solution**: Add `dbt_staging` sink type that writes to a database with metadata columns (`_loaded_at`, `_source_file`) and generates `sources.yml` for dbt.
+
+**Desired syntax**:
+```yaml
+sink:
+  type: dbt_staging
+  connection: ${WAREHOUSE_CONNECTION}
+  schema: staging
+  table: stg_orders
+  include_metadata: true
+```
+
+---
+
+### 🟢 Data Profiling Module
+
+**Status**: Not implemented
+
+**Problem**: No way to quickly inspect data structure, null rates, and value distributions.
+
+**Solution**: Add a `DataProfiler` class and `quicketl profile` CLI command that produces column-level statistics (nulls, distinct counts, min/max, sample values).
+
+**Desired syntax**:
+```bash
+quicketl profile data.parquet
+quicketl profile data.parquet --format json -o profile.json
+```
 
 ---
 
