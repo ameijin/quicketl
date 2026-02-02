@@ -2,6 +2,178 @@
 
 <!-- version list -->
 
+## v1.6.0 (2026-02-02)
+
+### Bug Fixes
+
+- Add None guards for optional sink in CLI commands
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Close database connections after use to prevent resource leaks
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Close database connections after use to prevent resource leaks
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Comprehensive cleanup and production readiness improvements
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Prevent hash_key temp table leak and SQL injection
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Prevent hash_key temp table leak and SQL injection
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Resolve ruff lint errors ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Sync _version.py with pyproject.toml (was 1.3.0, should be 1.5.0)
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Sync _version.py with pyproject.toml (was 1.3.0, should be 1.5.0)
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Wire ExecutionContext into pipeline execution ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Wire ExecutionContext into pipeline execution ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- **ci**: Use --group dev instead of --extra dev for dependency groups
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+### Chores
+
+- Add *.csv and *.parquet to .gitignore, untrack data files
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Consolidate dev dependencies into dependency-groups
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Consolidate dev dependencies into dependency-groups
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Update development status classifier to Beta ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Update development status classifier to Beta ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+### Documentation
+
+- Deduplicate CHANGELOG, merge ENHANCEMENT_PLAN into BACKLOG
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Deduplicate CHANGELOG, merge ENHANCEMENT_PLAN into BACKLOG
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Update README, add examples, and clean up BACKLOG status markers
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Update README, add examples, and clean up BACKLOG status markers
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+### Features
+
+- Add --env and --profile CLI flags ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Add --env and --profile CLI flags ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Add JSON output format for file sinks ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Add JSON output format for file sinks ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Add retry with backoff for cloud storage operations
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Add retry with backoff for cloud storage operations
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Implement upsert mode for DatabaseSink ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Implement upsert mode for DatabaseSink ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+### Refactoring
+
+- Extract shared predicate parser into engines/parsing.py
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Extract shared predicate parser into engines/parsing.py
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Remove dead engines/expressions.py module ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Remove dead engines/expressions.py module ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Remove IcebergSource from union and make sink optional
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Remove IcebergSource from union and make sink optional
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Rename ETLXEngine to QuickETLEngine ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Rename ETLXEngine to QuickETLEngine ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+### Testing
+
+- Add contracts module tests for schema, registry, and pandera adapter
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Add contracts module tests for schema, registry, and pandera adapter
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Add parity tests for cast, fill_null, and dedup transforms
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Add parity tests for cast, fill_null, and dedup transforms
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+- Improve core module coverage for context, backends, and results
+  ([#7](https://github.com/ameijin/quicketl/pull/7),
+  [`72ab5b9`](https://github.com/ameijin/quicketl/commit/72ab5b9496538e079272bc32b577887fb64a27b7))
+
+- Improve core module coverage for context, backends, and results
+  ([#6](https://github.com/ameijin/quicketl/pull/6),
+  [`6342674`](https://github.com/ameijin/quicketl/commit/634267422ae9ddef36a69b218d8ba1003cc7dabd))
+
+
 ## v1.5.0 (2026-01-20)
 
 ### Bug Fixes
