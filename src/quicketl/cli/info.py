@@ -223,10 +223,13 @@ def _show_pipeline_info(config_file: Path) -> None:
 
         # Sink info
         console.print("\n[bold]Sink:[/bold]")
-        sink_dict = config.sink.model_dump()
-        for key, value in sink_dict.items():
-            if value:
-                console.print(f"  {key}: {value}")
+        if config.sink:
+            sink_dict = config.sink.model_dump()
+            for key, value in sink_dict.items():
+                if value:
+                    console.print(f"  {key}: {value}")
+        else:
+            console.print("  (none)")
 
     except Exception as e:
         console.print(f"[red]Error loading config:[/red] {e}")

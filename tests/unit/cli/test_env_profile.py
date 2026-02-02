@@ -48,9 +48,8 @@ class TestResolveProjectConfig:
             "    engine: duckdb\n"
         )
 
-        with mock.patch(_FIND_PROJECT, return_value=project_yml):
-            with pytest.raises(ClickExit):
-                _resolve_project_config(env="nonexistent", profile=None, variables={})
+        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(ClickExit):
+            _resolve_project_config(env="nonexistent", profile=None, variables={})
 
     def test_profile_injects_variables(self, tmp_path: Path):
         project_yml = tmp_path / "quicketl.yml"
@@ -74,9 +73,8 @@ class TestResolveProjectConfig:
         project_yml = tmp_path / "quicketl.yml"
         project_yml.write_text("profiles: {}\n")
 
-        with mock.patch(_FIND_PROJECT, return_value=project_yml):
-            with pytest.raises(ClickExit):
-                _resolve_project_config(env=None, profile="missing", variables={})
+        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(ClickExit):
+            _resolve_project_config(env=None, profile="missing", variables={})
 
     def test_no_project_file_returns_none(self):
         variables: dict[str, str] = {}

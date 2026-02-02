@@ -3,16 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 import yaml
 
 from quicketl.quality.contracts.schema import ColumnContract, DataContract
-
-if TYPE_CHECKING:
-    pass
-
 
 # =============================================================================
 # ColumnContract tests

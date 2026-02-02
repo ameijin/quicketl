@@ -9,9 +9,8 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Any
 
-import ibis
-
 if TYPE_CHECKING:
+    import ibis
     import ibis.expr.types as ir
 
 
