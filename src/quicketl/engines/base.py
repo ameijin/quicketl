@@ -192,10 +192,7 @@ class QuickETLEngine:
         # connection can be released immediately.
         db_con = ibis.connect(connection)
         try:
-            if query:
-                result = db_con.sql(query)
-            else:
-                result = db_con.table(table)
+            result = db_con.sql(query) if query else db_con.table(table)
 
             # Materialize to PyArrow so the result is independent of db_con
             arrow_data = result.to_pyarrow()

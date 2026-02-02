@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 _CLOUD_PREFIXES = ("s3://", "gs://", "gcs://", "az://", "abfss://", "abfs://")
 
@@ -38,7 +39,7 @@ def is_cloud_path(path: str) -> bool:
     return path.startswith(_CLOUD_PREFIXES)
 
 
-def with_retry(
+def with_retry[T](
     fn: Callable[..., T],
     *args: Any,
     max_retries: int = DEFAULT_MAX_RETRIES,

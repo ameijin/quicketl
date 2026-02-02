@@ -63,9 +63,8 @@ class TestWithRetry:
 
     def test_exhausts_retries_then_raises(self):
         fn = mock.Mock(side_effect=OSError("persistent failure"))
-        with mock.patch("quicketl.io.retry.time.sleep"):
-            with pytest.raises(OSError, match="persistent failure"):
-                with_retry(fn, max_retries=2)
+        with mock.patch("quicketl.io.retry.time.sleep"), pytest.raises(OSError, match="persistent failure"):
+            with_retry(fn, max_retries=2)
         # initial attempt + 2 retries = 3 calls
         assert fn.call_count == 3
 
