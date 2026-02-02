@@ -73,7 +73,7 @@ def validate(
             console.print(f"  Source: {source_type}")
             console.print(f"  Transforms: {len(config.transforms)}")
             console.print(f"  Checks: {len(config.checks)}")
-            console.print(f"  Sink: {config.sink.type}")
+            console.print(f"  Sink: {config.sink.type if config.sink else 'none'}")
 
         raise typer.Exit(0)
 
