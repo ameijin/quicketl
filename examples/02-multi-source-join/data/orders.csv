@@ -1,6 +1,0 @@
-order_id,customer_id,product,quantity,price
-1001,1,Widget,5,10.00
-1002,2,Gadget,2,25.00
-1003,1,Widget,3,10.00
-1004,3,Gadget,1,25.00
-1005,2,Gizmo,4,15.00

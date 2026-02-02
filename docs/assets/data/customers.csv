@@ -1,6 +1,0 @@
-customer_id,name,email,tier,signup_date,country
-C001,Acme Corporation,acme@example.com,Gold,2024-01-01,USA
-C002,Globex Industries,globex@example.com,Silver,2024-03-15,USA
-C003,Initech LLC,initech@example.com,Bronze,2024-06-20,Canada
-C004,Umbrella Corp,umbrella@example.com,Gold,2024-02-28,UK
-C005,Stark Enterprises,stark@example.com,Platinum,2023-11-11,USA

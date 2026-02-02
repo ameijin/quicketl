@@ -76,6 +76,10 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# Data files
+*.csv
+*.parquet
+
 # Database
 *.db
 *.sqlite
