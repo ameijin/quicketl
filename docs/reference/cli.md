@@ -10,6 +10,7 @@ QuickETL provides a command-line interface for running and managing pipelines.
 | [`validate`](#validate) | Validate configuration |
 | [`workflow`](#workflow) | Run and manage multi-pipeline workflows |
 | [`init`](#init) | Create new project or pipeline |
+| [`platform`](#platform) | Work with platform specs (`platform.yml`) |
 | [`info`](#info) | Display version and backend info |
 | [`schema`](#schema) | Output JSON schema for IDE support |
 
@@ -446,6 +447,31 @@ The sample pipeline is immediately runnable:
 ```bash
 quicketl run pipelines/sample.yml
 ```
+
+---
+
+## platform {#platform}
+
+Work with platform specs. A platform spec (`platform.yml`) describes the data platform you want. See [Platform Spec](../platform/spec.md). These commands are part of the core install and do not need the `pipelines` extra.
+
+### platform validate
+
+Check a platform spec and print a short summary.
+
+```bash
+quicketl platform validate [spec_file]
+```
+
+`spec_file` defaults to `platform.yml` in the current folder.
+
+```bash
+quicketl platform validate
+quicketl platform validate examples/06-platform-spec/platform.yml
+```
+
+On success it prints the warehouse, environments, layers, and how many domains, roles and sources the spec defines. On failure it lists each problem and exits with code 1. A problem in one field shows where it is, for example `roles -> 1 -> access -> marts: Input should be 'read' or 'write'`. Problems with references between sections, such as a role naming a layer that does not exist, are checked after every field is valid.
+
+More `platform` commands (`init`, `scaffold`, `update`) are planned for 2.0.
 
 ---
 

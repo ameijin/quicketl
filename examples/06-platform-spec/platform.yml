@@ -1,0 +1,53 @@
+# A platform spec for a small Snowflake platform.
+# Check it with: quicketl platform validate
+version: "1"
+name: acme_data
+
+warehouse:
+  type: snowflake
+
+# Each environment gets its own databases and grants.
+environments: [dev, prod]
+
+# Data layers in order. Sources load into the first one (raw).
+layers: [raw, staging, marts]
+
+domains:
+  - name: sales
+    description: Orders, customers and returns
+  - name: finance
+    description: Invoices and payments
+
+roles:
+  - name: loader
+    description: Service user that loads raw files
+    access: {raw: write}
+  - name: transformer
+    description: Service user that runs dbt
+    access: {raw: read, staging: write, marts: write}
+  - name: analyst
+    description: Sales analysts
+    access: {marts: read}
+    domains: [sales]
+
+sso:
+  provider: okta
+
+network:
+  # Documentation-only ranges (RFC 5737). Replace with your office or VPN ranges.
+  allowed_ips: [203.0.113.0/24, 198.51.100.7]
+
+sources:
+  - name: orders
+    domain: sales
+    location: s3://example-landing/sales/orders/
+    format: parquet
+  - name: invoices
+    domain: finance
+    location: s3://example-landing/finance/invoices/
+    format: csv
+
+orchestrator:
+  type: airflow
+  hosting: mwaa
+  schedule: "@daily"
