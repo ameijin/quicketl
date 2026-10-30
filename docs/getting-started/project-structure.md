@@ -6,6 +6,7 @@ Learn how to organize QuickETL projects for maintainability and scalability.
 
 ```
 my_project/
+├── quicketl.yml            # Project root marker
 ├── pipelines/              # Pipeline configurations
 │   ├── daily/             # Daily pipelines
 │   │   ├── sales_etl.yml
@@ -31,6 +32,8 @@ my_project/
 ├── .gitignore
 └── README.md
 ```
+
+The `quicketl.yml` file marks the project root. Relative paths in your pipelines, such as `data/sales.csv`, resolve against its folder. `quicketl init` creates it for you. See [How Relative Paths Are Resolved](../guides/configuration/relative-paths.md).
 
 ## Pipeline Organization
 
