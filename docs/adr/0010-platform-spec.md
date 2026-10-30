@@ -2,7 +2,7 @@
 
 This record explains what `platform.yml` holds and why it is kept small. Read it before adding a field to the spec.
 
-**Status:** Accepted (the spec, `quicketl platform init` and `quicketl platform validate` are implemented on the 2.0 branch; scaffolding from it is planned). Date: 2026-10-30.
+**Status:** Accepted (the spec and `quicketl platform init`, `validate`, `scaffold` and `update` are implemented on the 2.0 branch). Date: 2026-10-30.
 
 ## Context
 

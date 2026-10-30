@@ -15,7 +15,8 @@ All nine records below were agreed on 2026-10-30. Records marked "planned for 2.
 | [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (planned for 2.0, not yet implemented) |
 | [0008](0008-config-relative-paths.md) | Project-root relative paths with a `--base-dir` override | Accepted (ships in 1.7.0) |
 | [0009](0009-release-plan.md) | Release plan: 1.7.0 and 2.0.0, released through a `dev` branch | Accepted |
-| [0010](0010-platform-spec.md) | A small, strict platform spec (`platform.yml`) | Accepted (spec and `platform validate` on the 2.0 branch; scaffolding planned) |
+| [0010](0010-platform-spec.md) | A small, strict platform spec (`platform.yml`) | Accepted (implemented on the 2.0 branch) |
+| [0011](0011-copier-template-layout.md) | One Copier configuration picks the template from the spec | Accepted (implemented on the 2.0 branch) |
 
 ## Record format
 

@@ -2,7 +2,7 @@
 
 This record explains the 2.0 install layout: a small default install for platform work, with pipelines as an opt-in extra. Read it to learn why `pip install quicketl` changes in 2.0.
 
-**Status:** Accepted. The slim core and the `[pipelines]` extra are implemented on the 2.0 branch (unreleased). The Copier and platform commands are still planned. Date: 2026-10-30.
+**Status:** Accepted. The slim core and the `[pipelines]` extra are implemented on the 2.0 branch (unreleased). Copier and the platform commands are implemented on the same branch. Copier adds about 8 MB, and a core install measures about 33 MB (see [0011](0011-copier-template-layout.md)). sqlglot is not in core yet; it arrives with `migrate convert`. Date: 2026-10-30.
 
 ## Context
 

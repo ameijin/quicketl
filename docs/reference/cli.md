@@ -494,7 +494,23 @@ quicketl platform validate examples/06-platform-spec/platform.yml
 
 On success it prints the warehouse, environments, layers, and how many domains, roles and sources the spec defines. On failure it lists each problem and exits with code 1. A problem in one field shows where it is, for example `roles -> 1 -> access -> marts: Input should be 'read' or 'write'`. Problems with references between sections, such as a role naming a layer that does not exist, are checked after every field is valid.
 
-More `platform` commands (`scaffold` and `update`) are planned for 2.0.
+### platform scaffold
+
+Generate a project from a spec. Needs `git`.
+
+```bash
+quicketl platform scaffold [spec_file] [--dest DIR] [--ref TAG] [--template URL_OR_PATH]
+```
+
+### platform update
+
+Apply `platform.yml` and template changes to a generated project. The project must be in git with everything committed.
+
+```bash
+quicketl platform update [project] [--ref TAG]
+```
+
+Both commands are explained, with every option and common errors, in [Scaffold and Update a Platform](../platform/scaffold.md).
 
 ---
 

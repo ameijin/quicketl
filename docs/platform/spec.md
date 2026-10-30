@@ -3,7 +3,7 @@
 A platform spec is one small YAML file that describes the data platform you want: the warehouse, environments, data layers, business domains, who can access what, where raw files land, and how loads are scheduled. Write one when you start a new platform. Platform templates will read it to generate Terraform, dbt and Airflow code.
 
 !!! note "What works today"
-    You can create a starter spec with `quicketl platform init` and check it with `quicketl platform validate`. The commands that generate a project from it (`quicketl platform scaffold` and `update`) are planned for 2.0. See [ADR 0010](../adr/0010-platform-spec.md).
+    You can create a starter spec with `quicketl platform init`, check it with `quicketl platform validate`, and generate a project from it with `quicketl platform scaffold` (see [Scaffold and Update](scaffold.md)). The Snowflake template is still a skeleton. See [ADR 0010](../adr/0010-platform-spec.md).
 
 Checking a spec needs only the core install (`pip install quicketl`). It does not connect to AWS or your warehouse.
 
