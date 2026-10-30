@@ -1,6 +1,5 @@
 name: medallion_workflow
 description: Bronze -> Silver -> Gold medallion architecture
-engine: duckdb
 
 stages:
   - name: silver
