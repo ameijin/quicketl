@@ -29,25 +29,29 @@ QuickETL is a configuration-driven ETL framework that provides a simple, unified
 ## Installation
 
 ```bash
-pip install quicketl
+pip install 'quicketl[pipelines]'
 ```
+
+This installs the data stack needed to run pipelines (Ibis, DuckDB, Polars). A plain `pip install quicketl` installs only the small core: the CLI, `init`, `validate` and `schema`. Backend extras such as `spark` or `snowflake` already include `pipelines`.
+
+Upgrading from 1.x? See [Upgrading to 2.0](https://quicketl.com/getting-started/upgrading/). From 2.0.0, a plain `pip install quicketl` no longer includes pipelines.
 
 With optional extras:
 
 ```bash
 # Specific backends
-pip install quicketl[polars]
-pip install quicketl[spark]
+pip install 'quicketl[pipelines]'   # DuckDB, Polars and Ibis
+pip install 'quicketl[spark]'
 
 # AI/ML features
-pip install quicketl[embeddings-openai]
-pip install quicketl[chunking]
+pip install 'quicketl[embeddings-openai]'
+pip install 'quicketl[chunking]'
 
 # Data contracts
-pip install quicketl[contracts]
+pip install 'quicketl[contracts]'
 
 # All optional dependencies
-pip install quicketl[all]
+pip install 'quicketl[all]'
 ```
 
 See [installation docs](https://quicketl.com/getting-started/installation/) for backend-specific extras.

@@ -5,7 +5,7 @@ Apache Spark is a distributed computing framework for big data processing. Use S
 ## Installation
 
 ```bash
-pip install quicketl[spark]
+pip install 'quicketl[spark]'
 ```
 
 !!! warning "Java Required"

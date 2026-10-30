@@ -11,15 +11,31 @@ Common issues and solutions when working with QuickETL.
 **Solution**:
 
 ```bash
-# Install QuickETL
-pip install quicketl
+# Install QuickETL with the pipeline engine
+pip install 'quicketl[pipelines]'
 
-# Or with specific backend
-pip install quicketl[duckdb]
+# Or with a specific backend (includes pipelines)
+pip install 'quicketl[snowflake]'
 
 # Verify installation
 python -c "import quicketl; print(quicketl.__version__)"
 ```
+
+### Pipelines need the pipelines extra
+
+```
+Error: Pipelines need the pipelines extra. Install it with: pip install 'quicketl[pipelines]'
+```
+
+**Cause**: You installed only the core package. Core has the CLI, `init`, `validate` and `schema`, but not the pipeline engine (Ibis, DuckDB, Polars). The commands `run`, `workflow`, `info --backends` and `info --check` need the engine. The command exits with code 1.
+
+**Solution**: Install the extra. Quote it so your shell does not read the brackets:
+
+```bash
+pip install 'quicketl[pipelines]'
+```
+
+A backend extra such as `quicketl[snowflake]` also fixes this because it includes `pipelines`. See [Upgrading to 2.0](../getting-started/upgrading.md) for CI and Docker changes.
 
 ### Backend Not Installed
 
@@ -27,22 +43,21 @@ python -c "import quicketl; print(quicketl.__version__)"
 ModuleNotFoundError: No module named 'duckdb'
 ```
 
-**Solution**: Install the backend extra:
+**Solution**: Install the pipelines extra, which includes DuckDB and Polars, or a backend extra:
 
 ```bash
-pip install quicketl[duckdb]
-pip install quicketl[polars]
-pip install quicketl[spark]
-pip install quicketl[snowflake]
+pip install 'quicketl[pipelines]'
+pip install 'quicketl[spark]'
+pip install 'quicketl[snowflake]'
 ```
 
 ### Python Version Error
 
 ```
-ERROR: Package 'quicketl' requires a different Python: 3.8.0 not in '>=3.10'
+ERROR: Package 'quicketl' requires a different Python: 3.10.0 not in '>=3.12'
 ```
 
-**Solution**: Upgrade Python to 3.10 or later:
+**Solution**: Upgrade Python to 3.12 or later:
 
 ```bash
 # Check version

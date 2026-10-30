@@ -28,51 +28,55 @@ dependencies = [
     "structlog>=24.0",
     "typer>=0.12",
     "rich>=13.0",
+]
 
+[project.optional-dependencies]
+# Pipelines: the data stack for running, profiling and checking pipelines.
+# Every extra below that only works inside a pipeline includes it.
+pipelines = [
     # Ibis (the engine abstraction layer) - DuckDB and Polars by default
     "ibis-framework[duckdb,polars]>=12.0,<13",
-
     # Cloud storage abstraction
     "fsspec>=2024.6",
 ]
 
-[project.optional-dependencies]
 # Additional Ibis backends
 spark = [
+    "quicketl[pipelines]",
     "ibis-framework[pyspark]>=12.0,<13",
     "setuptools>=60.0",  # Provides distutils shim for Python 3.12+
 ]
-pandas = ["pandas>=2.0"]  # pandas support is built into ibis-framework
-datafusion = ["ibis-framework[datafusion]>=12.0,<13"]
+pandas = ["quicketl[pipelines]", "pandas>=2.0"]  # pandas support is built into ibis-framework
+datafusion = ["quicketl[pipelines]", "ibis-framework[datafusion]>=12.0,<13"]
 
 # Cloud storage providers
-aws = ["s3fs>=2024.6", "boto3>=1.34"]
-gcp = ["gcsfs>=2024.6", "google-cloud-storage>=2.14"]
-azure = ["adlfs>=2024.4", "azure-storage-blob>=12.19"]
+aws = ["quicketl[pipelines]", "s3fs>=2024.6", "boto3>=1.34"]
+gcp = ["quicketl[pipelines]", "gcsfs>=2024.6", "google-cloud-storage>=2.14"]
+azure = ["quicketl[pipelines]", "adlfs>=2024.4", "azure-storage-blob>=12.19"]
 
 # Data warehouses (via Ibis)
-snowflake = ["ibis-framework[snowflake]>=12.0,<13"]
-bigquery = ["ibis-framework[bigquery]>=12.0,<13"]
-trino = ["ibis-framework[trino]>=12.0,<13"]
-postgres = ["ibis-framework[postgres]>=12.0,<13"]
-mysql = ["ibis-framework[mysql]>=12.0,<13"]
-clickhouse = ["ibis-framework[clickhouse]>=12.0,<13"]
+snowflake = ["quicketl[pipelines]", "ibis-framework[snowflake]>=12.0,<13"]
+bigquery = ["quicketl[pipelines]", "ibis-framework[bigquery]>=12.0,<13"]
+trino = ["quicketl[pipelines]", "ibis-framework[trino]>=12.0,<13"]
+postgres = ["quicketl[pipelines]", "ibis-framework[postgres]>=12.0,<13"]
+mysql = ["quicketl[pipelines]", "ibis-framework[mysql]>=12.0,<13"]
+clickhouse = ["quicketl[pipelines]", "ibis-framework[clickhouse]>=12.0,<13"]
 
 # Secrets providers
 secrets-aws = ["boto3>=1.34"]
 secrets-azure = ["azure-identity>=1.15", "azure-keyvault-secrets>=4.8"]
 
 # AI/ML - Text chunking
-chunking = ["tiktoken>=0.5", "nltk>=3.8"]
+chunking = ["quicketl[pipelines]", "tiktoken>=0.5", "nltk>=3.9"]
 
 # AI/ML - Embeddings
-embeddings-openai = ["openai>=1.0", "tiktoken>=0.5"]
-embeddings-huggingface = ["sentence-transformers>=2.2"]
+embeddings-openai = ["quicketl[pipelines]", "openai>=1.0", "tiktoken>=0.5"]
+embeddings-huggingface = ["quicketl[pipelines]", "sentence-transformers>=2.2"]
 
 # Vector stores
-vector-pinecone = ["pinecone-client>=3.0"]
-vector-pgvector = ["pgvector>=0.2", "psycopg2-binary>=2.9"]
-vector-qdrant = ["qdrant-client>=1.7"]
+vector-pinecone = ["quicketl[pipelines]", "pinecone>=5.1,<11"]
+vector-pgvector = ["quicketl[pipelines]", "pgvector>=0.2", "psycopg2-binary>=2.9"]
+vector-qdrant = ["quicketl[pipelines]", "qdrant-client>=1.7"]
 
 # Telemetry
 opentelemetry = [
@@ -80,10 +84,10 @@ opentelemetry = [
     "opentelemetry-sdk>=1.22",
     "opentelemetry-exporter-otlp>=1.22",
 ]
-openlineage = ["openlineage-python>=1.8"]
+openlineage = ["openlineage-python>=1.41"]
 
 # Data quality / contracts
-contracts = ["pandera[polars]>=0.20"]
+contracts = ["quicketl[pipelines]", "pandera[polars]>=0.20"]
 quality = ["quicketl[contracts]"]
 
 # Documentation
@@ -109,7 +113,7 @@ enterprise = [
 
 # All backends and tools
 all = [
-    "quicketl[spark,pandas,datafusion,aws,gcp,azure,snowflake,bigquery,trino,postgres,mysql,clickhouse,ai,enterprise,quality,docs]",
+    "quicketl[pipelines,spark,pandas,datafusion,aws,gcp,azure,snowflake,bigquery,trino,postgres,mysql,clickhouse,ai,enterprise,quality,docs]",
 ]
 
 [project.scripts]

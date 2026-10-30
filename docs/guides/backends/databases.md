@@ -19,7 +19,7 @@ PostgreSQL is a powerful open-source relational database with excellent SQL supp
 ### Installation
 
 ```bash
-pip install quicketl[postgres]
+pip install 'quicketl[postgres]'
 ```
 
 ### Configuration
@@ -124,7 +124,7 @@ MySQL is a widely-used database, common in web applications.
 ### Installation
 
 ```bash
-pip install quicketl[mysql]
+pip install 'quicketl[mysql]'
 ```
 
 ### Configuration
@@ -207,7 +207,7 @@ ClickHouse is a column-oriented OLAP database designed for real-time analytics.
 ### Installation
 
 ```bash
-pip install quicketl[clickhouse]
+pip install 'quicketl[clickhouse]'
 ```
 
 ### Configuration
