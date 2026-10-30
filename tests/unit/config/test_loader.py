@@ -5,7 +5,9 @@ This module tests YAML loading and ${VAR} variable substitution.
 
 from __future__ import annotations
 
+import os
 import string
+from unittest.mock import patch
 
 import pytest
 from hypothesis import given, settings
@@ -205,6 +207,25 @@ class TestLoadYamlWithVariables:
 class TestLoadPipelineConfig:
     """Tests for load_pipeline_config function."""
 
+    def test_pipeline_without_any_source_is_invalid(self, tmp_path):
+        """A pipeline with neither `source` nor `sources` can never run."""
+        from pydantic import ValidationError
+
+        yaml_file = tmp_path / "pipeline.yml"
+        yaml_file.write_text("name: no_source\nengine: duckdb\n")
+
+        with pytest.raises(ValidationError, match="source"):
+            load_pipeline_config(yaml_file)
+
+    def test_pipeline_with_named_sources_only_is_valid(self, tmp_path):
+        """Multi-source pipelines set `sources` instead of `source`."""
+        yaml_file = tmp_path / "pipeline.yml"
+        yaml_file.write_text(
+            "name: multi\nsources:\n  a:\n    type: file\n    path: a.csv\n    format: csv\n"
+        )
+
+        assert list(load_pipeline_config(yaml_file).sources) == ["a"]
+
     def test_load_valid_pipeline_config(self, tmp_path):
         """Test loading a valid pipeline configuration."""
         yaml_content = """
@@ -305,7 +326,12 @@ class TestSubstituteVariablesWithHypothesis:
     def test_default_value_used_when_var_missing(self, var_name, default):
         """Default value should be used when variable is missing."""
         template = f"${{{var_name}:-{default}}}"
-        result = substitute_variables(template, {})
+        # substitute_variables falls back to os.environ before the default, so the
+        # generated name (e.g. "_", set by the shell) must be absent for this example.
+        # patch.dict is used because monkeypatch does not reset between examples.
+        with patch.dict(os.environ):
+            os.environ.pop(var_name, None)
+            result = substitute_variables(template, {})
         assert result == default
 
     @pytest.mark.hypothesis
@@ -337,11 +363,13 @@ class TestSubstituteVariablesWithHypothesis:
                 assert res == orig
 
     @pytest.mark.hypothesis
-    @given(st.dictionaries(
-        keys=st.text(alphabet=string.ascii_letters, min_size=1, max_size=10),
-        values=st.text(min_size=0, max_size=20),
-        max_size=10,
-    ))
+    @given(
+        st.dictionaries(
+            keys=st.text(alphabet=string.ascii_letters, min_size=1, max_size=10),
+            values=st.text(min_size=0, max_size=20),
+            max_size=10,
+        )
+    )
     @settings(max_examples=50)
     def test_dict_values_all_substituted(self, data):
         """All values in a dict should be processed."""

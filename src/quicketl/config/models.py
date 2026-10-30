@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 if TYPE_CHECKING:
     from quicketl.config.checks import CheckConfig
@@ -21,6 +21,7 @@ def _rebuild_models() -> None:
     from quicketl.config.transforms import TransformStep  # noqa: F401, F811
 
     PipelineConfig.model_rebuild()
+
 
 # =============================================================================
 # Source Configurations
@@ -261,6 +262,13 @@ class PipelineConfig(BaseModel):
     model_config = {
         "extra": "forbid",
     }
+
+    @model_validator(mode="after")
+    def _require_a_source(self) -> PipelineConfig:
+        """Reject pipelines with no input, since they can never run."""
+        if self.source is None and not self.sources:
+            raise ValueError("Pipeline needs a source: set `source` or `sources`")
+        return self
 
     def get_primary_source(self) -> SourceConfig:
         """Get the primary source for the pipeline.
