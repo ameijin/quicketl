@@ -124,9 +124,13 @@ def _table_exists(con: Any, name: str) -> bool:
 
 
 def _execute(con: Any, sql: str) -> None:
-    """Run one SQL statement and close its cursor if the backend returns one."""
+    """Run one SQL statement and close its cursor if the backend returns one.
+
+    DuckDB returns its own connection from ``raw_sql`` instead of a cursor.
+    Closing that would close the backend, so it is left open.
+    """
     result = con.raw_sql(sql)
-    if hasattr(result, "close"):
+    if hasattr(result, "close") and result is not getattr(con, "con", None):
         result.close()
 
 
