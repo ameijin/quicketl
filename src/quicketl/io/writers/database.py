@@ -48,8 +48,8 @@ def write_database(
             For 'append', 'truncate' and 'upsert', a missing table is created.
             'truncate' runs its delete and insert in one transaction, so a
             failure leaves the original rows in place. 'upsert' uses the
-            database's MERGE statement on DuckDB, PostgreSQL, Snowflake and
-            BigQuery when there is a single key column. In every other case
+            database's MERGE statement on DuckDB, Snowflake and BigQuery
+            when there is a single key column. In every other case
             it deletes matching rows and inserts the new ones in one
             transaction. Either way, a failure leaves the original rows.
         upsert_keys: Primary key columns for upsert mode (required when mode='upsert')
@@ -123,8 +123,10 @@ def write_database(
 
 # Backends where Ibis `upsert()` (MERGE INTO) is known to work. Other backends
 # either lack MERGE (SQLite, MySQL, ClickHouse, Trino, ...) or have not been
-# checked, so they keep the transaction based path.
-_NATIVE_UPSERT_BACKENDS = frozenset({"duckdb", "postgres", "snowflake", "bigquery"})
+# checked, so they keep the transaction based path. PostgreSQL is left out on
+# purpose: MERGE needs PostgreSQL 15 or newer, and the transaction path works
+# on every version.
+_NATIVE_UPSERT_BACKENDS = frozenset({"duckdb", "snowflake", "bigquery"})
 
 
 def _supports_native_upsert(con: Any, keys: list[str], columns: list[str]) -> bool:

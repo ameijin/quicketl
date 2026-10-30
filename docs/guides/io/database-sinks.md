@@ -68,7 +68,7 @@ QuickETL picks one of two ways to do this, based on your database and your keys:
 
 | Situation | What happens |
 |-----------|--------------|
-| DuckDB, PostgreSQL, Snowflake or BigQuery, with **one** key column | One native `MERGE` statement updates matching rows and inserts the rest |
+| DuckDB, Snowflake or BigQuery, with **one** key column | One native `MERGE` statement updates matching rows and inserts the rest |
 | Any other database, or **more than one** key column | Matching rows are deleted and all incoming rows are inserted, in one transaction |
 
 Both ways give the same result. The `MERGE` path is a single statement, so it succeeds or fails as a whole. QuickETL never switches to the other way after an error. If a `MERGE` fails, you see that error and the table keeps its original rows.
@@ -364,7 +364,7 @@ Verify the database user has INSERT and CREATE TABLE permissions, plus DELETE fo
 
 ### Upsert With `MERGE` Is Limited
 
-Native `MERGE` is used only on DuckDB, PostgreSQL, Snowflake and BigQuery, and only with a single key column. Other databases and multi-column keys use delete then insert inside a transaction. Only the DuckDB `MERGE` path and the transaction path are covered by QuickETL's automated tests. PostgreSQL needs version 15 or newer for `MERGE`.
+Native `MERGE` is used only on DuckDB, Snowflake and BigQuery, and only with a single key column. Other databases and multi-column keys use delete then insert inside a transaction. PostgreSQL also uses the transaction path, because `MERGE` needs PostgreSQL 15 or newer and the transaction path works on every version. Only the DuckDB `MERGE` path and the transaction path are covered by QuickETL's automated tests.
 
 ### Limited Schema Management
 
