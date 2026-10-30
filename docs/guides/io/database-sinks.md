@@ -1,6 +1,6 @@
 # Database Sinks
 
-Write transformed data to relational databases.
+Write transformed data to a database table. Use this when the results of a pipeline should land in a database instead of files.
 
 ## Basic Usage
 
@@ -18,7 +18,8 @@ sink:
 | `type` | Yes | - | Must be `database` |
 | `connection` | Yes | - | Database connection string |
 | `table` | Yes | - | Target table name |
-| `mode` | No | `append` | Write mode: `append`, `truncate`, `replace` |
+| `mode` | No | `append` | Write mode: `append`, `truncate`, `replace`, `upsert` |
+| `upsert_keys` | For `upsert` | - | Columns that identify a row, such as `[id]` |
 
 ## Write Modes
 
@@ -48,6 +49,22 @@ sink:
 
 !!! warning "Truncate is Destructive"
     Truncate deletes all existing data in the table before inserting new data.
+    The delete and insert run in one transaction, so if the insert fails, the old rows stay.
+
+### Upsert
+
+Update rows that already exist and add the rest. Rows are matched on `upsert_keys`:
+
+```yaml
+sink:
+  type: database
+  connection: ${DATABASE_URL}
+  table: customers
+  mode: upsert
+  upsert_keys: [customer_id]
+```
+
+Target rows whose keys match an incoming row are deleted, then all incoming rows are inserted. Both steps run in one transaction.
 
 ### Replace
 
@@ -63,6 +80,16 @@ sink:
 
 !!! warning "Replace Drops the Table"
     Replace will drop the existing table and create a new one. This means any indexes, constraints, or grants on the table will be lost.
+
+## How Writes Stay Safe
+
+A failed write never leaves the table half written:
+
+- **`truncate` and `upsert`** copy the new rows into a temporary staging table, then delete and insert inside one transaction. If any step fails, the transaction is rolled back, the table keeps its original rows, and you see the real database error.
+- **`append`** inserts in a single statement. If it fails, you see the real database error.
+- **`replace`** builds the new table before swapping it in.
+
+`truncate` and `upsert` need a database that supports transactions (`BEGIN`, `COMMIT`, `ROLLBACK`). On a database without them, QuickETL stops with an error instead of risking data loss.
 
 ## Connection Strings
 
@@ -174,8 +201,8 @@ sink:
 
 ### Table Creation
 
-- **`append` and `truncate` modes**: Table must exist. QuickETL will create it if it doesn't exist.
-- **`replace` mode**: Table is dropped and recreated automatically.
+- **`append`, `truncate` and `upsert` modes**: If the table does not exist yet, QuickETL creates it from the data.
+- **`replace` mode**: The table is always recreated from the data.
 
 For `append` mode with an existing table:
 
@@ -239,6 +266,14 @@ sink = DatabaseSink(
     table="sales_summary",
     mode="replace"
 )
+
+# With upsert (match rows on customer_id)
+sink = DatabaseSink(
+    connection="${DATABASE_URL}",
+    table="customers",
+    mode="upsert",
+    upsert_keys=["customer_id"]
+)
 ```
 
 ## Performance Tips
@@ -259,13 +294,9 @@ ALTER INDEX idx_sales_date DISABLE;
 ALTER INDEX idx_sales_date REBUILD;
 ```
 
-### Truncate vs Delete
+### Truncate vs Replace
 
-`truncate` is faster than deleting all rows:
-
-```yaml
-mode: truncate  # Fast - drops and recreates
-```
+`truncate` deletes rows and keeps the table, so indexes, constraints and grants stay. `replace` rebuilds the table, which can be faster for a full refresh but loses those settings.
 
 ### Connection Pooling
 
@@ -273,13 +304,13 @@ For high-frequency pipelines, consider connection pooling at the database level.
 
 ## Troubleshooting
 
-### Table Not Found
+### Transaction Not Supported
 
 ```
-Error: Table 'results' does not exist
+RuntimeError: Write mode needs transaction support to avoid losing rows, and the '<backend>' backend could not start a transaction
 ```
 
-Create the table before running the pipeline.
+`truncate` and `upsert` need transactions. Use `replace` for a full refresh, or `append` for new rows only.
 
 ### Column Mismatch
 
@@ -316,16 +347,13 @@ transforms:
 Error: Permission denied for table 'results'
 ```
 
-Verify the database user has INSERT (and TRUNCATE if using truncate mode) permissions.
+Verify the database user has INSERT and CREATE TABLE permissions, plus DELETE for `truncate` and `upsert` mode. CREATE TABLE is needed for the staging table.
 
 ## Limitations
 
-### No Upsert (Yet)
+### Upsert Is Delete Then Insert
 
-Upsert/merge operations are planned for a future release. Currently, use:
-
-- `append` for incremental loads
-- `truncate` for full refreshes
+Upsert deletes matching rows and inserts the new ones inside a transaction. It does not use `MERGE` yet. A native `MERGE` is planned for 1.7.0.
 
 ### Limited Schema Management
 

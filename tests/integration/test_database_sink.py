@@ -93,7 +93,6 @@ class TestDatabaseSink:
         assert result.rows_written == 5
         assert result.table == "output_table"
 
-
     def test_write_database_sqlite_upsert(self, engine, sample_data, temp_dir: Path):
         """Test writing to SQLite database with upsert mode."""
         import ibis
@@ -173,6 +172,107 @@ class TestDatabaseSink:
         result = engine.write_sink(sample_data, sink_config)
 
         assert result.rows_written == 5
+
+
+def _create_strict_target(db_path: Path) -> None:
+    """Create a target table that rejects the sample data on insert.
+
+    The extra NOT NULL column is missing from the incoming rows, so any
+    insert of the sample data fails partway through a write.
+    """
+    import sqlite3
+
+    with sqlite3.connect(db_path) as con:
+        con.execute(
+            "CREATE TABLE test_table (id INTEGER, name TEXT, amount REAL, "
+            "region TEXT, active INTEGER, note TEXT NOT NULL)"
+        )
+        con.executemany(
+            "INSERT INTO test_table VALUES (?, ?, ?, ?, ?, 'original')",
+            [(i, f"row{i}", 1.0, "North", 1) for i in range(1, 6)],
+        )
+    con.close()
+
+
+def _row_count(db_path: Path) -> int:
+    import sqlite3
+
+    with sqlite3.connect(db_path) as con:
+        count = con.execute("SELECT COUNT(*) FROM test_table").fetchone()[0]
+    con.close()
+    return count
+
+
+class TestDatabaseSinkFailureSafety:
+    """A failed write must keep existing rows and surface the real error."""
+
+    @pytest.mark.parametrize("mode", ["upsert", "truncate"])
+    def test_failed_insert_keeps_existing_rows(
+        self, engine, sample_data, temp_dir: Path, mode: str
+    ):
+        """If the insert fails after the delete, the delete is rolled back."""
+        db_path = temp_dir / "test.db"
+        _create_strict_target(db_path)
+
+        with pytest.raises(Exception, match="NOT NULL"):
+            engine.write_database(
+                sample_data,
+                connection=f"sqlite:///{db_path}",
+                target_table="test_table",
+                mode=mode,
+                upsert_keys=["id"] if mode == "upsert" else None,
+            )
+
+        assert _row_count(db_path) == 5
+
+    def test_failed_append_surfaces_original_error(self, engine, sample_data, temp_dir: Path):
+        """An append failure is raised as is, not replaced by a create error."""
+        db_path = temp_dir / "test.db"
+        _create_strict_target(db_path)
+
+        with pytest.raises(Exception, match="NOT NULL"):
+            engine.write_database(
+                sample_data,
+                connection=f"sqlite:///{db_path}",
+                target_table="test_table",
+                mode="append",
+            )
+
+        assert _row_count(db_path) == 5
+
+    @pytest.mark.parametrize("mode", ["append", "truncate", "upsert"])
+    def test_missing_table_is_created(self, engine, sample_data, temp_dir: Path, mode: str):
+        """Writing to a table that does not exist yet creates it."""
+        import ibis
+
+        db_path = temp_dir / "test.db"
+        connection = f"sqlite:///{db_path}"
+
+        result = engine.write_database(
+            sample_data,
+            connection=connection,
+            target_table="new_table",
+            mode=mode,
+            upsert_keys=["id"] if mode == "upsert" else None,
+        )
+
+        assert result.rows_written == 5
+        assert ibis.connect(connection).table("new_table").count().execute() == 5
+
+    def test_truncate_replaces_all_rows(self, engine, sample_data, temp_dir: Path):
+        """Truncate leaves exactly the incoming rows in the table."""
+        import ibis
+
+        db_path = temp_dir / "test.db"
+        connection = f"sqlite:///{db_path}"
+        for _ in range(2):
+            engine.write_database(
+                sample_data, connection=connection, target_table="t", mode="append"
+            )
+
+        engine.write_database(sample_data, connection=connection, target_table="t", mode="truncate")
+
+        assert ibis.connect(connection).table("t").count().execute() == 5
 
 
 class TestDatabaseSinkIntegration:
