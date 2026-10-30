@@ -14,7 +14,7 @@ All nine records below were agreed on 2026-10-30. Records marked "planned for 2.
 | [0006](0006-native-loaders-and-dbt-tests.md) | Generated projects use native loaders and dbt tests | Accepted (planned for 2.0, not yet implemented) |
 | [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (planned for 2.0, not yet implemented) |
 | [0008](0008-config-relative-paths.md) | Project-root relative paths with a `--base-dir` override | Accepted (ships in 1.7.0) |
-| [0009](0009-release-plan.md) | Release plan: 1.6.1, 1.7.0 and 2.0.0 | Accepted |
+| [0009](0009-release-plan.md) | Release plan: 1.7.0 and 2.0.0, released through a `dev` branch | Accepted |
 
 ## Record format
 
