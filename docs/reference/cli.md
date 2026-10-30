@@ -454,6 +454,29 @@ quicketl run pipelines/sample.yml
 
 Work with platform specs. A platform spec (`platform.yml`) describes the data platform you want. See [Platform Spec](../platform/spec.md). These commands are part of the core install and do not need the `pipelines` extra.
 
+### platform init
+
+Write a commented starter `platform.yml` to edit.
+
+```bash
+quicketl platform init [directory] [options]
+```
+
+`directory` defaults to the current folder and is created if missing.
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--name` | `-n` | Platform name. Default: the folder name, lowercased, with other characters turned into `_` (`acme-data` becomes `acme_data`). |
+| `--warehouse` | `-w` | `snowflake` (default), `databricks` or `redshift_serverless` |
+| `--force` | `-f` | Overwrite an existing `platform.yml`. Without it, the command stops with exit code 1 and leaves the file alone. |
+
+```bash
+quicketl platform init
+quicketl platform init acme-data --warehouse databricks
+```
+
+The starter spec has one domain (`core`), three roles (`loader`, `transformer`, `analyst`), no SSO, no network rules and no sources. Each section has a comment saying what to change.
+
 ### platform validate
 
 Check a platform spec and print a short summary.
@@ -471,7 +494,7 @@ quicketl platform validate examples/06-platform-spec/platform.yml
 
 On success it prints the warehouse, environments, layers, and how many domains, roles and sources the spec defines. On failure it lists each problem and exits with code 1. A problem in one field shows where it is, for example `roles -> 1 -> access -> marts: Input should be 'read' or 'write'`. Problems with references between sections, such as a role naming a layer that does not exist, are checked after every field is valid.
 
-More `platform` commands (`init`, `scaffold`, `update`) are planned for 2.0.
+More `platform` commands (`scaffold` and `update`) are planned for 2.0.
 
 ---
 

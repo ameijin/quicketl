@@ -62,6 +62,10 @@ class _SpecModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+WarehouseType = Literal["snowflake", "databricks", "redshift_serverless"]
+"""Warehouses a spec can name."""
+
+
 class Warehouse(_SpecModel):
     """The warehouse the platform runs on.
 
@@ -70,7 +74,7 @@ class Warehouse(_SpecModel):
           type: snowflake
     """
 
-    type: Literal["snowflake", "databricks", "redshift_serverless"] = Field(
+    type: WarehouseType = Field(
         ...,
         description="Warehouse product. Templates exist per warehouse; see the platform docs.",
     )
