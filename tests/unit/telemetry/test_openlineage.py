@@ -118,6 +118,7 @@ class TestOpenLineageIntegration:
                 namespace="quicketl",
                 job_name="test-pipeline",
             )
+            ctx.add_input_dataset(namespace="s3://raw", name="orders")
             ctx.add_output_dataset(
                 namespace="postgres://localhost",
                 name="processed_data",
@@ -131,6 +132,28 @@ class TestOpenLineageIntegration:
             # Verify column lineage facet was added
             call_args = mock_instance.emit.call_args[0][0]
             assert len(call_args.outputs) == 1
+            facet = call_args.outputs[0].facets["columnLineage"]
+            assert set(facet.fields) == {"full_name", "total"}
+            inputs = facet.fields["total"].inputFields
+            assert [(f.namespace, f.name, f.field) for f in inputs] == [
+                ("s3://raw", "orders", "price"),
+                ("s3://raw", "orders", "quantity"),
+            ]
+
+    def test_column_lineage_needs_one_input_dataset(self):
+        """Column lineage cannot name its source without exactly one input dataset."""
+        pytest.importorskip("openlineage")
+
+        from quicketl.telemetry.openlineage import LineageContext
+
+        ctx = LineageContext(namespace="quicketl", job_name="test-pipeline")
+
+        with pytest.raises(ValueError, match="exactly one input dataset"):
+            ctx.add_output_dataset(
+                namespace="postgres://localhost",
+                name="processed_data",
+                column_lineage={"total": ["price"]},
+            )
 
 
 class TestLineageModuleImport:

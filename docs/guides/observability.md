@@ -215,9 +215,12 @@ ctx.emit_complete()
 
 ### Column Lineage
 
-Track which input columns flow to which output columns:
+Track which input columns flow to which output columns. The input columns are attributed to the input dataset, so add exactly one input dataset first. With zero or several input datasets, `add_output_dataset` raises a `ValueError` instead of guessing the source.
+
+Column lineage needs `openlineage-python` 1.41 or newer, which the `openlineage` extra installs.
 
 ```python
+ctx.add_input_dataset(namespace="s3://data-lake", name="orders")
 ctx.add_output_dataset(
     namespace="postgres://warehouse",
     name="customer_summary",
