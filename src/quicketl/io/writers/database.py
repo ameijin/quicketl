@@ -44,10 +44,14 @@ def write_database(
             - 'append': Add rows to existing table
             - 'truncate': Clear table and insert
             - 'replace': Drop and recreate table
-            - 'upsert': Delete matching rows by key, then insert
+            - 'upsert': Update rows whose key matches, insert the rest
             For 'append', 'truncate' and 'upsert', a missing table is created.
-            'truncate' and 'upsert' run their delete and insert in one
-            transaction, so a failure leaves the original rows in place.
+            'truncate' runs its delete and insert in one transaction, so a
+            failure leaves the original rows in place. 'upsert' uses the
+            database's MERGE statement on DuckDB, PostgreSQL, Snowflake and
+            BigQuery when there is a single key column. In every other case
+            it deletes matching rows and inserts the new ones in one
+            transaction. Either way, a failure leaves the original rows.
         upsert_keys: Primary key columns for upsert mode (required when mode='upsert')
         **options: Additional connection options
 
@@ -96,7 +100,10 @@ def write_database(
 
             case "upsert":
                 assert upsert_keys is not None  # validated above
-                _replace_rows(con, target_table, arrow_table, keys=upsert_keys)
+                if _supports_native_upsert(con, upsert_keys, arrow_table.column_names):
+                    con.upsert(target_table, ibis.memtable(arrow_table), on=upsert_keys[0])
+                else:
+                    _replace_rows(con, target_table, arrow_table, keys=upsert_keys)
 
             case _:
                 raise ValueError(f"Unsupported write mode: {mode}")
@@ -111,6 +118,26 @@ def write_database(
         table=target_table,
         mode=mode,
         duration_ms=duration,
+    )
+
+
+# Backends where Ibis `upsert()` (MERGE INTO) is known to work. Other backends
+# either lack MERGE (SQLite, MySQL, ClickHouse, Trino, ...) or have not been
+# checked, so they keep the transaction based path.
+_NATIVE_UPSERT_BACKENDS = frozenset({"duckdb", "postgres", "snowflake", "bigquery"})
+
+
+def _supports_native_upsert(con: Any, keys: list[str], columns: list[str]) -> bool:
+    """Return True if this upsert can use the backend's MERGE statement.
+
+    Ibis `upsert()` takes one key column and updates every other column, so
+    it needs exactly one key and at least one non-key column.
+    """
+    return (
+        con.name in _NATIVE_UPSERT_BACKENDS
+        and hasattr(con, "upsert")
+        and len(keys) == 1
+        and any(c != keys[0] for c in columns)
     )
 
 

@@ -9,6 +9,8 @@ import pytest
 if TYPE_CHECKING:
     from pathlib import Path
 
+    import ibis.expr.types as ir
+
 
 class TestDatabaseSink:
     """Tests for the database sink feature."""
@@ -273,6 +275,190 @@ class TestDatabaseSinkFailureSafety:
         engine.write_database(sample_data, connection=connection, target_table="t", mode="truncate")
 
         assert ibis.connect(connection).table("t").count().execute() == 5
+
+
+def _connection(kind: str, temp_dir: Path) -> str:
+    """Build a file database connection string for the given backend."""
+    return f"{kind}:///{temp_dir / 'upsert.db'}"
+
+
+def _seed(connection: str, extra_column: str = "") -> None:
+    """Create target table `t` with ids 1 to 3."""
+    import ibis
+
+    con = ibis.connect(connection)
+    con.raw_sql(
+        f"CREATE TABLE t (id INTEGER, region VARCHAR, name VARCHAR, amount DOUBLE{extra_column})"
+    )
+    con.raw_sql(
+        "INSERT INTO t (id, region, name, amount) VALUES "
+        "(1, 'N', 'old1', 1.0), (2, 'N', 'old2', 2.0), (3, 'S', 'old3', 3.0)"
+    )
+    if connection.startswith("sqlite"):
+        con.con.commit()
+    con.disconnect()
+
+
+def _rows(connection: str, order_by: list[str]) -> list[tuple]:
+    import ibis
+
+    con = ibis.connect(connection)
+    try:
+        df = con.table("t").order_by(order_by).execute()
+        columns = [c for c in df.columns if c != "note"]
+        return [tuple(r) for r in df[columns].itertuples(index=False)]
+    finally:
+        con.disconnect()
+
+
+def _incoming() -> ir.Table:
+    import ibis
+
+    return ibis.memtable(
+        {
+            "id": [2, 3, 4],
+            "region": ["N", "N", "S"],
+            "name": ["new2", "new3", "new4"],
+            "amount": [20.0, 30.0, 40.0],
+        }
+    )
+
+
+NATIVE_AND_FALLBACK = pytest.mark.parametrize(
+    ("kind", "native"),
+    [("duckdb", True), ("sqlite", False)],
+    ids=["duckdb-merge", "sqlite-fallback"],
+)
+
+
+class TestNativeUpsert:
+    """Upsert uses MERGE where the backend supports it, otherwise delete and insert."""
+
+    @NATIVE_AND_FALLBACK
+    def test_single_key_updates_and_inserts(self, engine, temp_dir: Path, kind: str, native: bool):
+        from unittest import mock
+
+        from quicketl.io.writers import database
+
+        connection = _connection(kind, temp_dir)
+        _seed(connection)
+
+        with mock.patch.object(database, "_replace_rows", wraps=database._replace_rows) as spy:
+            engine.write_database(
+                _incoming(),
+                connection=connection,
+                target_table="t",
+                mode="upsert",
+                upsert_keys=["id"],
+            )
+
+        assert spy.called is (not native)
+        assert _rows(connection, ["id"]) == [
+            (1, "N", "old1", 1.0),
+            (2, "N", "new2", 20.0),
+            (3, "N", "new3", 30.0),
+            (4, "S", "new4", 40.0),
+        ]
+
+    @NATIVE_AND_FALLBACK
+    def test_multi_column_key(self, engine, temp_dir: Path, kind: str, native: bool):
+        """Rows match only when every key column matches."""
+        connection = _connection(kind, temp_dir)
+        _seed(connection)
+
+        engine.write_database(
+            _incoming(),
+            connection=connection,
+            target_table="t",
+            mode="upsert",
+            upsert_keys=["id", "region"],
+        )
+
+        # id 2 in N matches. id 3 in N does not match (3 is in S). id 4 is new.
+        assert _rows(connection, ["id", "region"]) == [
+            (1, "N", "old1", 1.0),
+            (2, "N", "new2", 20.0),
+            (3, "N", "new3", 30.0),
+            (3, "S", "old3", 3.0),
+            (4, "S", "new4", 40.0),
+        ]
+
+    @NATIVE_AND_FALLBACK
+    def test_failed_upsert_keeps_original_rows(
+        self, engine, temp_dir: Path, kind: str, native: bool
+    ):
+        """The incoming note is NULL for a NOT NULL column, so the write fails."""
+        import ibis
+
+        connection = _connection(kind, temp_dir)
+        _seed(connection, extra_column=", note VARCHAR NOT NULL DEFAULT 'kept'")
+
+        with pytest.raises(Exception, match="(?i)not null"):
+            engine.write_database(
+                _incoming().mutate(note=ibis.null().cast("string")),
+                connection=connection,
+                target_table="t",
+                mode="upsert",
+                upsert_keys=["id"],
+            )
+
+        assert _rows(connection, ["id"]) == [
+            (1, "N", "old1", 1.0),
+            (2, "N", "old2", 2.0),
+            (3, "S", "old3", 3.0),
+        ]
+
+    def test_failed_merge_does_not_fall_back(self, engine, temp_dir: Path):
+        """A MERGE error is raised as is, and delete and insert is never tried."""
+        from unittest import mock
+
+        import ibis
+
+        from quicketl.io.writers import database
+
+        connection = _connection("duckdb", temp_dir)
+        _seed(connection, extra_column=", note VARCHAR NOT NULL DEFAULT 'kept'")
+
+        with (
+            mock.patch.object(database, "_replace_rows") as spy,
+            pytest.raises(Exception, match="(?i)not null"),
+        ):
+            engine.write_database(
+                _incoming().mutate(note=ibis.null().cast("string")),
+                connection=connection,
+                target_table="t",
+                mode="upsert",
+                upsert_keys=["id"],
+            )
+
+        spy.assert_not_called()
+
+
+class TestSupportsNativeUpsert:
+    """The choice between MERGE and delete-then-insert is made up front."""
+
+    @pytest.mark.parametrize(
+        ("kind", "keys", "columns", "expected"),
+        [
+            ("duckdb", ["id"], ["id", "name"], True),
+            ("duckdb", ["id", "region"], ["id", "region", "name"], False),
+            ("duckdb", ["id"], ["id"], False),
+            ("sqlite", ["id"], ["id", "name"], False),
+        ],
+        ids=["duckdb-one-key", "duckdb-two-keys", "duckdb-only-keys", "sqlite"],
+    )
+    def test_detection(
+        self, temp_dir: Path, kind: str, keys: list[str], columns: list[str], expected: bool
+    ):
+        import ibis
+
+        from quicketl.io.writers.database import _supports_native_upsert
+
+        con = ibis.connect(_connection(kind, temp_dir))
+        try:
+            assert _supports_native_upsert(con, keys, columns) is expected
+        finally:
+            con.disconnect()
 
 
 class TestDatabaseSinkIntegration:

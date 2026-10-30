@@ -64,7 +64,17 @@ sink:
   upsert_keys: [customer_id]
 ```
 
-Target rows whose keys match an incoming row are deleted, then all incoming rows are inserted. Both steps run in one transaction.
+QuickETL picks one of two ways to do this, based on your database and your keys:
+
+| Situation | What happens |
+|-----------|--------------|
+| DuckDB, PostgreSQL, Snowflake or BigQuery, with **one** key column | One native `MERGE` statement updates matching rows and inserts the rest |
+| Any other database, or **more than one** key column | Matching rows are deleted and all incoming rows are inserted, in one transaction |
+
+Both ways give the same result. The `MERGE` path is a single statement, so it succeeds or fails as a whole. QuickETL never switches to the other way after an error. If a `MERGE` fails, you see that error and the table keeps its original rows.
+
+!!! note "MERGE Needs Unique Keys in the New Data"
+    A `MERGE` can fail if two incoming rows have the same key. The delete-then-insert way would keep both. Remove duplicate keys before the sink if this matters to you.
 
 ### Replace
 
@@ -85,11 +95,12 @@ sink:
 
 A failed write never leaves the table half written:
 
-- **`truncate` and `upsert`** copy the new rows into a temporary staging table, then delete and insert inside one transaction. If any step fails, the transaction is rolled back, the table keeps its original rows, and you see the real database error.
+- **`truncate`**, and **`upsert` without `MERGE`**, copy the new rows into a temporary staging table, then delete and insert inside one transaction. If any step fails, the transaction is rolled back, the table keeps its original rows, and you see the real database error.
+- **`upsert` with `MERGE`** (see [Upsert](#upsert)) runs as a single statement. If it fails, nothing changes and you see the real database error.
 - **`append`** inserts in a single statement. If it fails, you see the real database error.
 - **`replace`** builds the new table before swapping it in.
 
-`truncate` and `upsert` need a database that supports transactions (`BEGIN`, `COMMIT`, `ROLLBACK`). On a database without them, QuickETL stops with an error instead of risking data loss.
+`truncate`, and `upsert` without `MERGE`, need a database that supports transactions (`BEGIN`, `COMMIT`, `ROLLBACK`). On a database without them, QuickETL stops with an error instead of risking data loss.
 
 ## Connection Strings
 
@@ -351,9 +362,9 @@ Verify the database user has INSERT and CREATE TABLE permissions, plus DELETE fo
 
 ## Limitations
 
-### Upsert Is Delete Then Insert
+### Upsert With `MERGE` Is Limited
 
-Upsert deletes matching rows and inserts the new ones inside a transaction. It does not use `MERGE` yet. A native `MERGE` is planned for 1.7.0.
+Native `MERGE` is used only on DuckDB, PostgreSQL, Snowflake and BigQuery, and only with a single key column. Other databases and multi-column keys use delete then insert inside a transaction. Only the DuckDB `MERGE` path and the transaction path are covered by QuickETL's automated tests. PostgreSQL needs version 15 or newer for `MERGE`.
 
 ### Limited Schema Management
 
