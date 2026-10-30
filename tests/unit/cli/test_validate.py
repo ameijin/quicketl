@@ -31,9 +31,7 @@ class TestValidateCommand:
         assert result.exit_code == 1
         assert "invalid" in result.output.lower() or "error" in result.output.lower()
 
-    def test_validate_with_missing_file_exits_1(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_validate_with_missing_file_exits_1(self, cli_runner: CliRunner, temp_dir: Path):
         """Test validating a non-existent file exits with code 1."""
         nonexistent = temp_dir / "nonexistent.yml"
         result = cli_runner.invoke(app, ["validate", str(nonexistent)])
@@ -44,9 +42,7 @@ class TestValidateCommand:
         self, cli_runner: CliRunner, valid_pipeline_yaml: Path
     ):
         """Test that --verbose shows configuration details."""
-        result = cli_runner.invoke(
-            app, ["validate", str(valid_pipeline_yaml), "--verbose"]
-        )
+        result = cli_runner.invoke(app, ["validate", str(valid_pipeline_yaml), "--verbose"])
 
         # Verbose output should show more details
         assert "valid" in result.output.lower()
@@ -60,12 +56,11 @@ class TestValidateCommand:
         # Should show engine, source, transforms count, etc.
         assert "Engine" in result.output or "engine" in result.output
 
-    def test_validate_with_invalid_yaml_syntax_exits_1(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_validate_with_invalid_yaml_syntax_exits_1(self, cli_runner: CliRunner, temp_dir: Path):
         """Test validating file with invalid YAML syntax exits with code 1."""
         invalid_yaml = temp_dir / "invalid_syntax.yml"
-        invalid_yaml.write_text("name: test\n  invalid indentation")
+        # An unclosed flow sequence is a real YAML syntax error
+        invalid_yaml.write_text("name: [unclosed\n")
 
         result = cli_runner.invoke(app, ["validate", str(invalid_yaml)])
 
@@ -154,4 +149,3 @@ sink:
         # Should mention transforms and checks
         assert "Transforms" in result.output or "transforms" in result.output.lower()
         assert "Checks" in result.output or "checks" in result.output.lower()
-

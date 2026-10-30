@@ -58,9 +58,7 @@ class TestParseVariables:
 class TestRunCommand:
     """Tests for the 'quicketl run' command."""
 
-    def test_run_with_valid_config_succeeds(
-        self, cli_runner: CliRunner, valid_pipeline_yaml: Path
-    ):
+    def test_run_with_valid_config_succeeds(self, cli_runner: CliRunner, valid_pipeline_yaml: Path):
         """Test running a valid pipeline succeeds."""
         result = cli_runner.invoke(app, ["run", str(valid_pipeline_yaml)])
 
@@ -84,9 +82,7 @@ class TestRunCommand:
         if output_path.exists():
             output_path.unlink()
 
-        result = cli_runner.invoke(
-            app, ["run", str(valid_pipeline_yaml), "--dry-run"]
-        )
+        result = cli_runner.invoke(app, ["run", str(valid_pipeline_yaml), "--dry-run"])
 
         # The command should succeed (exit 0) or partial (exit 2)
         assert result.exit_code in [0, 2]
@@ -135,27 +131,20 @@ class TestRunCommand:
         self, cli_runner: CliRunner, valid_pipeline_yaml: Path
     ):
         """Test that --json outputs valid JSON."""
-        result = cli_runner.invoke(
-            app, ["run", str(valid_pipeline_yaml), "--json"]
-        )
+        result = cli_runner.invoke(app, ["run", str(valid_pipeline_yaml), "--json"])
 
-        # Exit 0 = success, 2 = partial success
-        assert result.exit_code in [0, 2]
-        # Try to parse the output as JSON (filter out non-JSON lines)
-        lines = result.output.strip().split('\n')
-        json_lines = [line for line in lines if line.strip().startswith('{') or line.strip().startswith('"')]
-        if json_lines:
-            output_data = json.loads('\n'.join(lines))
-            assert "pipeline_name" in output_data or "status" in output_data
+        assert result.exit_code == 0, result.output
+        # Structured log lines may precede the JSON document on stdout.
+        output_data = json.loads(result.output[result.output.index('{\n  "pipeline_name"') :])
+        assert output_data["pipeline_name"] == "test_pipeline"
+        assert output_data["status"] == "success"
 
     def test_run_with_engine_override_uses_specified_engine(
         self, cli_runner: CliRunner, valid_pipeline_yaml: Path
     ):
         """Test that --engine overrides the configured engine."""
         # Run with polars engine override
-        result = cli_runner.invoke(
-            app, ["run", str(valid_pipeline_yaml), "--engine", "polars"]
-        )
+        result = cli_runner.invoke(app, ["run", str(valid_pipeline_yaml), "--engine", "polars"])
 
         # Should succeed with polars (exit 0 or 2 for partial)
         assert result.exit_code in [0, 2]
@@ -164,9 +153,7 @@ class TestRunCommand:
         self, cli_runner: CliRunner, valid_pipeline_yaml: Path
     ):
         """Test that --verbose shows additional output."""
-        result = cli_runner.invoke(
-            app, ["run", str(valid_pipeline_yaml), "--verbose"]
-        )
+        result = cli_runner.invoke(app, ["run", str(valid_pipeline_yaml), "--verbose"])
 
         # Should complete (exit 0 or 2)
         assert result.exit_code in [0, 2]
@@ -199,14 +186,10 @@ sink:
         output_path = temp_dir / "output.parquet"
 
         yaml_path = temp_dir / "failing.yml"
-        yaml_path.write_text(
-            yaml_content.format(input_path=input_path, output_path=output_path)
-        )
+        yaml_path.write_text(yaml_content.format(input_path=input_path, output_path=output_path))
 
         # With --no-fail-on-checks, pipeline should complete
-        result = cli_runner.invoke(
-            app, ["run", str(yaml_path), "--no-fail-on-checks"]
-        )
+        result = cli_runner.invoke(app, ["run", str(yaml_path), "--no-fail-on-checks"])
 
         # Should complete (might be partial success)
         assert result.exit_code in [0, 2]  # 0 = success, 2 = partial
@@ -239,9 +222,7 @@ sink:
         output_path = temp_dir / "output.parquet"
 
         yaml_path = temp_dir / "failing.yml"
-        yaml_path.write_text(
-            yaml_content.format(input_path=input_path, output_path=output_path)
-        )
+        yaml_path.write_text(yaml_content.format(input_path=input_path, output_path=output_path))
 
         # With default --fail-on-checks, should fail
         result = cli_runner.invoke(app, ["run", str(yaml_path)])

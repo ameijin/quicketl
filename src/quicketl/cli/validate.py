@@ -20,7 +20,7 @@ console = Console()
 app = typer.Typer(help="Validate pipeline configuration")
 
 
-@app.callback(invoke_without_command=True)
+@app.command()
 def validate(
     config_file: Annotated[
         Path,
@@ -74,8 +74,6 @@ def validate(
             console.print(f"  Transforms: {len(config.transforms)}")
             console.print(f"  Checks: {len(config.checks)}")
             console.print(f"  Sink: {config.sink.type if config.sink else 'none'}")
-
-        raise typer.Exit(0)
 
     except ValidationError as e:
         panel = Panel(

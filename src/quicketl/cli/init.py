@@ -171,7 +171,7 @@ SAMPLE_DATA_CSV = '''id,name,category,amount,date
 '''
 
 
-@app.callback(invoke_without_command=True)
+@app.command()
 def init(
     name: Annotated[
         str | None,

@@ -31,7 +31,7 @@ def parse_variables(var_strings: list[str]) -> dict[str, str]:
     return variables
 
 
-@app.callback(invoke_without_command=True)
+@app.command()
 def run(
     config_file: Annotated[
         Path,
