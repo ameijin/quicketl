@@ -3733,8 +3733,6 @@ name = "quicketl"
 version = "1.6.0"
 source = { editable = "." }
 dependencies = [
-    { name = "fsspec" },
-    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "rich" },
@@ -3744,6 +3742,8 @@ dependencies = [
 
 [package.optional-dependencies]
 ai = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "nltk" },
     { name = "openai" },
     { name = "pgvector" },
@@ -3759,9 +3759,10 @@ all = [
     { name = "azure-keyvault-secrets" },
     { name = "azure-storage-blob" },
     { name = "boto3" },
+    { name = "fsspec" },
     { name = "gcsfs" },
     { name = "google-cloud-storage" },
-    { name = "ibis-framework", extra = ["bigquery", "clickhouse", "datafusion", "mysql", "postgres", "pyspark", "snowflake", "trino"] },
+    { name = "ibis-framework", extra = ["bigquery", "clickhouse", "datafusion", "duckdb", "mysql", "polars", "postgres", "pyspark", "snowflake", "trino"] },
     { name = "mkdocs" },
     { name = "mkdocs-gen-files" },
     { name = "mkdocs-literate-nav" },
@@ -3788,27 +3789,38 @@ all = [
 ]
 aws = [
     { name = "boto3" },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "s3fs" },
 ]
 azure = [
     { name = "adlfs" },
     { name = "azure-storage-blob" },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
 ]
 bigquery = [
-    { name = "ibis-framework", extra = ["bigquery"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["bigquery", "duckdb", "polars"] },
 ]
 chunking = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "nltk" },
     { name = "tiktoken" },
 ]
 clickhouse = [
-    { name = "ibis-framework", extra = ["clickhouse"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["clickhouse", "duckdb", "polars"] },
 ]
 contracts = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pandera", extra = ["polars"] },
 ]
 datafusion = [
-    { name = "ibis-framework", extra = ["datafusion"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["datafusion", "duckdb", "polars"] },
 ]
 docs = [
     { name = "mkdocs" },
@@ -3820,9 +3832,13 @@ docs = [
     { name = "pymdown-extensions" },
 ]
 embeddings-huggingface = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "sentence-transformers" },
 ]
 embeddings-openai = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "openai" },
     { name = "tiktoken" },
 ]
@@ -3836,11 +3852,14 @@ enterprise = [
     { name = "opentelemetry-sdk" },
 ]
 gcp = [
+    { name = "fsspec" },
     { name = "gcsfs" },
     { name = "google-cloud-storage" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
 ]
 mysql = [
-    { name = "ibis-framework", extra = ["mysql"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "mysql", "polars"] },
 ]
 openlineage = [
     { name = "openlineage-python" },
@@ -3851,12 +3870,21 @@ opentelemetry = [
     { name = "opentelemetry-sdk" },
 ]
 pandas = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pandas" },
 ]
+pipelines = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
+]
 postgres = [
-    { name = "ibis-framework", extra = ["postgres"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars", "postgres"] },
 ]
 quality = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pandera", extra = ["polars"] },
 ]
 secrets-aws = [
@@ -3867,23 +3895,32 @@ secrets-azure = [
     { name = "azure-keyvault-secrets" },
 ]
 snowflake = [
-    { name = "ibis-framework", extra = ["snowflake"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars", "snowflake"] },
 ]
 spark = [
-    { name = "ibis-framework", extra = ["pyspark"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars", "pyspark"] },
     { name = "setuptools" },
 ]
 trino = [
-    { name = "ibis-framework", extra = ["trino"] },
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars", "trino"] },
 ]
 vector-pgvector = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pgvector" },
     { name = "psycopg2-binary" },
 ]
 vector-pinecone = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "pinecone" },
 ]
 vector-qdrant = [
+    { name = "fsspec" },
+    { name = "ibis-framework", extra = ["duckdb", "polars"] },
     { name = "qdrant-client" },
 ]
 
@@ -3912,13 +3949,13 @@ requires-dist = [
     { name = "azure-storage-blob", marker = "extra == 'azure'", specifier = ">=12.19" },
     { name = "boto3", marker = "extra == 'aws'", specifier = ">=1.34" },
     { name = "boto3", marker = "extra == 'secrets-aws'", specifier = ">=1.34" },
-    { name = "fsspec", specifier = ">=2024.6" },
+    { name = "fsspec", marker = "extra == 'pipelines'", specifier = ">=2024.6" },
     { name = "gcsfs", marker = "extra == 'gcp'", specifier = ">=2024.6" },
     { name = "google-cloud-storage", marker = "extra == 'gcp'", specifier = ">=2.14" },
     { name = "ibis-framework", extras = ["bigquery"], marker = "extra == 'bigquery'", specifier = ">=12.0,<13" },
     { name = "ibis-framework", extras = ["clickhouse"], marker = "extra == 'clickhouse'", specifier = ">=12.0,<13" },
     { name = "ibis-framework", extras = ["datafusion"], marker = "extra == 'datafusion'", specifier = ">=12.0,<13" },
-    { name = "ibis-framework", extras = ["duckdb", "polars"], specifier = ">=12.0,<13" },
+    { name = "ibis-framework", extras = ["duckdb", "polars"], marker = "extra == 'pipelines'", specifier = ">=12.0,<13" },
     { name = "ibis-framework", extras = ["mysql"], marker = "extra == 'mysql'", specifier = ">=12.0,<13" },
     { name = "ibis-framework", extras = ["postgres"], marker = "extra == 'postgres'", specifier = ">=12.0,<13" },
     { name = "ibis-framework", extras = ["pyspark"], marker = "extra == 'spark'", specifier = ">=12.0,<13" },
@@ -3947,8 +3984,27 @@ requires-dist = [
     { name = "qdrant-client", marker = "extra == 'vector-qdrant'", specifier = ">=1.7" },
     { name = "quicketl", extras = ["chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant"], marker = "extra == 'ai'" },
     { name = "quicketl", extras = ["contracts"], marker = "extra == 'quality'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'aws'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'azure'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'bigquery'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'chunking'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'clickhouse'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'contracts'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'datafusion'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'embeddings-huggingface'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'embeddings-openai'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'gcp'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'mysql'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'pandas'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'postgres'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'snowflake'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'spark'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'trino'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'vector-pgvector'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'vector-pinecone'" },
+    { name = "quicketl", extras = ["pipelines"], marker = "extra == 'vector-qdrant'" },
+    { name = "quicketl", extras = ["pipelines", "spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "ai", "enterprise", "quality", "docs"], marker = "extra == 'all'" },
     { name = "quicketl", extras = ["secrets-aws", "secrets-azure", "opentelemetry", "openlineage"], marker = "extra == 'enterprise'" },
-    { name = "quicketl", extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "ai", "enterprise", "quality", "docs"], marker = "extra == 'all'" },
     { name = "rich", specifier = ">=13.0" },
     { name = "s3fs", marker = "extra == 'aws'", specifier = ">=2024.6" },
     { name = "sentence-transformers", marker = "extra == 'embeddings-huggingface'", specifier = ">=2.2" },
@@ -3958,7 +4014,7 @@ requires-dist = [
     { name = "tiktoken", marker = "extra == 'embeddings-openai'", specifier = ">=0.5" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "secrets-aws", "secrets-azure", "chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant", "opentelemetry", "openlineage", "contracts", "quality", "docs", "ai", "enterprise", "all"]
+provides-extras = ["pipelines", "spark", "pandas", "datafusion", "aws", "gcp", "azure", "snowflake", "bigquery", "trino", "postgres", "mysql", "clickhouse", "secrets-aws", "secrets-azure", "chunking", "embeddings-openai", "embeddings-huggingface", "vector-pinecone", "vector-pgvector", "vector-qdrant", "opentelemetry", "openlineage", "contracts", "quality", "docs", "ai", "enterprise", "all"]
 
 [package.metadata.requires-dev]
 dev = [

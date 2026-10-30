@@ -30,7 +30,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --extra pipelines
 
       - name: Run linting
         run: uv run ruff check src/ tests/
@@ -66,6 +66,23 @@ jobs:
 
       - name: Check package
         run: uvx twine check dist/*
+
+      # A plain `pip install quicketl` must stay slim: no data stack, core
+      # commands work, and pipeline commands point to the pipelines extra.
+      - name: Check the slim install
+        run: |
+          uv venv /tmp/slim --python 3.12
+          uv pip install --python /tmp/slim/bin/python dist/*.whl
+          /tmp/slim/bin/python -c "import importlib.util as u, sys; heavy = [m for m in ('ibis', 'pyarrow', 'pandas', 'polars', 'duckdb', 'fsspec') if u.find_spec(m)]; sys.exit(f'slim install pulled in: {heavy}' if heavy else 0)"
+          cd "$(mktemp -d)"
+          /tmp/slim/bin/quicketl --help > /dev/null
+          /tmp/slim/bin/quicketl init demo > /dev/null
+          /tmp/slim/bin/quicketl validate demo/pipelines/sample.yml > /dev/null
+          if /tmp/slim/bin/quicketl run demo/pipelines/sample.yml 2> err.txt; then
+            echo "quicketl run should fail without the pipelines extra"
+            exit 1
+          fi
+          grep -F "pip install 'quicketl[pipelines]'" err.txt
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

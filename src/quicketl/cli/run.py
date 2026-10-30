@@ -13,8 +13,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from quicketl.cli._extras import require_pipelines
 from quicketl.logging import configure_logging
-from quicketl.pipeline import Pipeline, PipelineStatus
 
 console = Console()
 app = typer.Typer(help="Run a QuickETL pipeline")
@@ -128,6 +128,9 @@ def run(
         quicketl run pipelines/sales.yml --base-dir /opt/project
     """
     # Configure logging
+    require_pipelines()
+    from quicketl.pipeline import Pipeline, PipelineStatus
+
     configure_logging(level="DEBUG" if verbose else "INFO")
 
     # Parse variables
@@ -184,6 +187,8 @@ def run(
 
 
 def _display_result(result) -> None:
+    from quicketl.pipeline import PipelineStatus
+
     """Display pipeline result in a formatted way."""
     # Status panel
     if result.status == PipelineStatus.SUCCESS:
