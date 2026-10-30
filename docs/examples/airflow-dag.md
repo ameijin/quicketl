@@ -451,7 +451,7 @@ airflow/
 ```
 # requirements.txt
 apache-airflow>=2.8.0
-quicketl[airflow,duckdb,snowflake]
+quicketl[snowflake]  # includes the pipelines extra
 ```
 
 ### Airflow Variables

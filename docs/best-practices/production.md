@@ -276,7 +276,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install QuickETL with required backends
-RUN pip install quicketl[duckdb,postgres,snowflake]
+RUN pip install 'quicketl[postgres,snowflake]'
 
 # Copy pipelines
 COPY pipelines/ /app/pipelines/

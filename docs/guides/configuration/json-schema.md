@@ -193,7 +193,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install QuickETL
-        run: pip install quicketl
+        run: pip install quicketl  # the core install is enough for validate
 
       - name: Validate all pipelines
         run: |

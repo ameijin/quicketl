@@ -143,6 +143,7 @@ nav:
   - Getting Started:
     - getting-started/index.md
     - Installation: getting-started/installation.md
+    - Upgrading to 2.0: getting-started/upgrading.md
     - Quick Start: getting-started/quickstart.md
     - Your First Pipeline: getting-started/first-pipeline.md
     - Project Structure: getting-started/project-structure.md

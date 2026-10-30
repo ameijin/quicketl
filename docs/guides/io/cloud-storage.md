@@ -11,7 +11,7 @@ QuickETL supports cloud storage through [fsspec](https://filesystem-spec.readthe
 ### Installation
 
 ```bash
-pip install quicketl[aws]
+pip install 'quicketl[aws]'
 ```
 
 ### Configuration
@@ -75,7 +75,7 @@ source:
 ### Installation
 
 ```bash
-pip install quicketl[gcp]
+pip install 'quicketl[gcp]'
 ```
 
 ### Configuration
@@ -125,7 +125,7 @@ sink:
 ### Installation
 
 ```bash
-pip install quicketl[azure]
+pip install 'quicketl[azure]'
 ```
 
 ### Configuration
