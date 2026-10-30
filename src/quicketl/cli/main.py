@@ -10,6 +10,7 @@ import typer
 from quicketl._version import __version__
 from quicketl.cli.info import app as info_app
 from quicketl.cli.init import init
+from quicketl.cli.platform import app as platform_app
 from quicketl.cli.run import run
 from quicketl.cli.schema import app as schema_app
 from quicketl.cli.validate import validate
@@ -30,6 +31,7 @@ app.command("run", short_help="Run a QuickETL pipeline")(run)
 app.command("validate", short_help="Validate pipeline configuration")(validate)
 app.add_typer(workflow_app, name="workflow")
 app.command("init", short_help="Initialize a new QuickETL project or pipeline")(init)
+app.add_typer(platform_app, name="platform")
 app.add_typer(info_app, name="info")
 app.add_typer(schema_app, name="schema")
 
@@ -69,6 +71,7 @@ def main(
       validate  Validate pipeline configuration without running
       workflow  Run and manage multi-pipeline workflows
       init      Create new project or pipeline
+      platform  Work with platform specs (platform.yml)
       info      Show version and available backends
       schema    Output JSON schema for IDE autocompletion
 
