@@ -6,7 +6,7 @@ This page shows how to install QuickETL. Use it to pick the right install for wh
 
 | I want to | Install | Approx. size |
 |-----------|---------|--------------|
-| Use the CLI to create projects, validate configs and export the JSON schema | `pip install quicketl` (core only) | 16 MB |
+| Use the CLI to create and scaffold platforms, create projects, validate configs and export the JSON schema | `pip install quicketl` (core only) | 33 MB |
 | Run pipelines and workflows with DuckDB and Polars | `pip install 'quicketl[pipelines]'` | 465 MB |
 | Run pipelines on a specific backend or cloud (for example Snowflake or S3) | `pip install 'quicketl[snowflake]'` (a backend extra) | 465 MB plus the backend |
 | Everything | `pip install 'quicketl[all]'` | Very large |
@@ -25,7 +25,7 @@ The secrets (`secrets-aws`, `secrets-azure`), telemetry (`opentelemetry`, `openl
 
 ## Core Installation
 
-The core install is small. It contains the CLI, `init`, `validate` and `schema`.
+The core install is small. It contains the CLI, `init`, `validate`, `schema` and the `platform` commands. `quicketl platform scaffold` and `update` also need `git` installed.
 
 === "pip"
 

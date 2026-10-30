@@ -9,14 +9,16 @@ QuickETL 2.0 is not released yet. It will ship as 2.0.0, after 1.7.0. Everything
 Before 2.0, `pip install quicketl` installed the whole data stack. From 2.0.0, it installs only the core:
 
 - pydantic, pyyaml, structlog, typer and rich
+- copier, for platform scaffolding
 
-The core install is about 16 MB. These commands work with it:
+The core install is about 33 MB. These commands work with it:
 
 - `quicketl --help` and `quicketl --version`
 - `quicketl info` (without flags)
 - `quicketl init`
 - `quicketl validate`
 - `quicketl schema`
+- `quicketl platform init`, `validate`, `scaffold` and `update` (new in 2.0; `scaffold` and `update` also need `git`)
 
 The data stack now lives in the `pipelines` extra (Ibis with DuckDB and Polars, plus fsspec). With it, the install is about 465 MB. You need it for:
 

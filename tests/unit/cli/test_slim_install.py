@@ -93,6 +93,27 @@ class TestCoreCommandsWorkWithoutPipelines:
 
         assert result.returncode == 0, result.stderr
 
+    def test_platform_validate(self, temp_dir: Path):
+        spec = temp_dir / "platform.yml"
+        spec.write_text("name: acme\nwarehouse:\n  type: snowflake\ndomains:\n  - name: sales\n")
+
+        result = run_slim("platform", "validate", str(spec), cwd=temp_dir)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "Platform spec is valid" in result.stdout
+
+    def test_platform_init(self, temp_dir: Path):
+        result = run_slim("platform", "init", str(temp_dir / "proj"), cwd=temp_dir)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert (temp_dir / "proj" / "platform.yml").exists()
+
+    @pytest.mark.parametrize("command", ["scaffold", "update"])
+    def test_platform_scaffolding_help(self, temp_dir: Path, command: str):
+        result = run_slim("platform", command, "--help", cwd=temp_dir)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+
     def test_init(self, temp_dir: Path):
         result = run_slim("init", "proj", "-o", str(temp_dir), cwd=temp_dir)
 
