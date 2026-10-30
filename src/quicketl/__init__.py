@@ -24,6 +24,9 @@ if TYPE_CHECKING:
     from quicketl.pipeline.pipeline import Pipeline
     from quicketl.pipeline.result import PipelineResult
 
+# Top-level packages installed by the pipelines extra
+_PIPELINE_STACK = {"ibis", "pyarrow", "pandas", "polars", "duckdb", "fsspec"}
+
 # Public name -> module that defines it. Loaded on first attribute access.
 _LAZY_EXPORTS = {
     "Pipeline": "quicketl.pipeline.pipeline",
@@ -47,6 +50,15 @@ def __getattr__(name: str) -> Any:
     module = _LAZY_EXPORTS.get(name)
     if module is None:
         raise AttributeError(f"module 'quicketl' has no attribute {name!r}")
-    value = getattr(importlib.import_module(module), name)
+    try:
+        loaded = importlib.import_module(module)
+    except ModuleNotFoundError as e:
+        # A missing data stack means the pipelines extra is not installed.
+        if (e.name or "").split(".")[0] in _PIPELINE_STACK:
+            from quicketl.cli._extras import PIPELINES_INSTALL_HINT
+
+            raise ImportError(f"quicketl.{name}: {PIPELINES_INSTALL_HINT}") from e
+        raise
+    value = getattr(loaded, name)
     globals()[name] = value
     return value

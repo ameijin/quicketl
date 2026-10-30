@@ -26,7 +26,7 @@ class _BlockPipelineStack:
 
     def find_spec(self, name, path=None, target=None):
         if name.split(".")[0] in self.BLOCKED:
-            raise ModuleNotFoundError(f"No module named {name!r}")
+            raise ModuleNotFoundError(f"No module named {name!r}", name=name)
         return None
 
 sys.meta_path.insert(0, _BlockPipelineStack())
@@ -147,6 +147,18 @@ class TestLazyTopLevelExports:
         from quicketl.pipeline.pipeline import Pipeline
 
         assert quicketl.Pipeline is Pipeline
+
+    def test_pipeline_import_without_extra_shows_hint(self):
+        """`from quicketl import Pipeline` on a core install names the extra to install."""
+        code = SLIM_CLI.split("from quicketl.cli.main import app")[0] + (
+            "try:\n    from quicketl import Pipeline\nexcept ImportError as e:\n    print(e)\n"
+        )
+
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True, check=True
+        )
+
+        assert INSTALL_HINT in result.stdout
 
     def test_unknown_attribute_raises(self):
         import quicketl
