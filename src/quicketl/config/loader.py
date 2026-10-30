@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 import yaml
 
 from quicketl.config.models import PipelineConfig
+from quicketl.config.project import find_project_config
 from quicketl.config.workflow import WorkflowConfig
 
 if TYPE_CHECKING:
@@ -265,6 +266,29 @@ def _resolve_profile_in_config(
     return result
 
 
+def _resolve_file_paths(config_dict: dict[str, Any], base_dir: Path) -> dict[str, Any]:
+    """Make relative local paths of file sources and sinks absolute under base_dir.
+
+    Absolute paths and remote URIs such as s3:// are left unchanged.
+    """
+
+    def resolve(entry: Any) -> Any:
+        if not isinstance(entry, dict) or entry.get("type") != "file":
+            return entry
+        path = entry.get("path")
+        if not isinstance(path, str) or "://" in path or Path(path).is_absolute():
+            return entry
+        return {**entry, "path": str(base_dir / path)}
+
+    result = dict(config_dict)
+    for key in ("source", "sink"):
+        if key in result:
+            result[key] = resolve(result[key])
+    if isinstance(result.get("sources"), dict):
+        result["sources"] = {name: resolve(s) for name, s in result["sources"].items()}
+    return result
+
+
 def load_pipeline_config(
     path: Path | str,
     variables: dict[str, str] | None = None,
@@ -272,8 +296,13 @@ def load_pipeline_config(
     secrets_provider: str | None = None,
     secrets_config: dict[str, Any] | None = None,
     profiles: dict[str, dict[str, Any]] | None = None,
+    base_dir: Path | str | None = None,
 ) -> PipelineConfig:
     """Load and validate a pipeline configuration from YAML.
+
+    Relative file paths in sources and sinks resolve against, in order:
+    `base_dir` if given; the folder of the nearest quicketl.yml at or above
+    the pipeline file (the project root); otherwise the current directory.
 
     Args:
         path: Path to the pipeline YAML file
@@ -281,6 +310,8 @@ def load_pipeline_config(
         secrets_provider: Secrets provider type ('env', 'aws', 'azure')
         secrets_config: Configuration options for the secrets provider
         profiles: Connection profiles to resolve 'profile' references
+        base_dir: Folder that relative file paths resolve against. Overrides
+            the project root.
 
     Returns:
         A validated PipelineConfig instance
@@ -314,6 +345,12 @@ def load_pipeline_config(
             secrets_provider=secrets_provider,
             secrets_config=secrets_config,
         )
+
+    if base_dir is None:
+        project_file = find_project_config(Path(path).parent)
+        base_dir = project_file.parent if project_file else None
+    if base_dir is not None:
+        config_dict = _resolve_file_paths(config_dict, Path(base_dir).resolve())
 
     return PipelineConfig.model_validate(config_dict)
 

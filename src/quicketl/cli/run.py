@@ -102,8 +102,21 @@ def run(
             help="Output result as JSON",
         ),
     ] = False,
+    base_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "--base-dir",
+            help=(
+                "Folder that relative file paths resolve against "
+                "(default: folder of the nearest quicketl.yml, else the current folder)"
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Execute a QuickETL pipeline.
+
+    Relative file paths in the pipeline resolve against --base-dir if given,
+    then the folder of the nearest quicketl.yml, then the current folder.
 
     Examples:
         quicketl run pipeline.yml
@@ -112,6 +125,7 @@ def run(
         quicketl run pipeline.yml --env prod
         quicketl run pipeline.yml --profile warehouse
         quicketl run pipeline.yml --dry-run
+        quicketl run pipelines/sales.yml --base-dir /opt/project
     """
     # Configure logging
     configure_logging(level="DEBUG" if verbose else "INFO")
@@ -124,7 +138,7 @@ def run(
 
     try:
         # Load pipeline
-        pipeline = Pipeline.from_yaml(config_file, variables=variables)
+        pipeline = Pipeline.from_yaml(config_file, variables=variables, base_dir=base_dir)
 
         # Override engine: explicit --engine takes priority, then env engine
         if engine:
@@ -200,7 +214,11 @@ def _display_result(result) -> None:
         for step in result.step_results:
             status_str = "[green]OK[/green]" if step.succeeded else "[red]FAIL[/red]"
             if step.error:
-                status_str = f"[red]FAIL: {step.error[:30]}...[/red]" if len(step.error) > 30 else f"[red]FAIL: {step.error}[/red]"
+                status_str = (
+                    f"[red]FAIL: {step.error[:30]}...[/red]"
+                    if len(step.error) > 30
+                    else f"[red]FAIL: {step.error}[/red]"
+                )
             table.add_row(
                 step.step_name,
                 step.step_type,
@@ -215,8 +233,7 @@ def _display_result(result) -> None:
         checks = result.check_results
         check_status = "[green]PASSED[/green]" if checks["all_passed"] else "[red]FAILED[/red]"
         console.print(
-            f"\nQuality Checks: {check_status} "
-            f"({checks['passed']}/{checks['total']} passed)"
+            f"\nQuality Checks: {check_status} ({checks['passed']}/{checks['total']} passed)"
         )
 
     # Summary

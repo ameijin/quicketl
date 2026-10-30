@@ -67,6 +67,8 @@ source:
   format: parquet
 ```
 
+Relative paths resolve against the project root (the folder with `quicketl.yml`), or the current folder if there is none. See [How Relative Paths Are Resolved](relative-paths.md).
+
 #### CSV Options
 
 ```yaml
