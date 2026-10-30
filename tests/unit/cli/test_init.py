@@ -12,9 +12,7 @@ from quicketl.cli.main import app
 class TestInitCommand:
     """Tests for the 'quicketl init' command."""
 
-    def test_init_without_name_creates_in_current_dir(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_without_name_creates_in_current_dir(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that init without name initializes in current directory."""
         result = cli_runner.invoke(app, ["init", "-o", str(temp_dir)])
 
@@ -23,13 +21,19 @@ class TestInitCommand:
         assert (temp_dir / "pipelines" / "sample.yml").exists()
         assert (temp_dir / "data").exists()
 
+    def test_init_writes_project_file(self, cli_runner: CliRunner, temp_dir: Path):
+        """Both project modes write quicketl.yml, which marks the project root."""
+        cli_runner.invoke(app, ["init", "-o", str(temp_dir / "here")])
+        cli_runner.invoke(app, ["init", "named", "-o", str(temp_dir)])
+
+        assert (temp_dir / "here" / "quicketl.yml").exists()
+        assert (temp_dir / "named" / "quicketl.yml").exists()
+
     def test_init_with_name_creates_project_subdirectory(
         self, cli_runner: CliRunner, temp_dir: Path
     ):
         """Test that init with name creates project in subdirectory."""
-        result = cli_runner.invoke(
-            app, ["init", "-o", str(temp_dir), "my_project"]
-        )
+        result = cli_runner.invoke(app, ["init", "-o", str(temp_dir), "my_project"])
 
         assert result.exit_code == 0
         project_dir = temp_dir / "my_project"
@@ -43,9 +47,7 @@ class TestInitCommand:
         self, cli_runner: CliRunner, temp_dir: Path
     ):
         """Test that --pipeline creates only a YAML file."""
-        result = cli_runner.invoke(
-            app, ["init", "-o", str(temp_dir), "--pipeline", "my_pipeline"]
-        )
+        result = cli_runner.invoke(app, ["init", "-o", str(temp_dir), "--pipeline", "my_pipeline"])
 
         assert result.exit_code == 0
         assert (temp_dir / "my_pipeline.yml").exists()
@@ -67,16 +69,12 @@ class TestInitCommand:
         project_dir = temp_dir / "existing_project"
         project_dir.mkdir()
 
-        result = cli_runner.invoke(
-            app, ["init", "-o", str(temp_dir), "existing_project"]
-        )
+        result = cli_runner.invoke(app, ["init", "-o", str(temp_dir), "existing_project"])
 
         assert result.exit_code == 1
         assert "exists" in result.output.lower()
 
-    def test_init_with_force_overwrites_existing(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_with_force_overwrites_existing(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that --force allows overwriting existing project."""
         # Create the directory first
         project_dir = temp_dir / "existing_project"
@@ -90,9 +88,7 @@ class TestInitCommand:
         assert result.exit_code == 0
         assert (project_dir / "pipelines" / "sample.yml").exists()
 
-    def test_init_creates_sample_data(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_creates_sample_data(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that init creates sample CSV data file."""
         result = cli_runner.invoke(app, ["init", "-o", str(temp_dir)])
 
@@ -105,9 +101,7 @@ class TestInitCommand:
         assert "id" in content
         assert "Electronics" in content
 
-    def test_init_creates_env_template(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_creates_env_template(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that init creates .env template."""
         result = cli_runner.invoke(app, ["init", "-o", str(temp_dir)])
 
@@ -115,9 +109,7 @@ class TestInitCommand:
         env_file = temp_dir / ".env"
         assert env_file.exists()
 
-    def test_init_sample_pipeline_is_valid(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_sample_pipeline_is_valid(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that the created sample pipeline is valid."""
         # Initialize
         result = cli_runner.invoke(app, ["init", "-o", str(temp_dir)])
@@ -131,9 +123,7 @@ class TestInitCommand:
         assert "valid" in result.output.lower()
         assert "invalid" not in result.output.lower()
 
-    def test_init_output_shows_next_steps(
-        self, cli_runner: CliRunner, temp_dir: Path
-    ):
+    def test_init_output_shows_next_steps(self, cli_runner: CliRunner, temp_dir: Path):
         """Test that init output shows how to run the sample pipeline."""
         result = cli_runner.invoke(app, ["init", "-o", str(temp_dir)])
 

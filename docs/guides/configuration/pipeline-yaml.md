@@ -11,7 +11,8 @@ description: string             # Optional: Human-readable description
 engine: string                  # Optional: Compute backend (default: "duckdb")
                                # Options: duckdb, polars, datafusion, spark, pandas
 
-# Data source
+# Data source: every pipeline needs `source`, or `sources` for multi-source
+# pipelines. A pipeline with neither fails validation.
 source:
   type: file | database         # Required: Source type
 
@@ -49,7 +50,8 @@ sink:
   # For type: database
   connection: string            # Required: Connection string
   table: string                 # Required: Target table
-  mode: append | truncate       # Optional: Write mode (default: append)
+  mode: append | truncate | replace | upsert  # Optional: Write mode (default: append)
+  upsert_keys: [string]         # Required for mode: upsert
 ```
 
 ## Source Configuration
@@ -64,6 +66,8 @@ source:
   path: data/sales.parquet
   format: parquet
 ```
+
+Relative paths resolve against the project root (the folder with `quicketl.yml`), or the current folder if there is none. See [How Relative Paths Are Resolved](relative-paths.md).
 
 #### CSV Options
 

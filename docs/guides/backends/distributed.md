@@ -108,11 +108,7 @@ quicketl run pipeline.yml --engine spark
 
 ### Databricks
 
-```bash
-export SPARK_MASTER=databricks
-export DATABRICKS_HOST=https://xxx.cloud.databricks.com
-export DATABRICKS_TOKEN=dapi...
-```
+Databricks support is planned and is not available yet. quicketl does not read `DATABRICKS_HOST` or `DATABRICKS_TOKEN`, and `SPARK_MASTER=databricks` does not work. See the [support matrix](support-matrix.md) for the current status of every backend.
 
 ### Google Dataproc
 

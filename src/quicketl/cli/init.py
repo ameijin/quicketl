@@ -15,7 +15,7 @@ console = Console()
 app = typer.Typer(help="Initialize a new QuickETL project or pipeline")
 
 
-SAMPLE_PIPELINE = '''# Example QuickETL Pipeline Configuration
+SAMPLE_PIPELINE = """# Example QuickETL Pipeline Configuration
 # Run this pipeline with: quicketl run pipelines/sample.yml
 name: {name}
 description: Sample ETL pipeline - processes sales data
@@ -69,9 +69,9 @@ sink:
   type: file
   path: data/output/sales_summary.parquet
   format: parquet
-'''
+"""
 
-PROJECT_STRUCTURE = '''# {name}
+PROJECT_STRUCTURE = """# {name}
 
 A QuickETL data pipeline project.
 
@@ -137,9 +137,9 @@ source:
 - Quality checks: not_null, unique, row_count, accepted_values, expression
 - Run `quicketl info --backends` to see available compute engines
 - Run `quicketl schema` to output JSON schema for IDE autocompletion
-'''
+"""
 
-ENV_TEMPLATE = '''# QuickETL Environment Variables
+ENV_TEMPLATE = """# QuickETL Environment Variables
 # Reference these in pipeline YAML with ${VAR_NAME}
 
 # Database connections
@@ -152,10 +152,10 @@ ENV_TEMPLATE = '''# QuickETL Environment Variables
 
 # Pipeline variables
 # RUN_DATE=2025-01-01
-'''
+"""
 
 # Sample CSV data for the demo pipeline
-SAMPLE_DATA_CSV = '''id,name,category,amount,date
+SAMPLE_DATA_CSV = """id,name,category,amount,date
 1,Widget A,Electronics,99.99,2025-01-15
 2,Widget B,Electronics,149.99,2025-01-15
 3,Gadget X,Home,29.99,2025-01-16
@@ -168,10 +168,17 @@ SAMPLE_DATA_CSV = '''id,name,category,amount,date
 10,Apparatus,Office,75.99,2025-01-19
 11,Invalid Item,Electronics,-10.00,2025-01-20
 12,Another Widget,Electronics,125.50,2025-01-20
-'''
+"""
+
+# Marks the project root: relative paths in pipelines resolve against this folder
+PROJECT_FILE = """# QuickETL project settings. This file marks the project root:
+# relative paths in pipelines (like data/sales.csv) resolve against this folder,
+# so pipelines run the same way from any working directory.
+version: "1.0"
+"""
 
 
-@app.callback(invoke_without_command=True)
+@app.command()
 def init(
     name: Annotated[
         str | None,
@@ -271,6 +278,7 @@ def _init_in_current_dir(base_path: Path, force: bool) -> None:
     # Optional files - skip if they exist (common project files)
     optional_files = {
         base_path / ".env": ENV_TEMPLATE,
+        base_path / "quicketl.yml": PROJECT_FILE,
     }
 
     created_count = 0
@@ -327,7 +335,9 @@ def _create_project(name: str, base_path: Path, force: bool) -> None:
         project_path / "data" / "sales.csv": SAMPLE_DATA_CSV.strip(),
         project_path / "README.md": PROJECT_STRUCTURE.format(name=name),
         project_path / ".env": ENV_TEMPLATE,
-        project_path / ".gitignore": "# Data files\ndata/output/\n\n# Environment\n.env\n\n# Python\n__pycache__/\n*.pyc\n",
+        project_path / "quicketl.yml": PROJECT_FILE,
+        project_path
+        / ".gitignore": "# Data files\ndata/output/\n\n# Environment\n.env\n\n# Python\n__pycache__/\n*.pyc\n",
     }
 
     for file_path, content in files.items():

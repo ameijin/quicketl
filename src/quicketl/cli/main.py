@@ -9,10 +9,10 @@ import typer
 
 from quicketl._version import __version__
 from quicketl.cli.info import app as info_app
-from quicketl.cli.init import app as init_app
-from quicketl.cli.run import app as run_app
+from quicketl.cli.init import init
+from quicketl.cli.run import run
 from quicketl.cli.schema import app as schema_app
-from quicketl.cli.validate import app as validate_app
+from quicketl.cli.validate import validate
 from quicketl.cli.workflow import app as workflow_app
 
 # Create main app
@@ -24,10 +24,12 @@ app = typer.Typer(
 )
 
 # Register subcommands
-app.add_typer(run_app, name="run")
-app.add_typer(validate_app, name="validate")
+# Single-command modules are registered as commands (not sub-Typers) so that
+# options may follow the positional argument.
+app.command("run", short_help="Run a QuickETL pipeline")(run)
+app.command("validate", short_help="Validate pipeline configuration")(validate)
 app.add_typer(workflow_app, name="workflow")
-app.add_typer(init_app, name="init")
+app.command("init", short_help="Initialize a new QuickETL project or pipeline")(init)
 app.add_typer(info_app, name="info")
 app.add_typer(schema_app, name="schema")
 

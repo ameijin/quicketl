@@ -50,6 +50,7 @@ quicketl run <config_file> [options]
 | `--no-fail-on-checks` | | Continue despite check failures |
 | `--verbose` | `-V` | Enable verbose logging |
 | `--json` | `-j` | Output result as JSON |
+| `--base-dir` | | Folder that relative file paths resolve against. Default: folder of the nearest `quicketl.yml`, else the current folder |
 
 ### Examples
 
@@ -73,6 +74,9 @@ quicketl run pipeline.yml --no-fail-on-checks
 
 # JSON output (for scripting)
 quicketl run pipeline.yml --json
+
+# Pin the folder for relative data paths
+quicketl run pipelines/sales.yml --base-dir /opt/project
 ```
 
 ### Output
@@ -209,6 +213,7 @@ quicketl workflow run <config_file> [options]
 | `--workers` | `-w` | Maximum parallel workers for parallel stages |
 | `--verbose` | `-V` | Enable verbose logging |
 | `--json` | `-j` | Output result as JSON |
+| `--base-dir` | | Folder that relative file paths in each pipeline resolve against. Default: folder of the nearest `quicketl.yml`, else the current folder |
 
 #### Examples
 
@@ -227,6 +232,9 @@ quicketl workflow run workflows/etl.yml --workers 4
 
 # JSON output for scripting
 quicketl workflow run workflows/etl.yml --json
+
+# Pin the folder for relative data paths
+quicketl workflow run workflows/etl.yml --base-dir /opt/project
 ```
 
 #### Output
@@ -404,6 +412,7 @@ When run without a name, `quicketl init` adds QuickETL structure to your existin
 
 ```
 your_project/
+├── quicketl.yml        # Project root marker, never overwritten
 ├── pipelines/
 │   └── sample.yml      # Working sample pipeline
 ├── data/
@@ -420,6 +429,7 @@ When run with a name, creates a complete project:
 
 ```
 my_project/
+├── quicketl.yml        # Project root marker
 ├── pipelines/
 │   └── sample.yml      # Working sample pipeline
 ├── data/

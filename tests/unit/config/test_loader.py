@@ -5,7 +5,9 @@ This module tests YAML loading and ${VAR} variable substitution.
 
 from __future__ import annotations
 
+import os
 import string
+from unittest.mock import patch
 
 import pytest
 from hypothesis import given, settings
@@ -202,8 +204,95 @@ class TestLoadYamlWithVariables:
         assert result == {"key": "value"}
 
 
+class TestRelativePathResolution:
+    """Relative file paths resolve against base_dir, then the project root, then cwd."""
+
+    PIPELINE = (
+        "name: p\n"
+        "source:\n  type: file\n  path: data/in.csv\n  format: csv\n"
+        "sink:\n  type: file\n  path: out/result.parquet\n"
+    )
+
+    def _write_project(self, root, *, project_file=True):
+        (root / "pipelines").mkdir(parents=True)
+        if project_file:
+            (root / "quicketl.yml").write_text('version: "1.0"\n')
+        pipeline = root / "pipelines" / "p.yml"
+        pipeline.write_text(self.PIPELINE)
+        return pipeline
+
+    def test_paths_resolve_against_project_root(self, tmp_path):
+        """With a quicketl.yml above the pipeline, paths start at that folder."""
+        config = load_pipeline_config(self._write_project(tmp_path))
+
+        root = tmp_path.resolve()
+        assert config.source.path == str(root / "data" / "in.csv")
+        assert config.sink.path == str(root / "out" / "result.parquet")
+
+    def test_paths_stay_relative_without_project_file(self, tmp_path):
+        """Without a quicketl.yml, paths keep resolving against the current directory."""
+        config = load_pipeline_config(self._write_project(tmp_path, project_file=False))
+
+        assert config.source.path == "data/in.csv"
+        assert config.sink.path == "out/result.parquet"
+
+    def test_base_dir_wins_over_project_root(self, tmp_path):
+        """An explicit base_dir is used even when a project root exists."""
+        other = tmp_path / "elsewhere"
+
+        config = load_pipeline_config(self._write_project(tmp_path), base_dir=other)
+
+        assert config.source.path == str(other.resolve() / "data" / "in.csv")
+
+    def test_absolute_and_remote_paths_are_unchanged(self, tmp_path):
+        """Only local relative paths are rewritten."""
+        (tmp_path / "quicketl.yml").write_text("")
+        absolute = str(tmp_path.resolve() / "abs.csv")
+        pipeline = tmp_path / "p.yml"
+        pipeline.write_text(
+            f"name: p\nsource:\n  type: file\n  path: {absolute}\n  format: csv\n"
+            "sink:\n  type: file\n  path: s3://bucket/out/\n"
+        )
+
+        config = load_pipeline_config(pipeline)
+
+        assert config.source.path == absolute
+        assert config.sink.path == "s3://bucket/out/"
+
+    def test_named_sources_are_resolved(self, tmp_path):
+        """Each entry under `sources` is resolved the same way as `source`."""
+        (tmp_path / "quicketl.yml").write_text("")
+        pipeline = tmp_path / "p.yml"
+        pipeline.write_text(
+            "name: p\nsources:\n  a:\n    type: file\n    path: data/a.csv\n    format: csv\n"
+        )
+
+        config = load_pipeline_config(pipeline)
+
+        assert config.sources["a"].path == str(tmp_path.resolve() / "data" / "a.csv")
+
+
 class TestLoadPipelineConfig:
     """Tests for load_pipeline_config function."""
+
+    def test_pipeline_without_any_source_is_invalid(self, tmp_path):
+        """A pipeline with neither `source` nor `sources` can never run."""
+        from pydantic import ValidationError
+
+        yaml_file = tmp_path / "pipeline.yml"
+        yaml_file.write_text("name: no_source\nengine: duckdb\n")
+
+        with pytest.raises(ValidationError, match="source"):
+            load_pipeline_config(yaml_file)
+
+    def test_pipeline_with_named_sources_only_is_valid(self, tmp_path):
+        """Multi-source pipelines set `sources` instead of `source`."""
+        yaml_file = tmp_path / "pipeline.yml"
+        yaml_file.write_text(
+            "name: multi\nsources:\n  a:\n    type: file\n    path: a.csv\n    format: csv\n"
+        )
+
+        assert list(load_pipeline_config(yaml_file).sources) == ["a"]
 
     def test_load_valid_pipeline_config(self, tmp_path):
         """Test loading a valid pipeline configuration."""
@@ -305,7 +394,12 @@ class TestSubstituteVariablesWithHypothesis:
     def test_default_value_used_when_var_missing(self, var_name, default):
         """Default value should be used when variable is missing."""
         template = f"${{{var_name}:-{default}}}"
-        result = substitute_variables(template, {})
+        # substitute_variables falls back to os.environ before the default, so the
+        # generated name (e.g. "_", set by the shell) must be absent for this example.
+        # patch.dict is used because monkeypatch does not reset between examples.
+        with patch.dict(os.environ):
+            os.environ.pop(var_name, None)
+            result = substitute_variables(template, {})
         assert result == default
 
     @pytest.mark.hypothesis
@@ -337,11 +431,13 @@ class TestSubstituteVariablesWithHypothesis:
                 assert res == orig
 
     @pytest.mark.hypothesis
-    @given(st.dictionaries(
-        keys=st.text(alphabet=string.ascii_letters, min_size=1, max_size=10),
-        values=st.text(min_size=0, max_size=20),
-        max_size=10,
-    ))
+    @given(
+        st.dictionaries(
+            keys=st.text(alphabet=string.ascii_letters, min_size=1, max_size=10),
+            values=st.text(min_size=0, max_size=20),
+            max_size=10,
+        )
+    )
     @settings(max_examples=50)
     def test_dict_values_all_substituted(self, data):
         """All values in a dict should be processed."""

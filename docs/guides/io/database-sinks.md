@@ -1,6 +1,6 @@
 # Database Sinks
 
-Write transformed data to relational databases.
+Write transformed data to a database table. Use this when the results of a pipeline should land in a database instead of files.
 
 ## Basic Usage
 
@@ -18,7 +18,8 @@ sink:
 | `type` | Yes | - | Must be `database` |
 | `connection` | Yes | - | Database connection string |
 | `table` | Yes | - | Target table name |
-| `mode` | No | `append` | Write mode: `append`, `truncate`, `replace` |
+| `mode` | No | `append` | Write mode: `append`, `truncate`, `replace`, `upsert` |
+| `upsert_keys` | For `upsert` | - | Columns that identify a row, such as `[id]` |
 
 ## Write Modes
 
@@ -48,6 +49,32 @@ sink:
 
 !!! warning "Truncate is Destructive"
     Truncate deletes all existing data in the table before inserting new data.
+    The delete and insert run in one transaction, so if the insert fails, the old rows stay.
+
+### Upsert
+
+Update rows that already exist and add the rest. Rows are matched on `upsert_keys`:
+
+```yaml
+sink:
+  type: database
+  connection: ${DATABASE_URL}
+  table: customers
+  mode: upsert
+  upsert_keys: [customer_id]
+```
+
+QuickETL picks one of two ways to do this, based on your database and your keys:
+
+| Situation | What happens |
+|-----------|--------------|
+| DuckDB, Snowflake or BigQuery, with **one** key column | One native `MERGE` statement updates matching rows and inserts the rest |
+| Any other database, or **more than one** key column | Matching rows are deleted and all incoming rows are inserted, in one transaction |
+
+Both ways give the same result. The `MERGE` path is a single statement, so it succeeds or fails as a whole. QuickETL never switches to the other way after an error. If a `MERGE` fails, you see that error and the table keeps its original rows.
+
+!!! note "MERGE Needs Unique Keys in the New Data"
+    A `MERGE` can fail if two incoming rows have the same key. The delete-then-insert way would keep both. Remove duplicate keys before the sink if this matters to you.
 
 ### Replace
 
@@ -63,6 +90,17 @@ sink:
 
 !!! warning "Replace Drops the Table"
     Replace will drop the existing table and create a new one. This means any indexes, constraints, or grants on the table will be lost.
+
+## How Writes Stay Safe
+
+A failed write never leaves the table half written:
+
+- **`truncate`**, and **`upsert` without `MERGE`**, copy the new rows into a temporary staging table, then delete and insert inside one transaction. If any step fails, the transaction is rolled back, the table keeps its original rows, and you see the real database error.
+- **`upsert` with `MERGE`** (see [Upsert](#upsert)) runs as a single statement. If it fails, nothing changes and you see the real database error.
+- **`append`** inserts in a single statement. If it fails, you see the real database error.
+- **`replace`** builds the new table before swapping it in.
+
+`truncate`, and `upsert` without `MERGE`, need a database that supports transactions (`BEGIN`, `COMMIT`, `ROLLBACK`). On a database without them, QuickETL stops with an error instead of risking data loss.
 
 ## Connection Strings
 
@@ -174,8 +212,8 @@ sink:
 
 ### Table Creation
 
-- **`append` and `truncate` modes**: Table must exist. QuickETL will create it if it doesn't exist.
-- **`replace` mode**: Table is dropped and recreated automatically.
+- **`append`, `truncate` and `upsert` modes**: If the table does not exist yet, QuickETL creates it from the data.
+- **`replace` mode**: The table is always recreated from the data.
 
 For `append` mode with an existing table:
 
@@ -239,6 +277,14 @@ sink = DatabaseSink(
     table="sales_summary",
     mode="replace"
 )
+
+# With upsert (match rows on customer_id)
+sink = DatabaseSink(
+    connection="${DATABASE_URL}",
+    table="customers",
+    mode="upsert",
+    upsert_keys=["customer_id"]
+)
 ```
 
 ## Performance Tips
@@ -259,13 +305,9 @@ ALTER INDEX idx_sales_date DISABLE;
 ALTER INDEX idx_sales_date REBUILD;
 ```
 
-### Truncate vs Delete
+### Truncate vs Replace
 
-`truncate` is faster than deleting all rows:
-
-```yaml
-mode: truncate  # Fast - drops and recreates
-```
+`truncate` deletes rows and keeps the table, so indexes, constraints and grants stay. `replace` rebuilds the table, which can be faster for a full refresh but loses those settings.
 
 ### Connection Pooling
 
@@ -273,13 +315,13 @@ For high-frequency pipelines, consider connection pooling at the database level.
 
 ## Troubleshooting
 
-### Table Not Found
+### Transaction Not Supported
 
 ```
-Error: Table 'results' does not exist
+RuntimeError: Write mode needs transaction support to avoid losing rows, and the '<backend>' backend could not start a transaction
 ```
 
-Create the table before running the pipeline.
+`truncate` and `upsert` need transactions. Use `replace` for a full refresh, or `append` for new rows only.
 
 ### Column Mismatch
 
@@ -316,16 +358,13 @@ transforms:
 Error: Permission denied for table 'results'
 ```
 
-Verify the database user has INSERT (and TRUNCATE if using truncate mode) permissions.
+Verify the database user has INSERT and CREATE TABLE permissions, plus DELETE for `truncate` and `upsert` mode. CREATE TABLE is needed for the staging table.
 
 ## Limitations
 
-### No Upsert (Yet)
+### Upsert With `MERGE` Is Limited
 
-Upsert/merge operations are planned for a future release. Currently, use:
-
-- `append` for incremental loads
-- `truncate` for full refreshes
+Native `MERGE` is used only on DuckDB, Snowflake and BigQuery, and only with a single key column. Other databases and multi-column keys use delete then insert inside a transaction. PostgreSQL also uses the transaction path, because `MERGE` needs PostgreSQL 15 or newer and the transaction path works on every version. Only the DuckDB `MERGE` path and the transaction path are covered by QuickETL's automated tests.
 
 ### Limited Schema Management
 

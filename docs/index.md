@@ -4,7 +4,7 @@
 
 **Fast & Flexible Python ETL Framework**
 
-Build data pipelines in YAML or Python with support for 20+ compute backends.
+Build data pipelines in YAML or Python with support for 12 compute backends (see the [support matrix](guides/backends/support-matrix.md)).
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
 [View on GitHub](https://github.com/ameijin/quicketl){ .md-button }

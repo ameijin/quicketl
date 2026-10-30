@@ -1,0 +1,4 @@
+# QuickETL project settings. This file marks the project root:
+# relative paths in pipelines (like data/sales.csv) resolve against this folder,
+# so pipelines run the same way from any working directory.
+version: "1.0"
