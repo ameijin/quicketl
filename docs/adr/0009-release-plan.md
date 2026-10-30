@@ -15,7 +15,7 @@ We will release in three steps:
 | Release | Contents |
 |---------|----------|
 | 1.6.1 | Trust fixes |
-| 1.7.0 | Config-relative paths ([0008](0008-config-relative-paths.md)) and the Ibis 12 upgrade |
+| 1.7.0 | Project-root relative paths with `--base-dir` ([0008](0008-config-relative-paths.md)) and the Ibis 12 upgrade |
 | 2.0.0 | Platform-first restructure |
 
 2.0.0 is breaking because a plain `pip install quicketl` no longer includes pipelines.

@@ -97,11 +97,22 @@ def run(
             help="Output result as JSON",
         ),
     ] = False,
+    base_dir: Annotated[
+        Path | None,
+        typer.Option(
+            "--base-dir",
+            help=(
+                "Folder that relative file paths in each pipeline resolve against "
+                "(default: folder of the nearest quicketl.yml, else the current folder)"
+            ),
+        ),
+    ] = None,
 ) -> None:
     """Execute a QuickETL workflow.
 
     Workflows orchestrate multiple pipelines with dependency management
-    and optional parallel execution.
+    and optional parallel execution. Pipeline references resolve against the
+    workflow file's folder.
 
     Examples:
         quicketl workflow run workflows/medallion.yml
@@ -109,6 +120,7 @@ def run(
         quicketl workflow run workflows/etl.yml --env prod
         quicketl workflow run workflows/etl.yml --dry-run
         quicketl workflow run workflows/etl.yml --workers 4
+        quicketl workflow run workflows/etl.yml --base-dir /opt/project
     """
     configure_logging(level="DEBUG" if verbose else "INFO")
     variables = parse_variables(var or [])
@@ -117,7 +129,7 @@ def run(
     _resolve_project_config(env, profile, variables)
 
     try:
-        workflow = Workflow.from_yaml(config_file, variables=variables)
+        workflow = Workflow.from_yaml(config_file, variables=variables, base_dir=base_dir)
 
         if not json_output:
             console.print(f"\nRunning workflow: [bold]{workflow.name}[/bold]")
@@ -443,9 +455,7 @@ def _display_result(result) -> None:
         console.print(table)
 
     # Summary
-    console.print(
-        f"\nPipelines: {result.pipelines_succeeded}/{result.total_pipelines} succeeded"
-    )
+    console.print(f"\nPipelines: {result.pipelines_succeeded}/{result.total_pipelines} succeeded")
 
     if result.error:
         console.print(f"\n[red]Error:[/red] {result.error}")

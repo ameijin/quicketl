@@ -103,17 +103,21 @@ class Pipeline:
         cls,
         path: str | Path,
         variables: dict[str, str] | None = None,
+        base_dir: str | Path | None = None,
     ) -> Pipeline:
         """Load a pipeline from a YAML file.
 
         Args:
             path: Path to YAML file
             variables: Optional variable overrides
+            base_dir: Folder that relative file paths resolve against.
+                Defaults to the project root (the folder of the nearest
+                quicketl.yml), or the current directory if there is none.
 
         Returns:
             Pipeline instance
         """
-        config = load_pipeline_config(str(path), variables=variables)
+        config = load_pipeline_config(str(path), variables=variables, base_dir=base_dir)
         pipeline = cls.from_config(config)
         if variables:
             pipeline._variables = variables

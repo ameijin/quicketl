@@ -154,12 +154,10 @@ stages:
             mock_instance._stages = []
             mock_workflow.from_yaml.return_value = mock_instance
 
-            _result = cli_runner.invoke(
-                app, ["run", str(workflow_file), "--var", "KEY=value"]
-            )
+            _result = cli_runner.invoke(app, ["run", str(workflow_file), "--var", "KEY=value"])
 
             mock_workflow.from_yaml.assert_called_with(
-                workflow_file, variables={"KEY": "value"}
+                workflow_file, variables={"KEY": "value"}, base_dir=None
             )
 
     def test_run_with_json_output(self, cli_runner: CliRunner, tmp_path: Path):
@@ -203,7 +201,9 @@ class TestWorkflowValidateCommand:
         """Test validating a valid workflow."""
         # Create pipeline file
         pipeline_file = tmp_path / "pipeline.yml"
-        pipeline_file.write_text("name: test\nengine: duckdb\nsource:\n  type: file\n  path: x\n  format: csv\nsink:\n  type: file\n  path: y\n  format: parquet")
+        pipeline_file.write_text(
+            "name: test\nengine: duckdb\nsource:\n  type: file\n  path: x\n  format: csv\nsink:\n  type: file\n  path: y\n  format: parquet"
+        )
 
         workflow_content = """
 name: valid_workflow
@@ -239,7 +239,9 @@ stages:
     def test_validate_verbose_shows_structure(self, cli_runner: CliRunner, tmp_path: Path):
         """Test that --verbose shows workflow structure."""
         pipeline_file = tmp_path / "pipeline.yml"
-        pipeline_file.write_text("name: test\nengine: duckdb\nsource:\n  type: file\n  path: x\n  format: csv\nsink:\n  type: file\n  path: y\n  format: parquet")
+        pipeline_file.write_text(
+            "name: test\nengine: duckdb\nsource:\n  type: file\n  path: x\n  format: csv\nsink:\n  type: file\n  path: y\n  format: parquet"
+        )
 
         workflow_content = """
 name: verbose_test
@@ -363,9 +365,7 @@ stages:
         with patch("quicketl.workflow.generators.generate_airflow_dag") as mock_gen:
             mock_gen.return_value = "# Generated Airflow DAG\nfrom airflow import DAG"
 
-            result = cli_runner.invoke(
-                app, ["generate", str(workflow_file), "--target", "airflow"]
-            )
+            result = cli_runner.invoke(app, ["generate", str(workflow_file), "--target", "airflow"])
 
             assert "airflow" in result.output.lower() or "DAG" in result.output
 
@@ -384,9 +384,7 @@ stages:
         with patch("quicketl.workflow.generators.generate_prefect_flow") as mock_gen:
             mock_gen.return_value = "# Generated Prefect Flow\nfrom prefect import flow"
 
-            result = cli_runner.invoke(
-                app, ["generate", str(workflow_file), "--target", "prefect"]
-            )
+            result = cli_runner.invoke(app, ["generate", str(workflow_file), "--target", "prefect"])
 
             assert "prefect" in result.output.lower() or "flow" in result.output.lower()
 
@@ -432,9 +430,7 @@ stages:
         workflow_file = tmp_path / "workflow.yml"
         workflow_file.write_text(workflow_content)
 
-        result = cli_runner.invoke(
-            app, ["generate", str(workflow_file), "--target", "unknown"]
-        )
+        result = cli_runner.invoke(app, ["generate", str(workflow_file), "--target", "unknown"])
 
         assert result.exit_code != 0
         assert "Unknown target" in result.output or "unknown" in result.output.lower()

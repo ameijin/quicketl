@@ -61,6 +61,8 @@ class Workflow:
         self.fail_fast = fail_fast
         self._stages: list[WorkflowStage] = []
         self._base_path: Path = Path()
+        # Folder that relative file paths inside pipelines resolve against
+        self._data_base_dir: Path | None = None
 
     @classmethod
     def from_config(cls, config: WorkflowConfig, base_path: Path | None = None) -> Workflow:
@@ -89,12 +91,19 @@ class Workflow:
         cls,
         path: str | Path,
         variables: dict[str, str] | None = None,
+        base_dir: str | Path | None = None,
     ) -> Workflow:
         """Load a workflow from a YAML file.
+
+        Pipeline references resolve against the workflow file's folder.
 
         Args:
             path: Path to workflow YAML file
             variables: Optional variable overrides
+            base_dir: Folder that relative file paths inside each pipeline
+                resolve against. Defaults to the project root (the folder of
+                the nearest quicketl.yml), or the current directory if there
+                is none.
 
         Returns:
             Workflow instance
@@ -120,6 +129,8 @@ class Workflow:
 
         # Create workflow with base path for resolving relative paths
         workflow = cls.from_config(config, base_path=path.parent)
+        if base_dir is not None:
+            workflow._data_base_dir = Path(base_dir)
         return workflow
 
     # =========================================================================
@@ -239,7 +250,11 @@ class Workflow:
                     pipelines_failed += stage_result.pipelines_failed
 
                     # Check for failure
-                    if not stage_result.succeeded and self.fail_fast and not stage.continue_on_failure:
+                    if (
+                        not stage_result.succeeded
+                        and self.fail_fast
+                        and not stage.continue_on_failure
+                    ):
                         error = f"Stage '{stage_name}' failed"
                         raise StopIteration
 
@@ -412,7 +427,9 @@ class Workflow:
         )
 
         try:
-            pipeline = Pipeline.from_yaml(pipeline_path, variables=merged_vars)
+            pipeline = Pipeline.from_yaml(
+                pipeline_path, variables=merged_vars, base_dir=self._data_base_dir
+            )
             result = pipeline.run(dry_run=dry_run)
         except Exception as e:
             # Create a failed result
@@ -452,8 +469,7 @@ class Workflow:
     def __repr__(self) -> str:
         total_pipelines = sum(len(s.pipelines) for s in self._stages)
         return (
-            f"Workflow(name={self.name!r}, stages={len(self._stages)}, "
-            f"pipelines={total_pipelines})"
+            f"Workflow(name={self.name!r}, stages={len(self._stages)}, pipelines={total_pipelines})"
         )
 
 
