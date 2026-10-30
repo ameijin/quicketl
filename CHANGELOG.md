@@ -2,6 +2,46 @@
 
 <!-- version list -->
 
+## v1.7.0 (2026-10-30)
+
+### Bug Fixes
+
+- **config**: Reject pipelines with no source ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+- **examples**: Make the workflow example run ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+- **sink**: Keep DuckDB connection open during transactional writes
+  ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+- **sink**: Keep existing rows when a database write fails
+  ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+### Build System
+
+- **deps**: Upgrade ibis-framework to 12.x ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+### Continuous Integration
+
+- Run CI on the dev branch ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+### Documentation
+
+- **adr**: Release 1.7.0 through a dev branch ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+### Features
+
+- **config**: Resolve relative paths against the project root
+  ([#11](https://github.com/ameijin/quicketl/pull/11),
+  [`241cab2`](https://github.com/ameijin/quicketl/commit/241cab2dbe40631301d57c5a5dd7e6554e06c8a9))
+
+
 ## v1.6.0 (2026-02-02)
 
 ### Bug Fixes
