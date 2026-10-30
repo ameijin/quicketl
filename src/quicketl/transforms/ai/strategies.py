@@ -156,15 +156,21 @@ class SentenceChunkStrategy(ChunkStrategy):
         self._tokenizer = None
 
     def _get_tokenizer(self):
-        """Lazy load NLTK sentence tokenizer."""
+        """Lazy load NLTK sentence tokenizer.
+
+        NLTK 3.9 and newer no longer load pickled models. The Punkt tokenizer
+        reads the `punkt_tab` data package instead, which is downloaded on
+        first use if it is missing.
+        """
         if self._tokenizer is None:
             import nltk
+            from nltk.tokenize import PunktTokenizer
 
             try:
-                self._tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+                self._tokenizer = PunktTokenizer("english")
             except LookupError:
-                nltk.download("punkt", quiet=True)
-                self._tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
+                nltk.download("punkt_tab", quiet=True)
+                self._tokenizer = PunktTokenizer("english")
         return self._tokenizer
 
     def chunk(self, text: str) -> list[str]:
