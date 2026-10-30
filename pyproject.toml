@@ -28,6 +28,8 @@ dependencies = [
     "structlog>=24.0",
     "typer>=0.12",
     "rich>=13.0",
+    # Platform scaffolding: renders templates/ from a git tag
+    "copier>=9.19,<10",
 ]
 
 [project.optional-dependencies]

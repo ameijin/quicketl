@@ -2,7 +2,7 @@
 
 This record explains how platform assets reach a user. Read it to learn why they are not inside the Python package.
 
-**Status:** Accepted (planned for 2.0, not yet implemented). Date: 2026-10-30.
+**Status:** Accepted. Templates are implemented on the 2.0 branch (see [0011](0011-copier-template-layout.md)), and the wheel only packages `src/quicketl`, so they stay out of it. Terraform modules and the dbt package are still planned. Date: 2026-10-30.
 
 ## Context
 

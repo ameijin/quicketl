@@ -108,6 +108,12 @@ class TestCoreCommandsWorkWithoutPipelines:
         assert result.returncode == 0, result.stdout + result.stderr
         assert (temp_dir / "proj" / "platform.yml").exists()
 
+    @pytest.mark.parametrize("command", ["scaffold", "update"])
+    def test_platform_scaffolding_help(self, temp_dir: Path, command: str):
+        result = run_slim("platform", command, "--help", cwd=temp_dir)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+
     def test_init(self, temp_dir: Path):
         result = run_slim("init", "proj", "-o", str(temp_dir), cwd=temp_dir)
 

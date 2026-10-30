@@ -1,0 +1,14 @@
+# Copier configuration for quicketl platform templates.
+#
+# Run it through `quicketl platform scaffold`, which validates platform.yml
+# and passes it as the `spec` answer. Each template lives in
+# templates/<warehouse>-<orchestrator>/ and is versioned by quicketl's git tags.
+# See docs/adr/0011-copier-template-layout.md.
+
+_min_copier_version: "9.19.0"
+_subdirectory: "templates/{{ spec.warehouse.type }}-{{ spec.orchestrator.type }}"
+_answers_file: .copier-answers.yml
+
+spec:
+  type: yaml
+  help: The validated platform spec (contents of platform.yml)

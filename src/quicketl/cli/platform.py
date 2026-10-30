@@ -5,6 +5,7 @@ Work with platform specs (platform.yml).
 
 from __future__ import annotations
 
+import shutil
 from enum import Enum
 from pathlib import Path
 from typing import Annotated, cast
@@ -16,6 +17,14 @@ from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
 
+from quicketl.platform.scaffold import (
+    TEMPLATE_SOURCE,
+    ScaffoldError,
+    default_ref,
+    template_name,
+)
+from quicketl.platform.scaffold import scaffold as scaffold_project
+from quicketl.platform.scaffold import update as update_project
 from quicketl.platform.spec import (
     PLATFORM_FILE,
     PlatformSpec,
@@ -42,6 +51,25 @@ def _print_errors(e: ValidationError) -> None:
     for error in e.errors():
         loc = " -> ".join(str(part) for part in error["loc"]) or "(top level)"
         console.print(f"  [red]-[/red] {escape(loc)}: {escape(error['msg'])}")
+
+
+def _load_spec(path: Path) -> PlatformSpec:
+    """Load a spec, or print why it is unusable and exit 1."""
+    try:
+        return load_platform_spec(path)
+    except PlatformSpecError as e:
+        console.print(f"[red]Error:[/red] {escape(str(e))}")
+        raise typer.Exit(1) from None
+    except ValidationError as e:
+        console.print(
+            Panel(
+                "[red]Platform spec is invalid[/red]",
+                title="Validation Failed",
+                border_style="red",
+            )
+        )
+        _print_errors(e)
+        raise typer.Exit(1) from None
 
 
 @app.command()
@@ -107,26 +135,12 @@ def validate(
     Checks YAML syntax, required fields, names, and that every role and
     source refers to a layer or domain the spec defines.
 
+    \b
     Examples:
-        quicketl platform validate
-        quicketl platform validate path/to/platform.yml
+      quicketl platform validate
+      quicketl platform validate path/to/platform.yml
     """
-    try:
-        spec = load_platform_spec(spec_file)
-    except PlatformSpecError as e:
-        console.print(f"[red]Error:[/red] {escape(str(e))}")
-        raise typer.Exit(1) from None
-    except ValidationError as e:
-        console.print(
-            Panel(
-                "[red]Platform spec is invalid[/red]",
-                title="Validation Failed",
-                border_style="red",
-            )
-        )
-        _print_errors(e)
-        raise typer.Exit(1) from None
-
+    spec = _load_spec(spec_file)
     console.print(
         Panel(
             "[green]Platform spec is valid[/green]",
@@ -142,3 +156,89 @@ def validate(
     console.print(f"  Sources: {len(spec.sources)}")
     console.print(f"  SSO: {spec.sso.provider}")
     console.print(f"  Orchestrator: {spec.orchestrator.type} on {spec.orchestrator.hosting}")
+
+
+@app.command()
+def scaffold(
+    spec_file: Annotated[
+        Path,
+        typer.Argument(help="Path to the platform spec"),
+    ] = Path(PLATFORM_FILE),
+    dest: Annotated[
+        Path | None,
+        typer.Option("--dest", "-d", help="Folder to generate into (default: the spec's folder)"),
+    ] = None,
+    ref: Annotated[
+        str | None,
+        typer.Option(
+            "--ref", "-r", help="Template git tag or commit (default: v<quicketl version>)"
+        ),
+    ] = None,
+    template: Annotated[
+        str,
+        typer.Option("--template", "-t", help="Template repo URL or local path"),
+    ] = TEMPLATE_SOURCE,
+) -> None:
+    """Generate a platform project from a spec.
+
+    Validates the spec, picks the template for its warehouse and
+    orchestrator, and renders it. Needs git installed.
+
+    \b
+    Examples:
+      quicketl platform scaffold
+      quicketl platform scaffold platform.yml --dest ../acme-platform
+      quicketl platform scaffold --ref v2.0.0
+    """
+    spec = _load_spec(spec_file)
+    target = dest or spec_file.parent
+    try:
+        scaffold_project(spec, target, template=template, ref=ref)
+    except ScaffoldError as e:
+        console.print(f"[red]Error:[/red] {escape(str(e))}")
+        raise typer.Exit(1) from None
+
+    copied_spec = target / PLATFORM_FILE
+    if not copied_spec.exists():
+        shutil.copyfile(spec_file, copied_spec)
+
+    console.print(
+        f"[green]Generated[/green] {escape(str(target))} "
+        f"from the {template_name(spec)} template ({ref or default_ref()})"
+    )
+    console.print("Next: read README.md there, then commit the project to git.")
+
+
+@app.command()
+def update(
+    project: Annotated[
+        Path,
+        typer.Argument(help="Generated project folder"),
+    ] = Path(),
+    ref: Annotated[
+        str | None,
+        typer.Option(
+            "--ref", "-r", help="Template git tag or commit (default: v<quicketl version>)"
+        ),
+    ] = None,
+) -> None:
+    """Apply platform.yml and template changes to a generated project.
+
+    Reads the project's platform.yml. The project must be a git repo with
+    everything committed. Clashes with your own edits are left as inline
+    conflict markers to resolve.
+
+    \b
+    Examples:
+      quicketl platform update
+      quicketl platform update ../acme-platform --ref v2.1.0
+    """
+    spec = _load_spec(project / PLATFORM_FILE)
+    try:
+        update_project(spec, project, ref=ref)
+    except ScaffoldError as e:
+        console.print(f"[red]Error:[/red] {escape(str(e))}")
+        raise typer.Exit(1) from None
+
+    console.print(f"[green]Updated[/green] {escape(str(project))} ({ref or default_ref()})")
+    console.print("Next: review the changes with git diff and resolve any conflict markers.")
