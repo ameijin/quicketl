@@ -1,6 +1,6 @@
 # QuickETL
 
-**Fast & Flexible Python ETL Framework with 20+ backend support via Ibis**
+**Fast & Flexible Python ETL Framework with 12 backends via Ibis**
 
 [![PyPI version](https://badge.fury.io/py/quicketl.svg)](https://pypi.org/project/quicketl/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,7 +11,7 @@ QuickETL is a configuration-driven ETL framework that provides a simple, unified
 
 ## Features
 
-- **20+ Backends**: DuckDB, Polars, Spark, pandas, Snowflake, BigQuery, PostgreSQL, and more via Ibis
+- **12 Backends**: DuckDB, Polars, DataFusion, pandas, Spark, BigQuery, Snowflake, Trino, PostgreSQL, MySQL, ClickHouse, and SQLite via Ibis. See the [support matrix](https://quicketl.com/guides/backends/support-matrix/) for what is tested
 - **Configuration-driven**: Define pipelines in YAML with variable substitution
 - **18 Transforms**: filter, aggregate, join, union, derive_column, window, pivot, unpivot, hash_key, coalesce, cast, fill_null, dedup, sort, select, rename, limit, and more
 - **6 Quality Checks**: not_null, unique, row_count, accepted_values, expression, and contract (Pandera)

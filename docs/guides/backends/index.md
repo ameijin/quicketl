@@ -1,6 +1,6 @@
 # Backends
 
-QuickETL supports multiple compute backends through Ibis. Choose the right backend for your workload.
+QuickETL supports multiple compute backends through Ibis. Choose the right backend for your workload. The [support matrix](support-matrix.md) shows which backends are tested.
 
 ## Available Backends
 
