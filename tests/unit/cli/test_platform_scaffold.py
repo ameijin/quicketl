@@ -220,3 +220,69 @@ class TestUpdate:
 
         assert result.exit_code == 1
         assert "not generated" in result.output
+
+
+FULL_SPEC = REPO_ROOT / "examples" / "06-platform-spec" / "platform.yml"
+MINIMAL_SPEC = REPO_ROOT / "tests" / "fixtures" / "platform" / "minimal.yml"
+
+
+class TestSnowflakeTerraform:
+    """What the snowflake-airflow template writes into terraform/.
+
+    scripts/check_templates.py (the CI `templates` job) runs terraform validate
+    on the same output. These tests check which files and values appear.
+    """
+
+    def render(self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path, spec: Path):
+        project = temp_dir / spec.stem
+        project.mkdir()
+        shutil.copy(spec, project / "platform.yml")
+        result = scaffold(
+            cli_runner, str(project / "platform.yml"), "-t", str(template_repo), "-r", TAG
+        )
+        assert result.exit_code == 0, result.output
+        return project / "terraform"
+
+    def test_full_spec_generates_optional_files(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        tf = self.render(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        names = {p.name for p in tf.iterdir()}
+        assert {"network.tf", "storage.tf", "sso.tf"} <= names
+        locals_tf = (tf / "locals.tf").read_text()
+        assert 'prefix = "ACME_DATA"' in locals_tf
+        assert 'environments = ["DEV", "PROD"]' in locals_tf
+        assert "ANALYST = {" in locals_tf
+        assert '"203.0.113.0/24", "198.51.100.7"' in (tf / "network.tf").read_text()
+        assert "s3://example-landing/finance/invoices/" in (tf / "storage.tf").read_text()
+        providers = (tf / "providers.tf").read_text()
+        assert "snowflake_network_rule_resource" in providers
+        assert "snowflake_storage_integration_aws_resource" in providers
+
+    def test_minimal_spec_skips_optional_files(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        tf = self.render(cli_runner, template_repo, temp_dir, MINIMAL_SPEC)
+
+        gitignore = (tf.parent / ".gitignore").read_text()
+        assert "*.tfvars" in gitignore
+        assert "*.tfstate" in gitignore
+        names = {p.name for p in tf.iterdir()}
+        assert not {"network.tf", "storage.tf", "sso.tf"} & names
+        assert not any(name.endswith(".jinja") for name in names)
+        assert "preview_features_enabled" not in (tf / "providers.tf").read_text()
+        variables = (tf / "variables.tf").read_text()
+        assert "storage_aws_role_arn" not in variables
+        assert "okta" not in variables
+
+    def test_role_domains_default_to_every_domain(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        tf = self.render(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        locals_tf = (tf / "locals.tf").read_text()
+        loader = locals_tf.split("LOADER = {")[1].split("TRANSFORMER")[0]
+        analyst = locals_tf.split("ANALYST = {")[1]
+        assert 'domains = ["SALES", "FINANCE"]' in loader
+        assert 'domains = ["SALES"]' in analyst

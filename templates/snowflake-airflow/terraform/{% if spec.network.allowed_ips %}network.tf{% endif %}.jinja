@@ -1,0 +1,31 @@
+# Network policy allowing only the IP ranges in platform.yml.
+#
+# It is created but NOT attached. Attaching it to the account blocks every
+# other address, including other teams using the same account. To attach it
+# to the whole account, run this as ACCOUNTADMIN once you have checked the
+# list includes your own address:
+#   ALTER ACCOUNT SET NETWORK_POLICY = {{ spec.name | upper }}_NETWORK_POLICY;
+
+resource "snowflake_database" "admin" {
+  name    = "${local.prefix}_ADMIN"
+  comment = "Platform administration objects"
+}
+
+resource "snowflake_schema" "network" {
+  database = snowflake_database.admin.name
+  name     = "NETWORK"
+}
+
+resource "snowflake_network_rule" "allowed_ips" {
+  name       = "${local.prefix}_ALLOWED_IPS"
+  database   = snowflake_database.admin.name
+  schema     = snowflake_schema.network.name
+  type       = "IPV4"
+  mode       = "INGRESS"
+  value_list = [{% for ip in spec.network.allowed_ips %}"{{ ip }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+}
+
+resource "snowflake_network_policy" "this" {
+  name                      = "${local.prefix}_NETWORK_POLICY"
+  allowed_network_rule_list = [snowflake_network_rule.allowed_ips.fully_qualified_name]
+}

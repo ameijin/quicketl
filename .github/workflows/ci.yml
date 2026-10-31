@@ -48,6 +48,33 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
+  # Render every platform template and check the Terraform it generates.
+  # Needs no Snowflake account: it stops at `terraform validate`.
+  templates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Check templates
+        run: uv run python scripts/check_templates.py
+
   build:
     runs-on: ubuntu-latest
     steps:
