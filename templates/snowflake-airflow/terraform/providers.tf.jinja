@@ -1,0 +1,18 @@
+# Credentials come from environment variables, never from files:
+#   SNOWFLAKE_ORGANIZATION_NAME, SNOWFLAKE_ACCOUNT_NAME, SNOWFLAKE_USER,
+#   SNOWFLAKE_ROLE, SNOWFLAKE_AUTHENTICATOR and SNOWFLAKE_PRIVATE_KEY.
+# The role must be able to create databases, roles, grants and integrations.
+provider "snowflake" {
+{%- if spec.network.allowed_ips or spec.sources %}
+  # Provider 2.22 marks these resources as preview features, which must be
+  # turned on before use. Preview features can change in minor releases.
+  preview_features_enabled = [
+{%- if spec.network.allowed_ips %}
+    "snowflake_network_rule_resource",
+{%- endif %}
+{%- if spec.sources %}
+    "snowflake_storage_integration_aws_resource",
+{%- endif %}
+  ]
+{%- endif %}
+}

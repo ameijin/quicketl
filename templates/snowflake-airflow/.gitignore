@@ -1,0 +1,8 @@
+# Terraform: provider cache, local state, saved plans and variable files
+# (variable files can hold secrets such as the Okta certificate).
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+crash.log

@@ -1,0 +1,6 @@
+# Smallest spec: no roles, sources, network rules or SSO.
+name: minimal
+warehouse:
+  type: snowflake
+domains:
+  - name: core
