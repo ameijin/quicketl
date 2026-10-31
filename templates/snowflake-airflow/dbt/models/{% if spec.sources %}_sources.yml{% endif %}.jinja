@@ -1,0 +1,19 @@
+# Raw tables in the landing layer, one dbt source per domain.
+# Each table holds the files from one S3 location in platform.yml. Loading
+# them (COPY INTO) is not generated yet.
+version: 2
+
+sources:
+{%- for domain in spec.domains %}
+{%- set domain_sources = spec.sources | selectattr("domain", "equalto", domain.name) | list %}
+{%- if domain_sources %}
+  - name: {{ domain.name }}
+    database: "{{ '{{' }} var('platform_prefix') {{ '}}' }}_{{ '{{' }} target.name | upper {{ '}}' }}_{{ '{{' }} var('platform_landing_layer') {{ '}}' }}"
+    schema: {{ domain.name | upper }}
+    tables:
+{%- for source in domain_sources %}
+      - name: {{ source.name }}
+        description: "{{ source.format | upper }} files landed at {{ source.location }}"
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
