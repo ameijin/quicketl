@@ -1,0 +1,41 @@
+# Okta single sign-on (SAML) and user provisioning (SCIM).
+#
+# OKTA_PROVISIONER is the role Okta uses to create users and roles. Its name
+# is account-wide; if another platform in this account already manages it,
+# remove the role and its grants from this file.
+
+resource "snowflake_saml2_integration" "okta" {
+  name            = "${local.prefix}_OKTA_SAML"
+  saml2_provider  = "OKTA"
+  saml2_issuer    = var.okta_saml_issuer
+  saml2_sso_url   = var.okta_sso_url
+  saml2_x509_cert = var.okta_x509_cert
+}
+
+resource "snowflake_account_role" "okta_provisioner" {
+  name    = "OKTA_PROVISIONER"
+  comment = "Used by Okta SCIM to provision users and roles"
+}
+
+resource "snowflake_grant_privileges_to_account_role" "okta_provisioner" {
+  account_role_name = snowflake_account_role.okta_provisioner.name
+  privileges        = ["CREATE USER", "CREATE ROLE"]
+  on_account        = true
+}
+
+resource "snowflake_grant_account_role" "okta_provisioner_to_accountadmin" {
+  role_name        = snowflake_account_role.okta_provisioner.name
+  parent_role_name = "ACCOUNTADMIN"
+}
+
+resource "snowflake_scim_integration" "okta" {
+  name        = "${local.prefix}_OKTA_SCIM"
+  enabled     = true
+  scim_client = "OKTA"
+  run_as_role = snowflake_account_role.okta_provisioner.name
+
+  depends_on = [
+    snowflake_grant_privileges_to_account_role.okta_provisioner,
+    snowflake_grant_account_role.okta_provisioner_to_accountadmin,
+  ]
+}

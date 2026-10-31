@@ -151,6 +151,7 @@ nav:
   - Platform:
     - Platform Spec: platform/spec.md
     - Scaffold and Update: platform/scaffold.md
+    - Snowflake and Airflow Template: platform/snowflake-airflow.md
 
   - Guides:
     - guides/index.md
@@ -223,6 +224,7 @@ nav:
       - "0009 Release plan": adr/0009-release-plan.md
       - "0010 Platform spec": adr/0010-platform-spec.md
       - "0011 Copier template layout": adr/0011-copier-template-layout.md
+      - "0012 Snowflake template design": adr/0012-snowflake-template-design.md
 
   - Examples:
     - examples/index.md

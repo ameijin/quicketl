@@ -1,0 +1,30 @@
+variable "warehouse_sizes" {
+  description = "Warehouse size per environment, for example { PROD = \"SMALL\" }. Missing environments use XSMALL."
+  type        = map(string)
+  default     = {}
+}
+{%- if spec.sources %}
+
+variable "storage_aws_role_arn" {
+  description = "ARN of the AWS IAM role Snowflake assumes to read the landing bucket."
+  type        = string
+}
+{%- endif %}
+{%- if spec.sso.provider == "okta" %}
+
+variable "okta_saml_issuer" {
+  description = "Okta identity provider issuer, from the Okta Snowflake app's SAML settings."
+  type        = string
+}
+
+variable "okta_sso_url" {
+  description = "Okta single sign-on URL, from the Okta Snowflake app's SAML settings."
+  type        = string
+}
+
+variable "okta_x509_cert" {
+  description = "Okta signing certificate: the base64 body only, without BEGIN and END lines."
+  type        = string
+  sensitive   = true
+}
+{%- endif %}

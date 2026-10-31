@@ -298,6 +298,16 @@ def test_string_without_vars_unchanged(text):
   - Integration modules (generators, airflow): coverage may be lower
 - Tests must pass on all supported Python versions (3.12, 3.13)
 
+### Platform Templates
+
+If you change `copier.yml` or anything in `templates/`, also run:
+
+```bash
+uv run python scripts/check_templates.py
+```
+
+It renders each template and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It needs `git` and `terraform` installed and downloads the Snowflake provider. It never connects to Snowflake. CI runs it in the `templates` job.
+
 ### Test Structure
 
 ```

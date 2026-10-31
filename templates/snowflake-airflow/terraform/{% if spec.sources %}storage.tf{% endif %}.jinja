@@ -1,0 +1,15 @@
+# Storage integration that lets Snowflake read the S3 landing locations.
+# After apply, add the outputs storage_iam_user_arn and storage_external_id
+# to the trust policy of var.storage_aws_role_arn in AWS.
+
+resource "snowflake_storage_integration_aws" "landing" {
+  name                 = "${local.prefix}_S3_LANDING"
+  enabled              = true
+  storage_provider     = "S3"
+  storage_aws_role_arn = var.storage_aws_role_arn
+  storage_allowed_locations = [
+{%- for location in spec.sources | map(attribute="location") | unique %}
+    "{{ location }}",
+{%- endfor %}
+  ]
+}
