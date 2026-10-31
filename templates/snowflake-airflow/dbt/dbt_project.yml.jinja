@@ -1,0 +1,25 @@
+name: {{ spec.name }}
+version: "1.0.0"
+profile: {{ spec.name }}
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+clean-targets: ["target", "dbt_packages"]
+
+# Platform layout from platform.yml. `quicketl platform update` rewrites
+# these when the spec changes. The macros in macros/ use them to put a model
+# in models/<layer>/<domain>/ into database <PREFIX>_<TARGET>_<LAYER>,
+# schema <DOMAIN>.
+vars:
+  platform_prefix: "{{ spec.name | upper }}"
+  platform_landing_layer: "{{ spec.layers[0] | upper }}"
+  platform_layers: [{% for layer in spec.layers[1:] %}"{{ layer | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  platform_domains: [{% for domain in spec.domains %}"{{ domain.name | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+
+models:
+  {{ spec.name }}:
+    +materialized: view

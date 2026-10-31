@@ -226,6 +226,18 @@ FULL_SPEC = REPO_ROOT / "examples" / "06-platform-spec" / "platform.yml"
 MINIMAL_SPEC = REPO_ROOT / "tests" / "fixtures" / "platform" / "minimal.yml"
 
 
+def render_project(cli_runner: CliRunner, template_repo: Path, temp_dir: Path, spec: Path) -> Path:
+    """Scaffold `spec` from the test template repo and return the project folder."""
+    project = temp_dir / spec.stem
+    project.mkdir()
+    shutil.copy(spec, project / "platform.yml")
+    result = scaffold(
+        cli_runner, str(project / "platform.yml"), "-t", str(template_repo), "-r", TAG
+    )
+    assert result.exit_code == 0, result.output
+    return project
+
+
 class TestSnowflakeTerraform:
     """What the snowflake-airflow template writes into terraform/.
 
@@ -234,14 +246,7 @@ class TestSnowflakeTerraform:
     """
 
     def render(self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path, spec: Path):
-        project = temp_dir / spec.stem
-        project.mkdir()
-        shutil.copy(spec, project / "platform.yml")
-        result = scaffold(
-            cli_runner, str(project / "platform.yml"), "-t", str(template_repo), "-r", TAG
-        )
-        assert result.exit_code == 0, result.output
-        return project / "terraform"
+        return render_project(cli_runner, template_repo, temp_dir, spec) / "terraform"
 
     def test_full_spec_generates_optional_files(
         self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
@@ -286,3 +291,65 @@ class TestSnowflakeTerraform:
         analyst = locals_tf.split("ANALYST = {")[1]
         assert 'domains = ["SALES", "FINANCE"]' in loader
         assert 'domains = ["SALES"]' in analyst
+
+
+class TestSnowflakeDbt:
+    """What the snowflake-airflow template writes into dbt/.
+
+    scripts/check_templates.py runs dbt parse and dbt ls on the same output.
+    """
+
+    def test_full_spec_generates_sources_and_example_model(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        dbt = render_project(cli_runner, template_repo, temp_dir, FULL_SPEC) / "dbt"
+
+        project = yaml.safe_load((dbt / "dbt_project.yml").read_text())
+        assert project["name"] == "acme_data"
+        assert project["vars"]["platform_prefix"] == "ACME_DATA"
+        assert project["vars"]["platform_landing_layer"] == "RAW"
+        assert project["vars"]["platform_layers"] == ["STAGING", "MARTS"]
+        assert project["vars"]["platform_domains"] == ["SALES", "FINANCE"]
+
+        sources = yaml.safe_load((dbt / "models" / "_sources.yml").read_text())["sources"]
+        assert [(s["name"], s["schema"]) for s in sources] == [
+            ("sales", "SALES"),
+            ("finance", "FINANCE"),
+        ]
+        assert "{{ target.name | upper }}" in sources[0]["database"]
+
+        model = dbt / "models" / "staging" / "sales" / "stg_sales__orders.sql"
+        assert "{{ source('sales', 'orders') }}" in model.read_text()
+
+    def test_profiles_default_to_the_transformer_role(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        dbt = render_project(cli_runner, template_repo, temp_dir, FULL_SPEC) / "dbt"
+
+        profile = yaml.safe_load((dbt / "profiles.yml").read_text())["acme_data"]
+        assert profile["target"] == "dev"
+        prod = profile["outputs"]["prod"]
+        assert prod["role"] == "{{ env_var('DBT_SNOWFLAKE_ROLE', 'ACME_DATA_PROD_TRANSFORMER') }}"
+        assert prod["warehouse"] == "ACME_DATA_PROD_WH"
+        assert prod["database"] == "ACME_DATA_PROD_STAGING"
+        assert prod["private_key"] == "{{ env_var('SNOWFLAKE_PRIVATE_KEY') }}"
+
+    def test_minimal_spec_requires_a_role_and_has_no_models(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        dbt = render_project(cli_runner, template_repo, temp_dir, MINIMAL_SPEC) / "dbt"
+
+        profile = yaml.safe_load((dbt / "profiles.yml").read_text())["minimal"]
+        assert profile["outputs"]["dev"]["role"] == "{{ env_var('DBT_SNOWFLAKE_ROLE') }}"
+        assert not (dbt / "models" / "_sources.yml").exists()
+        assert not list((dbt / "models").rglob("*.sql"))
+        assert not list(dbt.rglob("*.jinja"))
+
+    def test_dbt_build_output_is_ignored_by_git(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        project = render_project(cli_runner, template_repo, temp_dir, MINIMAL_SPEC)
+
+        gitignore = (project / ".gitignore").read_text()
+        assert "dbt/target/" in gitignore
+        assert "dbt/dbt_packages/" in gitignore

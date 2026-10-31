@@ -1,0 +1,8 @@
+{%- set first = spec.sources[0] -%}
+-- Example {{ spec.layers[1] }} model for the {{ first.domain }}.{{ first.name }} source.
+-- It builds in {{ spec.name | upper }}_<ENV>_{{ spec.layers[1] | upper }}.{{ first.domain | upper }},
+-- because it sits in models/{{ spec.layers[1] }}/{{ first.domain }}/.
+-- Replace `select *` with the columns you need, renamed and typed.
+
+select *
+from {{ "{{ source('" ~ first.domain ~ "', '" ~ first.name ~ "') }}" }}
