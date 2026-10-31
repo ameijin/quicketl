@@ -5,14 +5,27 @@ Initialize a new QuickETL project or pipeline.
 
 from __future__ import annotations
 
+import sys
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
+import click
 import typer
 from rich.console import Console
 
+from quicketl.cli.platform import WarehouseChoice, write_starter_spec
+from quicketl.platform.starter import default_platform_name
+
 console = Console()
 app = typer.Typer(help="Initialize a new QuickETL project or pipeline")
+
+
+class InitKind(str, Enum):
+    """What `quicketl init` creates."""
+
+    platform = "platform"
+    pipeline = "pipeline"
 
 
 SAMPLE_PIPELINE = """# Example QuickETL Pipeline Configuration
@@ -210,21 +223,52 @@ def init(
             help="Overwrite existing files",
         ),
     ] = False,
+    kind: Annotated[
+        InitKind | None,
+        typer.Option(
+            "--kind",
+            "-k",
+            help="What to create, without questions: a platform spec or a pipeline project",
+        ),
+    ] = None,
 ) -> None:
-    """Initialize a new QuickETL project or pipeline.
+    """Start a new platform or pipeline project.
 
-    Creates project structure with:
-    - Sample pipeline configuration
-    - Directory structure
-    - Environment template
+    With no arguments in a terminal, asks what to set up. A new platform
+    (a starter platform.yml) is the default. Any argument or flag skips
+    the questions and creates a pipeline project, as in 1.x, unless
+    --kind says otherwise.
 
+    \b
     Examples:
-        quicketl init                      # Initialize in current directory
-        quicketl init my_project           # Create new project subdirectory
-        quicketl init my_pipeline -p       # Create single pipeline file
-        quicketl init my_project -o ./projects/
+      quicketl init                          # Ask what to set up
+      quicketl init acme --kind platform     # Platform spec in ./acme
+      quicketl init my_project               # Pipeline project in ./my_project
+      quicketl init -o .                     # Pipeline project here
+      quicketl init my_pipeline -p           # Single pipeline file
     """
+    if kind is None:
+        if name or pipeline_only or output_dir or force:
+            kind = InitKind.pipeline
+        elif _is_interactive():
+            _wizard()
+            return
+        else:
+            console.print(
+                "[red]Error:[/red] no terminal to ask questions in. "
+                "Pass --kind platform or --kind pipeline."
+            )
+            raise typer.Exit(1)
+
     base_path = output_dir or Path.cwd()
+
+    if kind is InitKind.platform:
+        if pipeline_only:
+            console.print("[red]Error:[/red] --pipeline only works with --kind pipeline.")
+            raise typer.Exit(1)
+        directory = base_path / name if name else base_path
+        write_starter_spec(directory, None, WarehouseChoice.snowflake, force=force)
+        return
 
     if pipeline_only:
         # For pipeline-only, name is required
@@ -238,6 +282,44 @@ def init(
     else:
         # No name - initialize in current directory
         _init_in_current_dir(base_path, force)
+
+
+def _is_interactive() -> bool:
+    """True when stdin is a terminal, so the wizard can ask questions."""
+    return sys.stdin.isatty()
+
+
+def _wizard() -> None:
+    """Ask what to set up, then create it in the current folder."""
+    choice = typer.prompt(
+        "What do you want to set up? (platform, pipeline)",
+        type=click.Choice([k.value for k in InitKind]),
+        default=InitKind.platform.value,
+        show_choices=False,
+    )
+    base_path = Path.cwd()
+
+    if choice == InitKind.platform.value:
+        folder = typer.prompt("Folder for platform.yml", default=".")
+        directory = base_path / folder
+        platform_name = typer.prompt(
+            "Platform name", default=default_platform_name(directory.resolve().name)
+        )
+        warehouse = typer.prompt(
+            "Warehouse",
+            type=click.Choice([w.value for w in WarehouseChoice]),
+            default=WarehouseChoice.snowflake.value,
+        )
+        write_starter_spec(directory, platform_name, WarehouseChoice(warehouse), force=False)
+        return
+
+    project = typer.prompt(
+        "Project name (leave blank to use this folder)", default="", show_default=False
+    )
+    if project:
+        _create_project(project, base_path, force=False)
+    else:
+        _init_in_current_dir(base_path, force=False)
 
 
 def _create_pipeline(name: str, base_path: Path, force: bool) -> None:

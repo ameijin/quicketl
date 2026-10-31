@@ -101,6 +101,20 @@ def init(
       quicketl platform init acme-data --warehouse databricks
       quicketl platform init --name acme_data --force
     """
+    write_starter_spec(directory, name, warehouse, force=force)
+
+
+def write_starter_spec(
+    directory: Path,
+    name: str | None,
+    warehouse: WarehouseChoice,
+    *,
+    force: bool,
+) -> None:
+    """Write a starter platform.yml into `directory`, or print why not and exit 1.
+
+    Shared by `quicketl platform init` and the `quicketl init` wizard.
+    """
     target = directory / PLATFORM_FILE
     if target.exists() and not force:
         console.print(
@@ -120,7 +134,8 @@ def init(
     directory.mkdir(parents=True, exist_ok=True)
     target.write_text(text, encoding="utf-8")
     console.print(f"[green]Wrote[/green] {escape(str(target))} for platform {platform_name!r}")
-    console.print("Next: edit it, then run [bold]quicketl platform validate[/bold]")
+    console.print("Next: edit it, then check it with [bold]quicketl platform validate[/bold]")
+    console.print("Then generate the project with [bold]quicketl platform scaffold[/bold]")
 
 
 @app.command()
