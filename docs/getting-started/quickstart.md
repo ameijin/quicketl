@@ -6,12 +6,14 @@ Get up and running with QuickETL in 5 minutes.
 
 ### In an Existing Project
 
-If you already have a project, run `quicketl init` in your project directory:
+If you already have a project, run `quicketl init --kind pipeline` in your project directory:
 
 ```bash
 cd my_existing_project
-quicketl init
+quicketl init --kind pipeline
 ```
+
+A bare `quicketl init` asks what to set up instead, and suggests a new platform first. Answer `pipeline`, then leave the project name blank, to get the same result.
 
 This adds QuickETL structure to your current directory:
 
