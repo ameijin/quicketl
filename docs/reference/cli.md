@@ -9,7 +9,7 @@ QuickETL provides a command-line interface for running and managing pipelines.
 | [`run`](#run) | Execute a pipeline |
 | [`validate`](#validate) | Validate configuration |
 | [`workflow`](#workflow) | Run and manage multi-pipeline workflows |
-| [`init`](#init) | Create new project or pipeline |
+| [`init`](#init) | Start a new platform or pipeline project |
 | [`platform`](#platform) | Work with platform specs (`platform.yml`) |
 | [`info`](#info) | Display version and backend info |
 | [`schema`](#schema) | Output JSON schema for IDE support |
@@ -368,7 +368,7 @@ See [Workflow Documentation](../guides/workflows/index.md) for complete workflow
 
 ## init {#init}
 
-Initialize QuickETL in the current directory or create a new project.
+Start a new platform or pipeline project.
 
 ### Usage
 
@@ -376,25 +376,48 @@ Initialize QuickETL in the current directory or create a new project.
 quicketl init [name] [options]
 ```
 
+### Ask what to set up
+
+Run `quicketl init` with no arguments in a terminal and it asks:
+
+1. **What do you want to set up?** `platform` (the default) or `pipeline`.
+2. For `platform`: the folder for `platform.yml` (default: this folder), the platform name (default: from the folder name) and the warehouse (default: `snowflake`). It then writes the same starter spec as [`quicketl platform init`](#platform).
+3. For `pipeline`: a project name. Leave it blank to set up this folder.
+
+Press Enter to accept a default. An answer that is not one of the choices is asked again.
+
+Run with no arguments where there is no terminal (a script or CI job), it stops with exit code 1 and asks for `--kind`.
+
+### Skip the questions
+
+Passing a name or any of `--pipeline`, `--output` or `--force` skips the questions and creates a pipeline project, as in 1.x. `--kind` picks explicitly.
+
 ### Arguments
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `name` | No | Project name. If omitted, initializes in current directory |
+| `name` | No | Project name (or platform folder with `--kind platform`). If omitted, uses the current directory |
 
 ### Options
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--pipeline` | `-p` | Create pipeline file only (requires name) |
+| `--kind` | `-k` | `platform` or `pipeline`. Creates it without questions. `--kind platform` uses the `snowflake` warehouse; use `quicketl platform init -w` for another. |
+| `--pipeline` | `-p` | Create pipeline file only (requires name; not with `--kind platform`) |
 | `--output` | `-o` | Output directory (default: current) |
 | `--force` | `-f` | Overwrite existing files |
 
 ### Examples
 
 ```bash
-# Initialize in current directory (existing project)
+# Ask what to set up
 quicketl init
+
+# Platform spec in ./acme, no questions
+quicketl init acme --kind platform
+
+# Pipeline structure in the current directory (existing project)
+quicketl init --kind pipeline
 
 # Create new project in subdirectory
 quicketl init my_project

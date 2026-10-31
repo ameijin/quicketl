@@ -30,7 +30,7 @@ app = typer.Typer(
 app.command("run", short_help="Run a QuickETL pipeline")(run)
 app.command("validate", short_help="Validate pipeline configuration")(validate)
 app.add_typer(workflow_app, name="workflow")
-app.command("init", short_help="Initialize a new QuickETL project or pipeline")(init)
+app.command("init", short_help="Start a new platform or pipeline project")(init)
 app.add_typer(platform_app, name="platform")
 app.add_typer(info_app, name="info")
 app.add_typer(schema_app, name="schema")
@@ -61,7 +61,7 @@ def main(
 
     \b
     Quick Start:
-      quicketl init                       # Initialize in current directory
+      quicketl init                       # Ask: new platform or pipeline project
       quicketl run pipelines/sample.yml   # Run a single pipeline
       quicketl workflow run workflow.yml  # Run a multi-pipeline workflow
 
@@ -70,7 +70,7 @@ def main(
       run       Execute a single pipeline from YAML config
       validate  Validate pipeline configuration without running
       workflow  Run and manage multi-pipeline workflows
-      init      Create new project or pipeline
+      init      Start a new platform or pipeline project
       platform  Work with platform specs (platform.yml)
       info      Show version and available backends
       schema    Output JSON schema for IDE autocompletion
