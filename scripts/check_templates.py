@@ -11,11 +11,15 @@ For each spec below, this script:
    check references through for_each keys, so this step covers that gap;
 5. runs `dbt parse` and `dbt ls` in the generated dbt/ folder, and checks that
    every generated model lands in a domain schema (never PUBLIC, which the
-   Terraform grants nothing on).
+   Terraform grants nothing on);
+6. installs Airflow 3.3.1 from the generated airflow/requirements.txt (the file
+   MWAA installs, with its constraints) into a scratch virtual environment,
+   then loads the generated DAGs with Airflow's DagBag and fails on any import
+   error or missing DAG.
 
-It needs `git`, `terraform`, `uvx` and network access to the Terraform
-registry and PyPI. It never connects to Snowflake: dbt gets placeholder
-credentials and neither command opens a connection.
+It needs `git`, `terraform`, `uv` and network access to the Terraform
+registry and PyPI. It never connects to Snowflake: dbt and Airflow get
+placeholder settings and nothing opens a connection.
 
 Usage:
     uv run python scripts/check_templates.py
@@ -119,27 +123,94 @@ def check_dbt(dbt_dir: Path) -> list[str]:
     return problems
 
 
-def check_spec(spec: Path, repo: Path, work: Path) -> list[str]:
+AIRFLOW_VERSION = "3.3.1"
+LOAD_DAGS = """
+import sys
+from airflow.dag_processing.dagbag import DagBag
+
+bag = DagBag(dag_folder=sys.argv[1], safe_mode=False)
+for path, error in bag.import_errors.items():
+    print(f"IMPORT ERROR in {path}:\\n{error}")
+print("DAGS:", ",".join(sorted(bag.dags)))
+"""
+
+
+def make_airflow_venv(work: Path, requirements: Path) -> Path:
+    """Create a virtual environment with Airflow and the template's requirements."""
+    venv = work / "airflow-venv"
+    run(["uv", "venv", "-q", str(venv), "--python", "3.12"], cwd=work)
+    python = venv / "bin" / "python"
+    run(
+        [
+            "uv",
+            "pip",
+            "install",
+            "-q",
+            "--python",
+            str(python),
+            f"apache-airflow=={AIRFLOW_VERSION}",
+            "-r",
+            str(requirements),
+        ],
+        cwd=work,
+    )
+    return python
+
+
+def check_airflow(dags_dir: Path, python: Path, work: Path) -> list[str]:
+    """Load the generated DAGs with DagBag and return import problems."""
+    home = work / "airflow-home"
+    home.mkdir(exist_ok=True)
+    env = {**os.environ, "AIRFLOW_HOME": str(home), "AIRFLOW__CORE__LOAD_EXAMPLES": "False"}
+    print(f"$ DagBag({dags_dir.name})", flush=True)
+    output = subprocess.run(
+        [str(python), "-I", "-c", LOAD_DAGS, str(dags_dir)],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    problems = [line for line in output.splitlines() if line.startswith("IMPORT ERROR")]
+    dag_ids = next(line for line in output.splitlines() if line.startswith("DAGS:"))[5:].strip()
+    if not dag_ids:
+        problems.append(f"airflow: no DAG loaded from {dags_dir}")
+    else:
+        print(f"  loaded: {dag_ids}")
+    if problems:
+        print(output)
+    return problems
+
+
+def scaffold_spec(spec: Path, repo: Path, work: Path) -> Path:
     project = work / spec.stem
     project.mkdir()
     shutil.copy(spec, project / "platform.yml")
     quicketl = shutil.which("quicketl") or "quicketl"
     run([quicketl, "platform", "scaffold", "-t", str(repo), "-r", TAG], cwd=project)
+    return project
 
+
+def check_project(project: Path, airflow_python: Path, work: Path) -> list[str]:
     tf_dir = project / "terraform"
     run(["terraform", "fmt", "-check", "-diff"], cwd=tf_dir)
     run(["terraform", "init", "-backend=false", "-input=false", "-no-color"], cwd=tf_dir)
     run(["terraform", "validate", "-no-color"], cwd=tf_dir)
-    return check_references(tf_dir) + check_dbt(project / "dbt")
+    return (
+        check_references(tf_dir)
+        + check_dbt(project / "dbt")
+        + check_airflow(project / "airflow" / "dags", airflow_python, work)
+    )
 
 
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
         repo = make_template_repo(work)
+        projects = [scaffold_spec(spec, repo, work) for spec in SPECS]
+        airflow_python = make_airflow_venv(work, projects[0] / "airflow" / "requirements.txt")
         problems = []
-        for spec in SPECS:
-            problems += check_spec(spec, repo, work)
+        for project in projects:
+            problems += check_project(project, airflow_python, work)
     for problem in problems:
         print(f"ERROR: {problem}")
     print("Templates OK" if not problems else f"{len(problems)} problem(s)")

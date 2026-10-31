@@ -2,7 +2,7 @@
 
 This record explains how generated projects load and test data. Read it to learn why generated projects do not need quicketl when they run.
 
-**Status:** Accepted (planned for 2.0, not yet implemented). Date: 2026-10-30.
+**Status:** Accepted (implemented for Snowflake on the 2.0 branch: `COPY INTO` from an Airflow DAG, then `dbt build`; see [0014](0014-airflow-on-mwaa-template.md). Databricks and Redshift come with their templates). Date: 2026-10-30.
 
 ## Context
 
