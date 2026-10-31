@@ -3,7 +3,7 @@
 `quicketl platform scaffold` turns a [platform spec](spec.md) into a project folder. `quicketl platform update` applies later spec or template changes to that folder. Use them when you start a new platform and whenever the spec changes.
 
 !!! note "What the template generates today"
-    The Snowflake and Airflow template currently writes the Snowflake Terraform, a dbt project, a `README.md` describing the platform, a `.gitignore` and `.copier-answers.yml`. See [Snowflake and Airflow Template](snowflake-airflow.md). Airflow code arrives in a later template version, and `quicketl platform update` will pick it up.
+    The Snowflake and Airflow template writes the Snowflake Terraform, a dbt project, an Airflow DAG with MWAA setup files, a `README.md` describing the platform, a `.gitignore` and `.copier-answers.yml`. See [Snowflake and Airflow Template](snowflake-airflow.md). None of it has been run against a live Snowflake account or MWAA environment yet.
 
 ## Before you start
 

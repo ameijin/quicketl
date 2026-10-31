@@ -11,3 +11,6 @@ crash.log
 dbt/target/
 dbt/dbt_packages/
 dbt/logs/
+
+# Python caches from running the DAG locally
+__pycache__/

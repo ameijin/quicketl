@@ -306,7 +306,7 @@ If you change `copier.yml` or anything in `templates/`, also run:
 uv run python scripts/check_templates.py
 ```
 
-It renders each template and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It also runs `dbt parse` and `dbt ls` (through `uvx`, with placeholder credentials) and checks that every generated model builds in a domain schema. It needs `git`, `terraform` and `uv` installed and downloads the Snowflake provider and dbt. It never connects to Snowflake. CI runs it in the `templates` job.
+It renders each template and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It also runs `dbt parse` and `dbt ls` (through `uvx`, with placeholder credentials) and checks that every generated model builds in a domain schema. Then it installs Airflow 3.3.1 from the generated `requirements.txt` into a scratch virtual environment and loads the DAGs with `DagBag`. It needs `git`, `terraform` and `uv` installed and downloads the Snowflake provider and dbt. It never connects to Snowflake. CI runs it in the `templates` job.
 
 ### Test Structure
 

@@ -226,6 +226,7 @@ nav:
       - "0011 Copier template layout": adr/0011-copier-template-layout.md
       - "0012 Snowflake template design": adr/0012-snowflake-template-design.md
       - "0013 dbt project layout": adr/0013-dbt-project-layout.md
+      - "0014 Airflow on MWAA template": adr/0014-airflow-on-mwaa-template.md
 
   - Examples:
     - examples/index.md

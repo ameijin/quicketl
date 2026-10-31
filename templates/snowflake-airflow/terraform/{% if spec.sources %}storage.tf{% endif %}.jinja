@@ -13,3 +13,23 @@ resource "snowflake_storage_integration_aws" "landing" {
 {%- endfor %}
   ]
 }
+
+# Roles that write the landing layer (such as the loader) create stages on
+# this integration, which needs USAGE on it.
+locals {
+  landing_writers = {
+    for key, functional in local.functional_roles : key => functional
+    if lookup(local.roles[functional.role].access, local.layers[0], "") == "write"
+  }
+}
+
+resource "snowflake_grant_privileges_to_account_role" "landing_integration" {
+  for_each = local.landing_writers
+
+  account_role_name = snowflake_account_role.functional[each.key].name
+  privileges        = ["USAGE"]
+  on_account_object {
+    object_type = "INTEGRATION"
+    object_name = snowflake_storage_integration_aws.landing.name
+  }
+}
