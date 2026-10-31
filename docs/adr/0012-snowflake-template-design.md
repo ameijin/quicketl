@@ -2,7 +2,7 @@
 
 This record explains how the Snowflake template names objects and grants access. Read it before changing `templates/snowflake-airflow/terraform/`.
 
-**Status:** Accepted (implemented on the 2.0 branch; not yet planned against a live account). Date: 2026-10-30.
+**Status:** Accepted (implemented on the 2.0 branch; not yet planned against a live account). The "spec becomes data, plain Terraform in the project" point is superseded by [0015](0015-terraform-modules.md): the resources now live in modules that the project calls. Date: 2026-10-30.
 
 ## Context
 

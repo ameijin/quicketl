@@ -12,14 +12,15 @@ All records below were agreed on 2026-10-30. Records marked "planned for 2.0" de
 | [0004](0004-airflow-on-mwaa.md) | Airflow on MWAA is the default orchestrator | Accepted |
 | [0005](0005-first-reference-stack.md) | First reference stack: Snowflake, Terraform, dbt and Airflow | Accepted |
 | [0006](0006-native-loaders-and-dbt-tests.md) | Generated projects use native loaders and dbt tests | Accepted (implemented for Snowflake on the 2.0 branch) |
-| [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (templates implemented on the 2.0 branch; Terraform modules and the dbt package planned) |
+| [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (templates and Terraform modules implemented on the 2.0 branch; the dbt package planned) |
 | [0008](0008-config-relative-paths.md) | Project-root relative paths with a `--base-dir` override | Accepted (ships in 1.7.0) |
 | [0009](0009-release-plan.md) | Release plan: 1.7.0 and 2.0.0, released through a `dev` branch | Accepted |
 | [0010](0010-platform-spec.md) | A small, strict platform spec (`platform.yml`) | Accepted (implemented on the 2.0 branch) |
 | [0011](0011-copier-template-layout.md) | One Copier configuration picks the template from the spec | Accepted (implemented on the 2.0 branch) |
-| [0012](0012-snowflake-template-design.md) | Snowflake template layout and role model | Accepted (implemented on the 2.0 branch; not yet planned against a live account) |
+| [0012](0012-snowflake-template-design.md) | Snowflake template layout and role model | Accepted, partly superseded by 0015 (not yet planned against a live account) |
 | [0013](0013-dbt-project-layout.md) | dbt project layout in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet built against a live account) |
 | [0014](0014-airflow-on-mwaa-template.md) | Airflow DAG and MWAA setup in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet run on MWAA) |
+| [0015](0015-terraform-modules.md) | Terraform lives in modules that templates call | Accepted (implemented on the 2.0 branch) |
 
 ## Record format
 

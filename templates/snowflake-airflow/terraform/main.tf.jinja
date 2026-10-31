@@ -1,0 +1,15 @@
+# Modules come from the quicketl repo at the tag this project was generated
+# from. `quicketl platform update --ref <tag>` moves them to a newer tag. To
+# change a module's code, copy it into this project and point `source` at the
+# copy.
+
+module "platform" {
+  source = "git::https://github.com/ameijin/quicketl.git//terraform/modules/snowflake-platform?ref={{ template_ref }}"
+
+  prefix          = local.prefix
+  environments    = local.environments
+  layers          = local.layers
+  domains         = local.domains
+  roles           = local.roles
+  warehouse_sizes = var.warehouse_sizes
+}

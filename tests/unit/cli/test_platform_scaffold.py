@@ -281,6 +281,33 @@ class TestSnowflakeTerraform:
         assert "storage_aws_role_arn" not in variables
         assert "okta" not in variables
 
+    def test_modules_are_pinned_to_the_template_tag(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        tf = self.render(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        sources = [
+            line.split('"')[1]
+            for path in sorted(tf.glob("*.tf"))
+            for line in path.read_text().splitlines()
+            if line.strip().startswith("source") and "snowflakedb/snowflake" not in line
+        ]
+        base = "git::https://github.com/ameijin/quicketl.git//terraform/modules/"
+        assert sorted(sources) == sorted(
+            f"{base}{name}?ref={TAG}"
+            for name in (
+                "snowflake-platform",
+                "snowflake-network-policy",
+                "snowflake-s3-integration",
+                "snowflake-okta-sso",
+            )
+        )
+        for source in sources:
+            module = source.removeprefix(base).split("?")[0]
+            assert (REPO_ROOT / "terraform" / "modules" / module / "main.tf").exists()
+        answers = yaml.safe_load((tf.parent / ".copier-answers.yml").read_text())
+        assert answers["template_ref"] == TAG
+
     def test_role_domains_default_to_every_domain(
         self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
     ):

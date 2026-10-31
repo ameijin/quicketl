@@ -43,6 +43,10 @@ SPECS = [
 ]
 PROVIDER = "registry.terraform.io/snowflakedb/snowflake"
 TAG = "v0.0.1"
+MODULES_DIR = REPO_ROOT / "terraform" / "modules"
+MODULE_SOURCE = re.compile(
+    r'source\s*=\s*"git::https://github\.com/ameijin/quicketl\.git//terraform/modules/([a-z0-9-]+)\?ref=[^"]+"'
+)
 REFERENCE = re.compile(r"\b(snowflake_[a-z0-9_]+)\.([a-z0-9_]+)(?:\[[^\]]*\])?\.([a-z0-9_]+)")
 DBT = ["uvx", "--from", "dbt-core==1.12.6", "--with", "dbt-snowflake==1.12.4", "dbt"]
 DBT_ENV = {
@@ -70,8 +74,12 @@ def make_template_repo(work: Path) -> Path:
     return repo
 
 
-def check_references(tf_dir: Path) -> list[str]:
-    """Return references to attributes the provider schema does not have."""
+def check_references(tf_dir: Path, source_dir: Path | None = None) -> list[str]:
+    """Return references to attributes the provider schema does not have.
+
+    `tf_dir` is an initialized Terraform folder to read the schema from;
+    `source_dir` (default: `tf_dir`) holds the .tf files to check.
+    """
     schema_json = subprocess.run(
         ["terraform", "providers", "schema", "-json"],
         cwd=tf_dir,
@@ -81,12 +89,48 @@ def check_references(tf_dir: Path) -> list[str]:
     ).stdout
     resources = json.loads(schema_json)["provider_schemas"][PROVIDER]["resource_schemas"]
     problems = []
-    for tf_file in sorted(tf_dir.glob("*.tf")):
+    for tf_file in sorted((source_dir or tf_dir).glob("*.tf")):
         for resource_type, _name, attribute in REFERENCE.findall(tf_file.read_text()):
             attributes = resources.get(resource_type, {}).get("block", {}).get("attributes", {})
             if attribute not in attributes:
                 problems.append(f"{tf_file.name}: {resource_type} has no attribute {attribute!r}")
     return problems
+
+
+def terraform_check(tf_dir: Path) -> None:
+    run(["terraform", "init", "-backend=false", "-input=false", "-no-color"], cwd=tf_dir)
+    run(["terraform", "validate", "-no-color"], cwd=tf_dir)
+
+
+def check_modules() -> list[str]:
+    """Format-check each module, validate its example, and check its references."""
+    problems = []
+    for module in sorted(p for p in MODULES_DIR.iterdir() if p.is_dir()):
+        run(["terraform", "fmt", "-check", "-diff", "-recursive"], cwd=module)
+        example = module / "examples" / "basic"
+        if not example.is_dir():
+            problems.append(f"{module.name}: no examples/basic")
+            continue
+        terraform_check(example)
+        problems += [f"{module.name}/{p}" for p in check_references(example, module)]
+        shutil.rmtree(example / ".terraform", ignore_errors=True)
+        (example / ".terraform.lock.hcl").unlink(missing_ok=True)
+    return problems
+
+
+def use_local_modules(tf_dir: Path) -> int:
+    """Point git module sources at this checkout; the release tag may not exist yet.
+
+    Returns how many sources were rewritten.
+    """
+    count = 0
+    for tf_file in tf_dir.glob("*.tf"):
+        text, n = MODULE_SOURCE.subn(
+            lambda m: f'source = "{MODULES_DIR / m.group(1)}"', tf_file.read_text()
+        )
+        tf_file.write_text(text)
+        count += n
+    return count
 
 
 def check_dbt(dbt_dir: Path) -> list[str]:
@@ -192,11 +236,14 @@ def scaffold_spec(spec: Path, repo: Path, work: Path) -> Path:
 
 def check_project(project: Path, airflow_python: Path, work: Path) -> list[str]:
     tf_dir = project / "terraform"
+    problems = []
     run(["terraform", "fmt", "-check", "-diff"], cwd=tf_dir)
-    run(["terraform", "init", "-backend=false", "-input=false", "-no-color"], cwd=tf_dir)
-    run(["terraform", "validate", "-no-color"], cwd=tf_dir)
+    if use_local_modules(tf_dir) == 0:
+        problems.append(f"{project.name}: terraform/ uses no quicketl modules")
+    terraform_check(tf_dir)
     return (
-        check_references(tf_dir)
+        problems
+        + check_references(tf_dir)
         + check_dbt(project / "dbt")
         + check_airflow(project / "airflow" / "dags", airflow_python, work)
     )
@@ -208,7 +255,7 @@ def main() -> int:
         repo = make_template_repo(work)
         projects = [scaffold_spec(spec, repo, work) for spec in SPECS]
         airflow_python = make_airflow_venv(work, projects[0] / "airflow" / "requirements.txt")
-        problems = []
+        problems = check_modules()
         for project in projects:
             problems += check_project(project, airflow_python, work)
     for problem in problems:
