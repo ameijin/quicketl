@@ -353,3 +353,62 @@ class TestSnowflakeDbt:
         gitignore = (project / ".gitignore").read_text()
         assert "dbt/target/" in gitignore
         assert "dbt/dbt_packages/" in gitignore
+
+
+class TestSnowflakeAirflow:
+    """What the snowflake-airflow template writes into airflow/.
+
+    scripts/check_templates.py loads the same DAGs with Airflow 3.3.1's DagBag.
+    """
+
+    def test_full_spec_dag_loads_every_source_then_runs_dbt(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        airflow = render_project(cli_runner, template_repo, temp_dir, FULL_SPEC) / "airflow"
+
+        dag = (airflow / "dags" / "acme_data_platform.py").read_text()
+        compile(dag, "acme_data_platform.py", "exec")
+        assert 'dag_id="acme_data_platform"' in dag
+        assert 'schedule="@daily"' in dag
+        assert '"location": "s3://example-landing/finance/invoices/"' in dag
+        assert (
+            "load_source.partial(environment=ENVIRONMENT).expand(source=SOURCES) >> dbt_build"
+            in dag
+        )
+        assert 'STORAGE_INTEGRATION = f"{PREFIX}_S3_LANDING"' in dag
+        assert "{{ var.value.get('platform_environment', 'dev') }}" in dag
+
+    def test_minimal_spec_dag_only_runs_dbt(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        airflow = render_project(cli_runner, template_repo, temp_dir, MINIMAL_SPEC) / "airflow"
+
+        dag = (airflow / "dags" / "minimal_platform.py").read_text()
+        compile(dag, "minimal_platform.py", "exec")
+        assert "SnowflakeHook" not in dag
+        assert "load_source" not in dag
+        assert "dbt_build = BashOperator(" in dag
+
+    def test_requirements_follow_the_airflow_constraints(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        airflow = render_project(cli_runner, template_repo, temp_dir, MINIMAL_SPEC) / "airflow"
+
+        lines = (airflow / "requirements.txt").read_text().splitlines()
+        assert lines[0] == (
+            '--constraint "https://raw.githubusercontent.com/apache/airflow/'
+            'constraints-3.3.1/constraints-3.12.txt"'
+        )
+        assert "apache-airflow-providers-snowflake==6.16.0" in lines
+        assert "apache-airflow-providers-standard==1.17.0" in lines
+
+    def test_startup_script_installs_dbt_on_workers_only(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        airflow = render_project(cli_runner, template_repo, temp_dir, MINIMAL_SPEC) / "airflow"
+
+        script = (airflow / "startup.sh").read_text()
+        assert '"${MWAA_AIRFLOW_COMPONENT}" != "worker"' in script
+        assert '"dbt-core==1.12.6" "dbt-snowflake==1.12.4"' in script
+        dag = (airflow / "dags" / "minimal_platform.py").read_text()
+        assert "/usr/local/airflow/python3-virtualenv/dbt-env/bin/dbt" in dag

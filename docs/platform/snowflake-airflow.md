@@ -6,7 +6,9 @@ This template turns a [platform spec](spec.md) with `warehouse.type: snowflake` 
     - `terraform/`: databases, schemas, warehouses, roles and grants, plus a network policy, S3 storage integration and Okta sign-in when the spec asks for them.
     - `dbt/`: a dbt project that builds into those databases, with the spec's sources and one example model.
 
-    Airflow (MWAA) code arrives in a later template version.
+    - `airflow/`: a DAG for Amazon MWAA (Airflow 3.3.1) that loads each source from S3 and then runs `dbt build`, plus `requirements.txt` and a startup script that installs dbt in its own virtual environment.
+
+    None of it has been run against a live Snowflake account or MWAA environment yet.
 
 ## What gets created
 
@@ -86,7 +88,35 @@ So keep every model in `models/<layer>/<domain>/`. The landing layer (the first 
 - One example model, in `models/<second layer>/<domain>/`, selecting from the first source.
 - `profiles.yml`: each target uses its environment's warehouse and, when the spec has a `transformer` role, defaults to that role. Without one, set `DBT_SNOWFLAKE_ROLE`.
 
-Teams add their own models and tests from there. Loading the landing tables from S3 is not generated yet; it comes with the Airflow part.
+Teams add their own models and tests from there. The Airflow DAG creates and loads the landing tables.
+
+## The Airflow DAG (MWAA)
+
+`airflow/dags/<name>_platform.py` is one DAG for Airflow 3, scheduled by `orchestrator.schedule` in the spec, with catchup off and one run at a time.
+
+```mermaid
+flowchart LR
+    L1["load_source<br/>(sales.orders)"] --> D["dbt_build"]
+    L2["load_source<br/>(finance.invoices)"] --> D
+```
+
+- **`load_source`** runs once per source (dynamic task mapping), as the `snowflake_loader` connection. For each source it:
+    1. creates a file format and a stage on the S3 storage integration, if missing;
+    2. on the first run only, creates the table with columns inferred from the files (`INFER_SCHEMA` and `USING TEMPLATE`);
+    3. runs `COPY INTO ... MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE`. Snowflake skips files it has already loaded, so reruns do not duplicate data.
+- **`dbt_build`** is a `BashOperator`. It copies the dbt project out of the read-only DAGs folder and runs `dbt build --target <environment>` with the dbt from the virtual environment `startup.sh` makes. Credentials come from the `snowflake_dbt` connection.
+- **Which environment** a run uses comes from the Airflow Variable `platform_environment`, so the same files serve every MWAA environment.
+
+The generated README lists the S3 upload layout and the connections to create. AWS documents the dbt-in-a-virtual-environment pattern in its [MWAA dbt sample](https://docs.aws.amazon.com/mwaa/latest/userguide/samples-dbt.html).
+
+**Supporting files:**
+
+| File | What it does |
+|------|--------------|
+| `airflow/requirements.txt` | The Snowflake and standard Airflow providers, pinned to the Airflow 3.3.1 constraints file MWAA requires. |
+| `airflow/startup.sh` | On workers only, creates `/usr/local/airflow/python3-virtualenv/dbt-env` and installs dbt Core 1.12 and `dbt-snowflake` 1.12 into it. |
+
+Terraform grants `USAGE` on the storage integration to every functional role that can write the landing layer, so the loader can create stages.
 
 ## Provider version and preview features
 
@@ -98,10 +128,11 @@ The template pins the Snowflake provider to `snowflakedb/snowflake ~> 2.22`. In 
 
 - runs `terraform fmt -check`, `terraform init` and `terraform validate`;
 - checks every attribute reference against the provider schema, because `terraform validate` does not check references made through `for_each` keys;
-- runs `dbt parse` and `dbt ls` with placeholder credentials, and fails if any generated model would build in `PUBLIC`.
+- runs `dbt parse` and `dbt ls` with placeholder credentials, and fails if any generated model would build in `PUBLIC`;
+- installs Airflow 3.3.1 from the generated `airflow/requirements.txt` (with its constraints) into a scratch virtual environment, then loads the DAGs with Airflow's `DagBag` and fails on any import error.
 
-CI runs it in the `templates` job. None of this connects to Snowflake.
+CI runs it in the `templates` job. None of this connects to Snowflake or AWS.
 
-It has not been planned, applied or built against a live Snowflake account yet. Run `terraform plan` and `dbt build` against a sandbox account before using it for real.
+It has not been planned, applied, built or scheduled against a live Snowflake account or MWAA environment yet. Run `terraform plan`, `dbt build` and the DAG against sandbox accounts before using it for real.
 
-The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md) (Terraform) and [ADR 0013](../adr/0013-dbt-project-layout.md) (dbt).
+The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md) (Terraform), [ADR 0013](../adr/0013-dbt-project-layout.md) (dbt) and [ADR 0014](../adr/0014-airflow-on-mwaa-template.md) (Airflow).

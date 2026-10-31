@@ -1,6 +1,6 @@
 # Raw tables in the landing layer, one dbt source per domain.
-# Each table holds the files from one S3 location in platform.yml. Loading
-# them (COPY INTO) is not generated yet.
+# Each table holds the files from one S3 location in platform.yml. The
+# Airflow DAG in airflow/dags/ creates and loads them with COPY INTO.
 version: 2
 
 sources:
