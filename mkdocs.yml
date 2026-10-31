@@ -225,6 +225,7 @@ nav:
       - "0010 Platform spec": adr/0010-platform-spec.md
       - "0011 Copier template layout": adr/0011-copier-template-layout.md
       - "0012 Snowflake template design": adr/0012-snowflake-template-design.md
+      - "0013 dbt project layout": adr/0013-dbt-project-layout.md
 
   - Examples:
     - examples/index.md

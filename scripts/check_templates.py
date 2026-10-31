@@ -1,4 +1,4 @@
-"""Render each platform template and check the Terraform it generates.
+"""Render each platform template and check the Terraform and dbt it generates.
 
 For each spec below, this script:
 
@@ -8,10 +8,14 @@ For each spec below, this script:
    `terraform validate` in the generated terraform/ folder;
 4. checks that every `snowflake_<type>.<name>[...].<attribute>` reference
    names an attribute the provider schema has. `terraform validate` does not
-   check references through for_each keys, so this step covers that gap.
+   check references through for_each keys, so this step covers that gap;
+5. runs `dbt parse` and `dbt ls` in the generated dbt/ folder, and checks that
+   every generated model lands in a domain schema (never PUBLIC, which the
+   Terraform grants nothing on).
 
-It needs `git`, `terraform` and network access to the Terraform registry.
-It never connects to Snowflake.
+It needs `git`, `terraform`, `uvx` and network access to the Terraform
+registry and PyPI. It never connects to Snowflake: dbt gets placeholder
+credentials and neither command opens a connection.
 
 Usage:
     uv run python scripts/check_templates.py
@@ -20,6 +24,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -35,6 +40,14 @@ SPECS = [
 PROVIDER = "registry.terraform.io/snowflakedb/snowflake"
 TAG = "v0.0.1"
 REFERENCE = re.compile(r"\b(snowflake_[a-z0-9_]+)\.([a-z0-9_]+)(?:\[[^\]]*\])?\.([a-z0-9_]+)")
+DBT = ["uvx", "--from", "dbt-core==1.12.6", "--with", "dbt-snowflake==1.12.4", "dbt"]
+DBT_ENV = {
+    "SNOWFLAKE_ACCOUNT": "placeholder",
+    "SNOWFLAKE_USER": "placeholder",
+    "SNOWFLAKE_PRIVATE_KEY": "placeholder",
+    "DBT_SNOWFLAKE_ROLE": "placeholder",
+    "DBT_SEND_ANONYMOUS_USAGE_STATS": "false",
+}
 
 
 def run(cmd: list[str], cwd: Path) -> None:
@@ -72,6 +85,40 @@ def check_references(tf_dir: Path) -> list[str]:
     return problems
 
 
+def check_dbt(dbt_dir: Path) -> list[str]:
+    """Parse the dbt project and return models that would land outside a domain schema."""
+    env = {**os.environ, **DBT_ENV}
+    common = ["--profiles-dir", ".", "--no-version-check"]
+    print(f"$ dbt parse  (in {dbt_dir.name})", flush=True)
+    subprocess.run([*DBT, "parse", *common], cwd=dbt_dir, env=env, check=True)
+    listed = subprocess.run(
+        [
+            *DBT,
+            "ls",
+            *common,
+            "--resource-types",
+            "model",
+            "--output",
+            "json",
+            "--output-keys",
+            "unique_id",
+            "schema",
+            "--quiet",
+        ],
+        cwd=dbt_dir,
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    problems = []
+    for line in filter(None, listed.splitlines()):
+        node = json.loads(line)
+        if node["schema"].upper() == "PUBLIC":
+            problems.append(f"dbt: {node['unique_id']} would build in PUBLIC, not a domain schema")
+    return problems
+
+
 def check_spec(spec: Path, repo: Path, work: Path) -> list[str]:
     project = work / spec.stem
     project.mkdir()
@@ -83,7 +130,7 @@ def check_spec(spec: Path, repo: Path, work: Path) -> list[str]:
     run(["terraform", "fmt", "-check", "-diff"], cwd=tf_dir)
     run(["terraform", "init", "-backend=false", "-input=false", "-no-color"], cwd=tf_dir)
     run(["terraform", "validate", "-no-color"], cwd=tf_dir)
-    return check_references(tf_dir)
+    return check_references(tf_dir) + check_dbt(project / "dbt")
 
 
 def main() -> int:

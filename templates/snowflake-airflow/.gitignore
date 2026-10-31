@@ -6,3 +6,8 @@
 *.tfplan
 *.tfvars
 crash.log
+
+# dbt: build output, installed packages and logs
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
