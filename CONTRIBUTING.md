@@ -68,6 +68,16 @@ pytest tests/test_transforms.py
 pytest -k "test_filter"
 ```
 
+Tests for an optional extra (OpenAI, Pinecone, OpenLineage and so on) skip when the extra is not installed, and CI installs none of them. To run them all:
+
+```bash
+uv sync --group dev --all-extras
+uv run --no-sync mypy src/
+uv run --no-sync pytest
+```
+
+`--no-sync` stops `uv run` from re-syncing and removing the extras. The **Extras** workflow (`.github/workflows/extras.yml`) does the same every Monday, on any pull request that changes `pyproject.toml` or `uv.lock`, and when started by hand from the Actions tab.
+
 ### Running Linters
 
 ```bash
