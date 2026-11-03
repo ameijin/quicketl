@@ -104,6 +104,27 @@ class TestOpenLineageIntegration:
             assert len(call_args.outputs) == 1
             assert call_args.outputs[0].name == "processed_data"
 
+    def test_datasets_use_input_and_output_types(self):
+        """Events carry InputDataset inputs and OutputDataset outputs, as the spec defines."""
+        pytest.importorskip("openlineage")
+
+        from openlineage.client.event_v2 import InputDataset, OutputDataset
+
+        from quicketl.telemetry.openlineage import LineageContext
+
+        with patch("quicketl.telemetry.openlineage.OpenLineageClient") as mock_client:
+            mock_instance = MagicMock()
+            mock_client.return_value = mock_instance
+
+            ctx = LineageContext(namespace="quicketl", job_name="test-pipeline")
+            ctx.add_input_dataset(namespace="s3://bucket", name="raw_data")
+            ctx.add_output_dataset(namespace="postgres://localhost", name="processed_data")
+            ctx.emit_complete()
+
+            event = mock_instance.emit.call_args[0][0]
+            assert isinstance(event.inputs[0], InputDataset)
+            assert isinstance(event.outputs[0], OutputDataset)
+
     def test_column_lineage_extracted(self):
         """Column-level lineage is tracked."""
         pytest.importorskip("openlineage")

@@ -15,9 +15,6 @@ try:
     HAS_AZURE = True
 except ImportError:
     HAS_AZURE = False
-    DefaultAzureCredential = None
-    SecretClient = None
-    ResourceNotFoundError = Exception
 
 
 class AzureSecretsProvider(AbstractSecretsProvider):

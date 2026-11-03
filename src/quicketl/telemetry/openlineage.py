@@ -7,12 +7,19 @@ Requires: quicketl[openlineage]
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
 from uuid import uuid4
 
 from openlineage.client import OpenLineageClient
-from openlineage.client.event_v2 import Dataset, Job, Run, RunEvent, RunState
+from openlineage.client.event_v2 import (
+    InputDataset,
+    Job,
+    OutputDataset,
+    Run,
+    RunEvent,
+    RunState,
+)
 from openlineage.client.facet_v2 import (
+    DatasetFacet,
     column_lineage_dataset,
     schema_dataset,
 )
@@ -45,8 +52,8 @@ class LineageContext:
         self.job_name = job_name
         self._client = client or OpenLineageClient()
         self._run_id = str(uuid4())
-        self._inputs: list[Dataset] = []
-        self._outputs: list[Dataset] = []
+        self._inputs: list[InputDataset] = []
+        self._outputs: list[OutputDataset] = []
 
     def _create_job(self) -> Job:
         """Create the job object."""
@@ -69,7 +76,7 @@ class LineageContext:
             name: Dataset name (e.g., 'table_name').
             schema: Optional column schema {col_name: type}.
         """
-        facets = {}
+        facets: dict[str, DatasetFacet] = {}
         if schema:
             fields = [
                 schema_dataset.SchemaDatasetFacetFields(name=col, type=dtype)
@@ -77,7 +84,7 @@ class LineageContext:
             ]
             facets["schema"] = schema_dataset.SchemaDatasetFacet(fields=fields)
 
-        dataset = Dataset(namespace=namespace, name=name, facets=facets)
+        dataset = InputDataset(namespace=namespace, name=name, facets=facets)
         self._inputs.append(dataset)
 
     def add_output_dataset(
@@ -101,7 +108,7 @@ class LineageContext:
             ValueError: If column_lineage is given and there is not exactly
                 one input dataset.
         """
-        facets: dict[str, Any] = {}
+        facets: dict[str, DatasetFacet] = {}
 
         if schema:
             fields = [
@@ -135,7 +142,7 @@ class LineageContext:
                 }
             )
 
-        dataset = Dataset(namespace=namespace, name=name, facets=facets)
+        dataset = OutputDataset(namespace=namespace, name=name, facets=facets)
         self._outputs.append(dataset)
 
     def emit_start(self) -> None:
