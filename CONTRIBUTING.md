@@ -437,6 +437,18 @@ When your PR is merged to `main`, the release workflow automatically:
 
 **No manual release steps required!** Just use proper commit messages.
 
+### Dependency Updates
+
+Dependabot (`.github/dependabot.yml`) opens pull requests into `dev` every week for outdated GitHub Actions and Python dependencies. Minor and patch updates come grouped in one PR per ecosystem; each major update gets its own PR. Merge them once CI passes.
+
+Workflows pin every action to a full commit SHA, with the version as a comment, so a moved or hijacked tag cannot change what runs:
+
+```yaml
+- uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+```
+
+When you add an action, pin it the same way. `git ls-remote --tags https://github.com/<owner>/<repo>.git` lists each tag's SHA; for annotated tags use the line ending in `^{}`.
+
 ## Style Guide
 
 ### Python Style
