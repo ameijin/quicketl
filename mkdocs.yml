@@ -229,6 +229,7 @@ nav:
       - "0013 dbt project layout": adr/0013-dbt-project-layout.md
       - "0014 Airflow on MWAA template": adr/0014-airflow-on-mwaa-template.md
       - "0015 Terraform modules": adr/0015-terraform-modules.md
+      - "0016 Generated CI/CD": adr/0016-generated-cicd.md
 
   - Examples:
     - examples/index.md

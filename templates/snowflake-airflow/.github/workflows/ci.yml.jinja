@@ -1,0 +1,143 @@
+name: CI
+
+# Checks every pull request: Terraform format and validity, a Terraform plan
+# once remote state is set up, dbt parse, and that the Airflow DAGs import.
+# Nothing here changes Snowflake or AWS. See README.md, "CI/CD".
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+{% raw %}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+{% endraw %}
+env:
+  TERRAFORM_VERSION: "1.17.1"
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  terraform:
+    name: terraform validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:{% raw %}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}{% endraw %}
+          terraform_wrapper: false
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
+  terraform-plan:
+    name: terraform plan
+    # Skipped until the repository variable TF_STATE_BUCKET is set.
+    if: vars.TF_STATE_BUCKET != ''
+    needs: terraform
+    runs-on: ubuntu-latest
+    environment: terraform-plan
+    permissions:
+      contents: read
+      id-token: write # to assume the AWS role through OIDC
+    defaults:
+      run:
+        working-directory: terraform
+    env:{% raw %}
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+      SNOWFLAKE_ORGANIZATION_NAME: ${{ vars.SNOWFLAKE_ORGANIZATION_NAME }}
+      SNOWFLAKE_ACCOUNT_NAME: ${{ vars.SNOWFLAKE_ACCOUNT_NAME }}
+      SNOWFLAKE_USER: ${{ vars.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}{% endraw %}
+{%- if spec.sources %}{% raw %}
+      TF_VAR_storage_aws_role_arn: ${{ vars.STORAGE_AWS_ROLE_ARN }}{% endraw %}
+{%- endif %}
+{%- if spec.sso.provider == "okta" %}{% raw %}
+      TF_VAR_okta_saml_issuer: ${{ vars.OKTA_SAML_ISSUER }}
+      TF_VAR_okta_sso_url: ${{ vars.OKTA_SSO_URL }}
+      TF_VAR_okta_x509_cert: ${{ secrets.OKTA_X509_CERT }}{% endraw %}
+{%- endif %}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:{% raw %}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}{% endraw %}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:{% raw %}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.TF_STATE_REGION }}{% endraw %}
+      - name: terraform init
+        run: >-
+          terraform init -input=false
+          -backend-config="bucket=$TF_STATE_BUCKET"
+          -backend-config="key={{ spec.name }}/terraform.tfstate"
+          -backend-config="region=$TF_STATE_REGION"
+          -backend-config="use_lockfile=true"
+      - name: terraform plan
+        run: |
+          terraform plan -input=false -lock-timeout=5m -no-color -out plan.tfplan
+          {
+            echo "## Terraform plan"
+            echo '```'
+            terraform show -no-color plan.tfplan
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  dbt:
+    name: dbt parse
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dbt
+    env:
+      # dbt parse reads profiles.yml but never connects, so placeholders do.
+      SNOWFLAKE_ACCOUNT: placeholder
+      SNOWFLAKE_USER: placeholder
+      SNOWFLAKE_PRIVATE_KEY: placeholder
+      DBT_SNOWFLAKE_ROLE: placeholder
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:{% raw %}
+          python-version: ${{ env.PYTHON_VERSION }}{% endraw %}
+      # The same versions airflow/startup.sh installs on MWAA.
+      - run: pip install "dbt-core==1.12.6" "dbt-snowflake==1.12.4"
+      - run: dbt parse --profiles-dir . --no-version-check
+
+  airflow:
+    name: DAG import
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:{% raw %}
+          python-version: ${{ env.PYTHON_VERSION }}{% endraw %}
+      # requirements.txt carries the Airflow 3.3.1 constraints line MWAA uses.
+      - run: pip install "apache-airflow==3.3.1" -r airflow/requirements.txt
+      - name: Load the DAGs
+        run: |
+          export AIRFLOW_HOME="$RUNNER_TEMP/airflow"
+          export AIRFLOW__CORE__LOAD_EXAMPLES=False
+          python - airflow/dags <<'EOF'
+          import sys
+
+          from airflow.dag_processing.dagbag import DagBag
+
+          bag = DagBag(dag_folder=sys.argv[1], safe_mode=False)
+          for path, error in bag.import_errors.items():
+              print(f"::error file={path}::Import error in {path}")
+              print(error)
+          if bag.import_errors or not bag.dags:
+              sys.exit("The DAGs did not load")
+          print("Loaded:", ", ".join(sorted(bag.dags)))
+          EOF

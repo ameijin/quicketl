@@ -7,8 +7,9 @@ This template turns a [platform spec](spec.md) with `warehouse.type: snowflake` 
     - `dbt/`: a dbt project that builds into those databases, with the spec's sources and one example model.
 
     - `airflow/`: a DAG for Amazon MWAA (Airflow 3.3.1) that loads each source from S3 and then runs `dbt build`, plus `requirements.txt` and a startup script that installs dbt in its own virtual environment.
+    - `.github/`: GitHub Actions that check every pull request and deploy every push to `main` (see [CI/CD](#cicd)).
 
-    None of it has been run against a live Snowflake account or MWAA environment yet.
+    None of it has been run against a live Snowflake account, AWS account or MWAA environment yet.
 
 ## What gets created
 
@@ -56,10 +57,12 @@ Give people and services functional roles only.
 
 The generated `README.md` has the exact steps for your spec. In short:
 
-1. Set Snowflake credentials as environment variables (`SNOWFLAKE_ORGANIZATION_NAME`, `SNOWFLAKE_ACCOUNT_NAME`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_AUTHENTICATOR`, `SNOWFLAKE_PRIVATE_KEY`). Never put them in files.
-2. Add a Terraform state backend, such as S3, before sharing the project.
+1. Set Snowflake credentials as environment variables (`SNOWFLAKE_ORGANIZATION_NAME`, `SNOWFLAKE_ACCOUNT_NAME`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_AUTHENTICATOR=SNOWFLAKE_JWT`, `SNOWFLAKE_PRIVATE_KEY`). Never put them in files.
+2. Create `terraform/backend.hcl` with the S3 state bucket, region, the key `<name>/terraform.tfstate` and `use_lockfile = true`. The template declares an S3 backend, so state is shared with CI and the rest of the team. It needs Terraform 1.11 or later.
 3. Create `platform.tfvars` if the spec has sources (`storage_aws_role_arn`) or Okta (`okta_saml_issuer`, `okta_sso_url`, `okta_x509_cert`). The generated `.gitignore` keeps `*.tfvars` out of git.
-4. `terraform init`, `terraform plan -out plan.tfplan`, read the plan, then `terraform apply plan.tfplan`.
+4. `terraform init -backend-config=backend.hcl`, `terraform plan -out plan.tfplan`, read the plan, then `terraform apply plan.tfplan`.
+
+Once CI/CD is set up, `deploy.yml` does steps 1 to 4 on every push to `main`.
 
 ## What you do by hand
 
@@ -118,6 +121,39 @@ The generated README lists the S3 upload layout and the connections to create. A
 
 Terraform grants `USAGE` on the storage integration to every functional role that can write the landing layer, so the loader can create stages.
 
+## CI/CD
+
+`.github/workflows/` holds two GitHub Actions workflows. Every action is pinned to a commit SHA, and a generated `dependabot.yml` keeps them current.
+
+```mermaid
+flowchart LR
+    PR["Pull request"] --> CI["ci.yml<br/>validate, plan,<br/>dbt parse, DAG import"]
+    M["Push to main"] --> P["plan"]
+    P -->|changes| A["apply<br/>(after approval)"]
+    P -->|no changes| W
+    A --> W["MWAA: dev, then prod<br/>(copy dags/ and dbt/)"]
+```
+
+| Workflow | When | What it does |
+|----------|------|--------------|
+| `ci.yml` | Every pull request | `terraform fmt`, `init -backend=false` and `validate`; `terraform plan` once the repository variable `TF_STATE_BUCKET` is set; `dbt parse` with the dbt versions MWAA installs; loads the DAGs with Airflow 3.3.1. Changes nothing. |
+| `deploy.yml` | Every push to `main` | Plans Terraform. If the plan has changes, applies that saved plan once a reviewer approves the `terraform` environment. Then copies `airflow/dags/` and `dbt/` to each environment's MWAA bucket, one environment at a time in spec order. |
+
+**Credentials.**
+- **AWS:** OIDC roles, one per GitHub environment, so no AWS keys are stored.
+- **Snowflake:** key-pair authentication, with the private key as an environment secret.
+- **What to set and where:** the generated README has the full table for your spec, covering the repository variables, the `terraform-plan` and `terraform` environments, and one environment per platform environment.
+
+**What stays manual.**
+- Changes to MWAA's `requirements.txt` and startup script, because MWAA only reads them when the environment is updated.
+- Setting up the GitHub environments and their protection rules.
+
+**Before you rely on it:**
+- The `terraform-plan` credentials can be used from any pull request branch.
+- The saved plan artifact holds secrets in plain text for one day.
+
+[ADR 0016](../adr/0016-generated-cicd.md) explains these trade-offs.
+
 ## Provider version and preview features
 
 The template pins the Snowflake provider to `snowflakedb/snowflake ~> 2.22`. In 2.22, network rules and the AWS storage integration are preview features, so the generated `providers.tf` turns them on only when the spec uses them. Preview features can change in minor provider releases.
@@ -126,13 +162,14 @@ The template pins the Snowflake provider to `snowflakedb/snowflake ~> 2.22`. In 
 
 `scripts/check_templates.py` renders the template for a full spec and a minimal one, then:
 
-- runs `terraform fmt -check`, `terraform init` and `terraform validate`;
+- runs `terraform fmt -check`, `terraform init -backend=false` and `terraform validate`;
 - checks every attribute reference against the provider schema, because `terraform validate` does not check references made through `for_each` keys;
 - runs `dbt parse` and `dbt ls` with placeholder credentials, and fails if any generated model would build in `PUBLIC`;
-- installs Airflow 3.3.1 from the generated `airflow/requirements.txt` (with its constraints) into a scratch virtual environment, then loads the DAGs with Airflow's `DagBag` and fails on any import error.
+- installs Airflow 3.3.1 from the generated `airflow/requirements.txt` (with its constraints) into a scratch virtual environment, then loads the DAGs with Airflow's `DagBag` and fails on any import error;
+- lints the generated GitHub Actions workflows with actionlint.
 
 CI runs it in the `templates` job. None of this connects to Snowflake or AWS.
 
 It has not been planned, applied, built or scheduled against a live Snowflake account or MWAA environment yet. Run `terraform plan`, `dbt build` and the DAG against sandbox accounts before using it for real.
 
-The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md) (Terraform), [ADR 0013](../adr/0013-dbt-project-layout.md) (dbt) and [ADR 0014](../adr/0014-airflow-on-mwaa-template.md) (Airflow).
+The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md) (Terraform), [ADR 0013](../adr/0013-dbt-project-layout.md) (dbt), [ADR 0014](../adr/0014-airflow-on-mwaa-template.md) (Airflow), [ADR 0015](../adr/0015-terraform-modules.md) (Terraform modules) and [ADR 0016](../adr/0016-generated-cicd.md) (CI/CD and state).

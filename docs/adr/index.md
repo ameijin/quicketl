@@ -21,6 +21,7 @@ All records below were agreed on 2026-10-30. Records marked "planned for 2.0" de
 | [0013](0013-dbt-project-layout.md) | dbt project layout in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet built against a live account) |
 | [0014](0014-airflow-on-mwaa-template.md) | Airflow DAG and MWAA setup in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet run on MWAA) |
 | [0015](0015-terraform-modules.md) | Terraform lives in modules that templates call | Accepted (implemented on the 2.0 branch) |
+| [0016](0016-generated-cicd.md) | Generated projects ship GitHub Actions CI/CD and S3 state | Accepted (implemented on the 2.0 branch; not yet run against live accounts) |
 
 ## Record format
 

@@ -69,6 +69,13 @@ jobs:
           terraform_version: 1.17.1
           terraform_wrapper: false
 
+      # Lints the GitHub Actions workflows the templates generate. Go verifies
+      # the module against its checksum database.
+      - name: Install actionlint
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
       - name: Install dependencies
         run: uv sync --group dev
 

@@ -439,3 +439,98 @@ class TestSnowflakeAirflow:
         assert '"dbt-core==1.12.6" "dbt-snowflake==1.12.4"' in script
         dag = (airflow / "dags" / "minimal_platform.py").read_text()
         assert "/usr/local/airflow/python3-virtualenv/dbt-env/bin/dbt" in dag
+
+
+class TestSnowflakeCICD:
+    """The GitHub Actions workflows the snowflake-airflow template writes.
+
+    scripts/check_templates.py runs actionlint on the same output.
+    """
+
+    def workflows(self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path, spec: Path):
+        project = render_project(cli_runner, template_repo, temp_dir, spec)
+        folder = project / ".github" / "workflows"
+        return project, {path.name: yaml.safe_load(path.read_text()) for path in folder.iterdir()}
+
+    def test_generates_ci_and_deploy_workflows(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        project, workflows = self.workflows(cli_runner, template_repo, temp_dir, MINIMAL_SPEC)
+
+        assert set(workflows) == {"ci.yml", "deploy.yml"}
+        assert (project / ".github" / "dependabot.yml").exists()
+        assert set(workflows["ci.yml"]["jobs"]) == {"terraform", "terraform-plan", "dbt", "airflow"}
+        assert set(workflows["deploy.yml"]["jobs"]) == {"plan", "apply", "mwaa"}
+        # GitHub expressions survive rendering untouched.
+        plan_env = workflows["deploy.yml"]["jobs"]["plan"]["env"]
+        assert plan_env["SNOWFLAKE_PRIVATE_KEY"] == "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}"
+        assert plan_env["SNOWFLAKE_AUTHENTICATOR"] == "SNOWFLAKE_JWT"
+
+    def test_terraform_uses_s3_state_keyed_by_platform(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        project, workflows = self.workflows(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        assert 'backend "s3" {}' in (project / "terraform" / "backend.tf").read_text()
+        inits = [
+            step["run"]
+            for workflow in workflows.values()
+            for job in workflow["jobs"].values()
+            for step in job["steps"]
+            if step.get("name") == "terraform init"
+        ]
+        assert len(inits) == 3  # CI plan, deploy plan, deploy apply
+        for init in inits:
+            assert '-backend-config="key=acme_data/terraform.tfstate"' in init
+            assert '-backend-config="use_lockfile=true"' in init
+
+    def test_deploy_runs_environments_in_spec_order(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        _, workflows = self.workflows(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        mwaa = workflows["deploy.yml"]["jobs"]["mwaa"]
+        assert mwaa["strategy"]["matrix"]["environment"] == ["dev", "prod"]
+        assert mwaa["strategy"]["max-parallel"] == 1
+        assert workflows["deploy.yml"]["jobs"]["apply"]["environment"] == "terraform"
+
+    def test_terraform_variables_follow_the_spec(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        _, full = self.workflows(cli_runner, template_repo, temp_dir, FULL_SPEC)
+        _, minimal = self.workflows(cli_runner, template_repo, temp_dir, MINIMAL_SPEC)
+
+        full_env = full["deploy.yml"]["jobs"]["plan"]["env"]
+        assert full_env["TF_VAR_storage_aws_role_arn"] == "${{ vars.STORAGE_AWS_ROLE_ARN }}"
+        assert full_env["TF_VAR_okta_x509_cert"] == "${{ secrets.OKTA_X509_CERT }}"
+        assert full["ci.yml"]["jobs"]["terraform-plan"]["env"] == full_env
+        for workflow in minimal.values():
+            for job in workflow["jobs"].values():
+                assert not [key for key in job.get("env", {}) if key.startswith("TF_VAR_")]
+
+    def test_actions_are_pinned_to_commit_shas(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        _, workflows = self.workflows(cli_runner, template_repo, temp_dir, FULL_SPEC)
+
+        uses = [
+            step["uses"]
+            for workflow in workflows.values()
+            for job in workflow["jobs"].values()
+            for step in job["steps"]
+            if "uses" in step
+        ]
+        assert uses
+        for ref in uses:
+            sha = ref.split("@")[1]
+            assert len(sha) == 40 and all(c in "0123456789abcdef" for c in sha), ref
+
+    def test_ci_checks_dbt_with_the_versions_mwaa_installs(
+        self, cli_runner: CliRunner, template_repo: Path, temp_dir: Path
+    ):
+        project, workflows = self.workflows(cli_runner, template_repo, temp_dir, MINIMAL_SPEC)
+
+        runs = [step.get("run", "") for step in workflows["ci.yml"]["jobs"]["dbt"]["steps"]]
+        assert 'pip install "dbt-core==1.12.6" "dbt-snowflake==1.12.4"' in runs
+        startup = (project / "airflow" / "startup.sh").read_text()
+        assert '"dbt-core==1.12.6" "dbt-snowflake==1.12.4"' in startup
