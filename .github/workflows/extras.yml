@@ -1,0 +1,48 @@
+name: Extras
+
+# The main CI installs no optional extras, so the tests for them skip there.
+# This workflow installs every extra and runs mypy and the full test suite,
+# weekly and whenever the dependencies change.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/extras.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extras:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
+        with:
+          # The extras include PyTorch; caching it would crowd out CI's cache.
+          enable-cache: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install every optional extra
+        run: uv sync --group dev --all-extras
+
+      # --no-sync keeps uv from re-syncing the environment and dropping the extras.
+      - name: Run type checking
+        run: uv run --no-sync mypy src/
+
+      - name: Run tests
+        run: uv run --no-sync pytest

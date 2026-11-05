@@ -16,9 +16,6 @@ try:
     HAS_PANDERA = True
 except ImportError:
     HAS_PANDERA = False
-    pa = None
-    Column = None
-    DataFrameSchema = None
 
 if TYPE_CHECKING:
     import ibis.expr.types as ir
