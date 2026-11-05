@@ -1,0 +1,20 @@
+# Platform data from platform.yml. `quicketl platform update` rewrites this
+# file when the spec changes, so edit platform.yml rather than this file.
+
+locals {
+  prefix = "{{ spec.name | upper }}"
+
+  environments = [{% for env in spec.environments %}"{{ env | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  layers       = [{% for layer in spec.layers %}"{{ layer | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  domains      = [{% for domain in spec.domains %}"{{ domain.name | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+
+  # Functional roles: layer => "read" or "write", and the domains they cover.
+  roles = {
+{%- for role in spec.roles %}
+    {{ role.name | upper }} = {
+      access  = { {% for layer, level in role.access.items() %}{{ layer | upper }} = "{{ level }}"{% if not loop.last %}, {% endif %}{% endfor %} }
+      domains = [{% for domain in (role.domains or spec.domains | map(attribute="name") | list) %}"{{ domain | upper }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    }
+{%- endfor %}
+  }
+}

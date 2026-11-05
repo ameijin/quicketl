@@ -1,0 +1,26 @@
+output "databases" {
+  description = "Database names by environment and layer."
+  value       = { for key, db in snowflake_database.this : key => db.name }
+}
+
+output "warehouses" {
+  description = "Warehouse names by environment."
+  value       = { for key, wh in snowflake_warehouse.this : key => wh.name }
+}
+
+output "functional_roles" {
+  description = "Functional role names by environment and role."
+  value       = { for key, role in snowflake_account_role.functional : key => role.name }
+}
+{%- if spec.sources %}
+
+output "storage_iam_user_arn" {
+  description = "AWS IAM user Snowflake uses; add it to the S3 role's trust policy."
+  value       = snowflake_storage_integration_aws.landing.describe_output[0].iam_user_arn
+}
+
+output "storage_external_id" {
+  description = "External ID to require in the S3 role's trust policy."
+  value       = snowflake_storage_integration_aws.landing.describe_output[0].external_id
+}
+{%- endif %}
