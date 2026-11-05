@@ -75,7 +75,7 @@ stages:
         workflow_file = tmp_path / "workflow.yml"
         workflow_file.write_text(workflow_content)
 
-        with patch("quicketl.cli.workflow.Workflow") as mock_workflow:
+        with patch("quicketl.workflow.Workflow") as mock_workflow:
             mock_instance = MagicMock()
             mock_result = MagicMock()
             mock_result.status.value = "success"
@@ -108,7 +108,7 @@ stages:
         workflow_file = tmp_path / "workflow.yml"
         workflow_file.write_text(workflow_content)
 
-        with patch("quicketl.cli.workflow.Workflow") as mock_workflow:
+        with patch("quicketl.workflow.Workflow") as mock_workflow:
             mock_instance = MagicMock()
             mock_result = MagicMock()
             mock_result.status.value = "success"
@@ -139,7 +139,7 @@ stages:
         workflow_file = tmp_path / "workflow.yml"
         workflow_file.write_text(workflow_content)
 
-        with patch("quicketl.cli.workflow.Workflow") as mock_workflow:
+        with patch("quicketl.workflow.Workflow") as mock_workflow:
             mock_instance = MagicMock()
             mock_result = MagicMock()
             mock_result.status.value = "success"
@@ -172,7 +172,7 @@ stages:
         workflow_file = tmp_path / "workflow.yml"
         workflow_file.write_text(workflow_content)
 
-        with patch("quicketl.cli.workflow.Workflow") as mock_workflow:
+        with patch("quicketl.workflow.Workflow") as mock_workflow:
             mock_instance = MagicMock()
             mock_result = MagicMock()
             mock_result.status.value = "success"

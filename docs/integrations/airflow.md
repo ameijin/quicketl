@@ -5,10 +5,12 @@ QuickETL provides first-class integration with Apache Airflow for orchestrating 
 ## Installation
 
 ```bash
-pip install quicketl[airflow]
+pip install 'quicketl[pipelines]'
 # or
-uv add quicketl[airflow]
+uv add 'quicketl[pipelines]'
 ```
+
+Install QuickETL in the same environment as Airflow. QuickETL does not install Airflow for you, and there is no `airflow` extra. Add a backend extra such as `quicketl[snowflake]` if your pipelines use one; backend extras include `pipelines`.
 
 ## Quick Start
 

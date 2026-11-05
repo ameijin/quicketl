@@ -14,7 +14,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from quicketl._version import __version__
-from quicketl.engines.backends import list_backends
+from quicketl.cli._extras import require_pipelines
 
 console = Console()
 app = typer.Typer(help="Display QuickETL information")
@@ -83,6 +83,9 @@ def _show_version_info() -> None:
 
 def _show_backends(check_imports: bool) -> None:
     """Display available backends."""
+    require_pipelines()
+    from quicketl.engines.backends import list_backends
+
     table = Table(title="Available Backends")
     table.add_column("Backend", style="cyan")
     table.add_column("Name")

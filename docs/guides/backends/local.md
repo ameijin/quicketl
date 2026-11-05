@@ -75,8 +75,10 @@ Polars is a blazing-fast DataFrame library written in Rust with excellent stream
 ### Installation
 
 ```bash
-pip install quicketl[polars]
+pip install 'quicketl[pipelines]'
 ```
+
+Polars is part of the `pipelines` extra. There is no separate `polars` extra.
 
 ### When to Use
 
@@ -122,7 +124,7 @@ Apache DataFusion is a fast query engine written in Rust, Arrow-native.
 ### Installation
 
 ```bash
-pip install quicketl[datafusion]
+pip install 'quicketl[datafusion]'
 ```
 
 ### When to Use

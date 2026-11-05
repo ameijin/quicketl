@@ -6,7 +6,7 @@ All nine records below were agreed on 2026-10-30. Records marked "planned for 2.
 
 | ADR | Decision | Status |
 |-----|----------|--------|
-| [0001](0001-single-repo-single-tool.md) | One repo, one tool: "quick data engineering" | Accepted (planned for 2.0, not yet implemented) |
+| [0001](0001-single-repo-single-tool.md) | One repo, one tool: "quick data engineering" | Accepted (slim core and `[pipelines]` implemented on the 2.0 branch; Copier and platform commands still planned) |
 | [0002](0002-platform-first-slim-core.md) | Platform-first default with a slim core and a `[pipelines]` extra | Accepted (planned for 2.0, not yet implemented) |
 | [0003](0003-init-wizard.md) | `quicketl init` becomes a wizard | Accepted (planned for 2.0, not yet implemented) |
 | [0004](0004-airflow-on-mwaa.md) | Airflow on MWAA is the default orchestrator | Accepted |

@@ -41,12 +41,10 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 git clone https://github.com/YOUR_USERNAME/quicketl.git
 cd quicketl
 
-# Create virtual environment and install dependencies
-uv venv
+# Create the virtual environment and install the dev tools
+# and the pipelines extra (the tests need it)
+uv sync --group dev --extra pipelines
 source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
-
-# Install in development mode with all extras
-uv pip install -e ".[dev,docs]"
 
 # Install pre-commit hooks (if available)
 pre-commit install
@@ -355,7 +353,7 @@ class TestFilterTransform:
 
 ```bash
 # Install docs dependencies
-uv pip install -e ".[docs]"
+uv sync --group dev --extra pipelines --extra docs
 
 # Serve docs locally with hot reload
 mkdocs serve

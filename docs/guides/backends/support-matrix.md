@@ -16,8 +16,8 @@ The list comes from the backend registry in `src/quicketl/engines/backends.py`. 
 
 | Backend | Install extra | Status |
 |---------|---------------|--------|
-| DuckDB | None (installed by default) | Tested in CI |
-| Polars | None (installed by default) | Tested in CI |
+| DuckDB | `quicketl[pipelines]` | Tested in CI |
+| Polars | `quicketl[pipelines]` | Tested in CI |
 | DataFusion | `quicketl[datafusion]` | Available, untested |
 | pandas | `quicketl[pandas]` | Available, untested |
 | Apache Spark | `quicketl[spark]` | Available, untested |

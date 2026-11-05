@@ -376,7 +376,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install QuickETL
-        run: pip install quicketl
+        run: pip install 'quicketl[pipelines]'
 
       - name: Validate workflows
         run: |
@@ -433,7 +433,7 @@ The pipeline paths are relative to the workflow file location. Ensure:
 Install QuickETL in your Airflow/Prefect environment:
 
 ```bash
-pip install quicketl
+pip install 'quicketl[pipelines]'
 ```
 
 Or add to `requirements.txt` in your Airflow deployment.

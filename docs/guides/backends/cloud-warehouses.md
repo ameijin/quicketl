@@ -20,7 +20,7 @@ Snowflake is a cloud-native data warehouse with separated compute and storage.
 ### Installation
 
 ```bash
-pip install quicketl[snowflake]
+pip install 'quicketl[snowflake]'
 ```
 
 ### Configuration
@@ -121,7 +121,7 @@ Google BigQuery is a serverless data warehouse with a pay-per-query model.
 ### Installation
 
 ```bash
-pip install quicketl[bigquery]
+pip install 'quicketl[bigquery]'
 ```
 
 ### Configuration

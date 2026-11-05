@@ -153,7 +153,7 @@ quicketl init examples
 cd examples
 
 # Install dependencies
-pip install quicketl[duckdb]
+pip install 'quicketl[pipelines]'
 ```
 
 ### Run Any Example

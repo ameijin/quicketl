@@ -1,10 +1,31 @@
 # Installation
 
-This guide covers how to install QuickETL and its optional dependencies.
+This page shows how to install QuickETL. Use it to pick the right install for what you want to do.
 
-## Basic Installation
+## Which install do I need?
 
-Install QuickETL with the default backends (DuckDB and Polars):
+| I want to | Install | Approx. size |
+|-----------|---------|--------------|
+| Use the CLI to create projects, validate configs and export the JSON schema | `pip install quicketl` (core only) | 16 MB |
+| Run pipelines and workflows with DuckDB and Polars | `pip install 'quicketl[pipelines]'` | 465 MB |
+| Run pipelines on a specific backend or cloud (for example Snowflake or S3) | `pip install 'quicketl[snowflake]'` (a backend extra) | 465 MB plus the backend |
+| Everything | `pip install 'quicketl[all]'` | Very large |
+
+Sizes are measured on a real install of the site-packages folder. They change as dependencies change.
+
+Backend extras (`spark`, `pandas`, `datafusion`, `aws`, `gcp`, `azure`, `snowflake`, `bigquery`, `trino`, `postgres`, `mysql`, `clickhouse`) already include `pipelines`. The AI and data contract extras do too. You do not need to install both.
+
+The secrets (`secrets-aws`, `secrets-azure`), telemetry (`opentelemetry`, `openlineage`) and `docs` extras do not include `pipelines`.
+
+!!! note "Quote extras in your shell"
+    Shells such as zsh treat square brackets as a pattern. Write `pip install 'quicketl[pipelines]'` with quotes.
+
+!!! info "Coming from 1.x?"
+    From 2.0.0, a plain `pip install quicketl` no longer includes pipelines. See [Upgrading to 2.0](upgrading.md).
+
+## Core Installation
+
+The core install is small. It contains the CLI, `init`, `validate` and `schema`.
 
 === "pip"
 
@@ -24,12 +45,35 @@ Install QuickETL with the default backends (DuckDB and Polars):
     pipx install quicketl
     ```
 
+The core install has no pipeline engine. Commands that run pipelines print an error and exit with code 1:
+
+```text
+Error: Pipelines need the pipelines extra. Install it with: pip install 'quicketl[pipelines]'
+```
+
+## Install for Running Pipelines
+
+Install the `pipelines` extra to run pipelines and workflows:
+
+=== "pip"
+
+    ```bash
+    pip install 'quicketl[pipelines]'
+    ```
+
+=== "uv"
+
+    ```bash
+    uv pip install 'quicketl[pipelines]'
+    ```
+
 This gives you:
 
 - DuckDB backend (default)
 - Polars backend
-- CLI tools (`quicketl run`, `quicketl init`, etc.)
-- Python API
+- Ibis and fsspec
+- `quicketl run`, `quicketl workflow` and `quicketl info --backends`
+- The Python API (`from quicketl import Pipeline`)
 
 ## Verify Installation
 
@@ -39,13 +83,13 @@ Check that QuickETL is installed correctly:
 quicketl --version
 ```
 
-You should see output like:
+You should see your installed version, for example:
 
 ```
-quicketl version 0.1.0
+quicketl version 2.0.0
 ```
 
-Check available backends:
+Check available backends (this needs the `pipelines` extra):
 
 ```bash
 quicketl info --backends --check
@@ -53,7 +97,7 @@ quicketl info --backends --check
 
 ## Optional Dependencies
 
-QuickETL uses optional dependencies to keep the base installation lightweight. Install only what you need.
+QuickETL uses optional dependencies to keep the base installation lightweight. Install only what you need. Each extra below includes `pipelines`.
 
 ### Cloud Storage
 
@@ -62,7 +106,7 @@ For reading/writing to cloud storage:
 === "AWS S3"
 
     ```bash
-    pip install quicketl[aws]
+    pip install 'quicketl[aws]'
     ```
 
     Includes `s3fs` and `boto3` for S3 access.
@@ -70,7 +114,7 @@ For reading/writing to cloud storage:
 === "Google Cloud Storage"
 
     ```bash
-    pip install quicketl[gcp]
+    pip install 'quicketl[gcp]'
     ```
 
     Includes `gcsfs` and `google-cloud-storage`.
@@ -78,7 +122,7 @@ For reading/writing to cloud storage:
 === "Azure ADLS"
 
     ```bash
-    pip install quicketl[azure]
+    pip install 'quicketl[azure]'
     ```
 
     Includes `adlfs` and `azure-storage-blob`.
@@ -90,7 +134,7 @@ For distributed or alternative compute engines:
 === "Apache Spark"
 
     ```bash
-    pip install quicketl[spark]
+    pip install 'quicketl[spark]'
     ```
 
     Requires Java 8+ to be installed.
@@ -98,7 +142,7 @@ For distributed or alternative compute engines:
 === "DataFusion"
 
     ```bash
-    pip install quicketl[datafusion]
+    pip install 'quicketl[datafusion]'
     ```
 
     Apache Arrow-native query engine.
@@ -106,7 +150,7 @@ For distributed or alternative compute engines:
 === "pandas"
 
     ```bash
-    pip install quicketl[pandas]
+    pip install 'quicketl[pandas]'
     ```
 
     For pandas-based processing.
@@ -117,13 +161,13 @@ For connecting to cloud data warehouses:
 
 ```bash
 # Snowflake
-pip install quicketl[snowflake]
+pip install 'quicketl[snowflake]'
 
 # Google BigQuery
-pip install quicketl[bigquery]
+pip install 'quicketl[bigquery]'
 
 # Trino
-pip install quicketl[trino]
+pip install 'quicketl[trino]'
 ```
 
 ### Databases
@@ -132,13 +176,13 @@ For connecting to relational databases:
 
 ```bash
 # PostgreSQL
-pip install quicketl[postgres]
+pip install 'quicketl[postgres]'
 
 # MySQL
-pip install quicketl[mysql]
+pip install 'quicketl[mysql]'
 
 # ClickHouse
-pip install quicketl[clickhouse]
+pip install 'quicketl[clickhouse]'
 ```
 
 ### Multiple Extras
@@ -146,7 +190,7 @@ pip install quicketl[clickhouse]
 Install multiple extras at once:
 
 ```bash
-pip install quicketl[aws,spark,snowflake]
+pip install 'quicketl[aws,spark,snowflake]'
 ```
 
 ### Everything
@@ -154,7 +198,7 @@ pip install quicketl[aws,spark,snowflake]
 Install all optional dependencies:
 
 ```bash
-pip install quicketl[all]
+pip install 'quicketl[all]'
 ```
 
 !!! warning "Large Installation"
@@ -169,12 +213,8 @@ For contributing to QuickETL:
 git clone https://github.com/quicketl/quicketl.git
 cd quicketl
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
-
-# Install in development mode
-pip install -e ".[dev,docs]"
+# Create the environment and install the dev tools and the pipelines extra
+uv sync --group dev --extra pipelines
 ```
 
 ## Troubleshooting
@@ -190,7 +230,7 @@ ImportError: No module named 'ibis.backends.snowflake'
 Install the required extra:
 
 ```bash
-pip install quicketl[snowflake]
+pip install 'quicketl[snowflake]'
 ```
 
 ### DuckDB Version Conflicts
@@ -198,7 +238,7 @@ pip install quicketl[snowflake]
 If you have version conflicts with DuckDB:
 
 ```bash
-pip install quicketl --upgrade
+pip install --upgrade 'quicketl[pipelines]'
 ```
 
 ### Spark Java Requirements
@@ -218,3 +258,5 @@ export JAVA_HOME=/path/to/java
 ## Next Steps
 
 Now that QuickETL is installed, continue to the [Quick Start](quickstart.md) to create your first pipeline.
+
+Upgrading from 1.x? Read [Upgrading to 2.0](upgrading.md).
