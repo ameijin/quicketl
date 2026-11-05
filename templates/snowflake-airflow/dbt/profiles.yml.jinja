@@ -1,0 +1,30 @@
+{%- set has_transformer = spec.roles | selectattr("name", "equalto", "transformer") | list -%}
+# One target per environment. Secrets come only from environment variables:
+#   SNOWFLAKE_ACCOUNT        organization-account identifier, such as myorg-myaccount
+#   SNOWFLAKE_USER           the dbt service user
+#   SNOWFLAKE_PRIVATE_KEY    the user's private key (PEM text), for key-pair auth
+{%- if has_transformer %}
+#   DBT_SNOWFLAKE_ROLE       optional; defaults to the platform's TRANSFORMER role
+{%- else %}
+#   DBT_SNOWFLAKE_ROLE       required: platform.yml has no `transformer` role, so
+#                            set this to a role that can write the model layers
+{%- endif %}
+{{ spec.name }}:
+  target: {{ spec.environments[0] }}
+  outputs:
+{%- for env in spec.environments %}
+    {{ env }}:
+      type: snowflake
+      account: "{% raw %}{{ env_var('SNOWFLAKE_ACCOUNT') }}{% endraw %}"
+      user: "{% raw %}{{ env_var('SNOWFLAKE_USER') }}{% endraw %}"
+      private_key: "{% raw %}{{ env_var('SNOWFLAKE_PRIVATE_KEY') }}{% endraw %}"
+{%- if has_transformer %}
+      role: "{% raw %}{{ env_var('DBT_SNOWFLAKE_ROLE', '{% endraw %}{{ spec.name | upper }}_{{ env | upper }}_TRANSFORMER{% raw %}') }}{% endraw %}"
+{%- else %}
+      role: "{% raw %}{{ env_var('DBT_SNOWFLAKE_ROLE') }}{% endraw %}"
+{%- endif %}
+      warehouse: {{ spec.name | upper }}_{{ env | upper }}_WH
+      database: {{ spec.name | upper }}_{{ env | upper }}_{{ (spec.layers[1] if spec.layers | length > 1 else spec.layers[0]) | upper }}
+      schema: PUBLIC
+      threads: 4
+{%- endfor %}

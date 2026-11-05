@@ -1,0 +1,30 @@
+# Dependabot opens weekly pull requests into dev for outdated GitHub Actions
+# and Python dependencies. Minor and patch updates are grouped into one PR per
+# ecosystem; major updates get a PR each, so CI checks them one at a time.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: uv
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+      include: scope
+    open-pull-requests-limit: 5
+    groups:
+      python:
+        patterns: ["*"]
+        update-types: [minor, patch]

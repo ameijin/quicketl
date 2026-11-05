@@ -14,9 +14,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
 
+from quicketl.cli._extras import require_pipelines
 from quicketl.logging import configure_logging
-from quicketl.pipeline.result import WorkflowStatus
-from quicketl.workflow import Workflow
 
 console = Console()
 app = typer.Typer(help="Run and manage workflows")
@@ -122,6 +121,10 @@ def run(
         quicketl workflow run workflows/etl.yml --workers 4
         quicketl workflow run workflows/etl.yml --base-dir /opt/project
     """
+    require_pipelines()
+    from quicketl.pipeline.result import WorkflowStatus
+    from quicketl.workflow import Workflow
+
     configure_logging(level="DEBUG" if verbose else "INFO")
     variables = parse_variables(var or [])
 
@@ -199,6 +202,9 @@ def validate(
         quicketl workflow validate workflows/medallion.yml
         quicketl workflow validate workflows/etl.yml --verbose
     """
+    require_pipelines()
+    from quicketl.workflow import Workflow
+
     try:
         workflow = Workflow.from_yaml(config_file)
 
@@ -268,6 +274,9 @@ def info(
     Examples:
         quicketl workflow info workflows/medallion.yml
     """
+    require_pipelines()
+    from quicketl.workflow import Workflow
+
     try:
         workflow = Workflow.from_yaml(config_file)
 
@@ -375,6 +384,7 @@ def generate(
         quicketl workflow generate workflows/etl.yml --target prefect
         quicketl workflow generate workflows/etl.yml -t airflow --schedule "0 0 * * *"
     """
+    require_pipelines()
     from quicketl.config.loader import load_workflow_config
     from quicketl.workflow.generators import generate_airflow_dag, generate_prefect_flow
 
@@ -414,6 +424,8 @@ def generate(
 
 
 def _display_result(result) -> None:
+    from quicketl.pipeline.result import WorkflowStatus
+
     """Display workflow result in a formatted way."""
     # Status panel
     if result.status == WorkflowStatus.SUCCESS:

@@ -98,3 +98,9 @@ Thumbs.db
 .playwright-mcp/
 
 .claude
+# Terraform runs of the module examples
+terraform/**/.terraform/
+terraform/**/.terraform.lock.hcl
+terraform/**/*.tfstate
+terraform/**/*.tfstate.*
+terraform/**/*.tfvars

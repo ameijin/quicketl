@@ -1,0 +1,10 @@
+# Okta single sign-on (SAML) and user provisioning (SCIM).
+
+module "okta_sso" {
+  source = "git::https://github.com/ameijin/quicketl.git//terraform/modules/snowflake-okta-sso?ref={{ template_ref }}"
+
+  prefix      = local.prefix
+  saml_issuer = var.okta_saml_issuer
+  sso_url     = var.okta_sso_url
+  x509_cert   = var.okta_x509_cert
+}

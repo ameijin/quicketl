@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main, dev]
+  # Every pull request, whatever its base, so stacked PRs are checked too.
   pull_request:
-    branches: [main, dev]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,10 +19,10 @@ jobs:
         python-version: ["3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
         with:
           enable-cache: true
 
@@ -30,7 +30,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --extra pipelines
 
       - name: Run linting
         run: uv run ruff check src/ tests/
@@ -42,13 +42,15 @@ jobs:
         run: uv run pytest --cov=quicketl --cov-report=xml
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         if: matrix.python-version == '3.12'
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
 
-  build:
+  # Render every platform template and check the Terraform it generates.
+  # Needs no Snowflake account: it stops at `terraform validate`.
+  templates:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,14 +63,66 @@ jobs:
       - name: Set up Python
         run: uv python install 3.12
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4.0.1
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+
+      # Lints the GitHub Actions workflows the templates generate. Go verifies
+      # the module against its checksum database.
+      - name: Install actionlint
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Check templates
+        run: uv run python scripts/check_templates.py
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
       - name: Build package
         run: uv build
 
       - name: Check package
         run: uvx twine check dist/*
 
+      # A plain `pip install quicketl` must stay slim: no data stack, core
+      # commands work, and pipeline commands point to the pipelines extra.
+      - name: Check the slim install
+        run: |
+          uv venv /tmp/slim --python 3.12
+          uv pip install --python /tmp/slim/bin/python dist/*.whl
+          /tmp/slim/bin/python -c "import importlib.util as u, sys; heavy = [m for m in ('ibis', 'pyarrow', 'pandas', 'polars', 'duckdb', 'fsspec') if u.find_spec(m)]; sys.exit(f'slim install pulled in: {heavy}' if heavy else 0)"
+          cd "$(mktemp -d)"
+          /tmp/slim/bin/quicketl --help > /dev/null
+          /tmp/slim/bin/quicketl init demo > /dev/null
+          /tmp/slim/bin/quicketl validate demo/pipelines/sample.yml > /dev/null
+          /tmp/slim/bin/quicketl platform init acme > /dev/null
+          /tmp/slim/bin/quicketl platform validate acme/platform.yml > /dev/null
+          /tmp/slim/bin/python -c "import copier"
+          if /tmp/slim/bin/quicketl run demo/pipelines/sample.yml 2> err.txt; then
+            echo "quicketl run should fail without the pipelines extra"
+            exit 1
+          fi
+          grep -F "pip install 'quicketl[pipelines]'" err.txt
+
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dist
           path: dist/

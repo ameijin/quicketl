@@ -1,0 +1,9 @@
+# Network policy allowing only the IP ranges in platform.yml. It is created
+# but NOT attached; see README.md for how to attach it.
+
+module "network_policy" {
+  source = "git::https://github.com/ameijin/quicketl.git//terraform/modules/snowflake-network-policy?ref={{ template_ref }}"
+
+  prefix      = local.prefix
+  allowed_ips = [{% for ip in spec.network.allowed_ips %}"{{ ip }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+}

@@ -272,7 +272,7 @@ Error: No module named 'psycopg2'
 Install the required extra:
 
 ```bash
-pip install quicketl[postgres]
+pip install 'quicketl[postgres]'
 ```
 
 ### Timeout

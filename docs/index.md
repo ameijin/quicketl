@@ -110,17 +110,20 @@ QuickETL provides a **unified API** for data transformation across multiple comp
 ## Installation
 
 ```bash
-# Basic installation (includes DuckDB + Polars)
+# Run pipelines (includes DuckDB + Polars)
+pip install 'quicketl[pipelines]'
+
+# Core only: CLI, init, validate, schema (no pipeline engine)
 pip install quicketl
 
 # With cloud storage support
-pip install quicketl[aws]      # S3
-pip install quicketl[gcp]      # GCS + BigQuery
-pip install quicketl[azure]    # Azure ADLS
+pip install 'quicketl[aws]'      # S3
+pip install 'quicketl[gcp]'      # GCS + BigQuery
+pip install 'quicketl[azure]'    # Azure ADLS
 
 # With additional backends
-pip install quicketl[spark]
-pip install quicketl[snowflake]
+pip install 'quicketl[spark]'
+pip install 'quicketl[snowflake]'
 ```
 
 ---

@@ -9,7 +9,8 @@ QuickETL provides a command-line interface for running and managing pipelines.
 | [`run`](#run) | Execute a pipeline |
 | [`validate`](#validate) | Validate configuration |
 | [`workflow`](#workflow) | Run and manage multi-pipeline workflows |
-| [`init`](#init) | Create new project or pipeline |
+| [`init`](#init) | Start a new platform or pipeline project |
+| [`platform`](#platform) | Work with platform specs (`platform.yml`) |
 | [`info`](#info) | Display version and backend info |
 | [`schema`](#schema) | Output JSON schema for IDE support |
 
@@ -367,7 +368,7 @@ See [Workflow Documentation](../guides/workflows/index.md) for complete workflow
 
 ## init {#init}
 
-Initialize QuickETL in the current directory or create a new project.
+Start a new platform or pipeline project.
 
 ### Usage
 
@@ -375,25 +376,48 @@ Initialize QuickETL in the current directory or create a new project.
 quicketl init [name] [options]
 ```
 
+### Ask what to set up
+
+Run `quicketl init` with no arguments in a terminal and it asks:
+
+1. **What do you want to set up?** `platform` (the default) or `pipeline`.
+2. For `platform`: the folder for `platform.yml` (default: this folder), the platform name (default: from the folder name) and the warehouse (default: `snowflake`). It then writes the same starter spec as [`quicketl platform init`](#platform).
+3. For `pipeline`: a project name. Leave it blank to set up this folder.
+
+Press Enter to accept a default. An answer that is not one of the choices is asked again.
+
+Run with no arguments where there is no terminal (a script or CI job), it stops with exit code 1 and asks for `--kind`.
+
+### Skip the questions
+
+Passing a name or any of `--pipeline`, `--output` or `--force` skips the questions and creates a pipeline project, as in 1.x. `--kind` picks explicitly.
+
 ### Arguments
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `name` | No | Project name. If omitted, initializes in current directory |
+| `name` | No | Project name (or platform folder with `--kind platform`). If omitted, uses the current directory |
 
 ### Options
 
 | Option | Short | Description |
 |--------|-------|-------------|
-| `--pipeline` | `-p` | Create pipeline file only (requires name) |
+| `--kind` | `-k` | `platform` or `pipeline`. Creates it without questions. `--kind platform` uses the `snowflake` warehouse; use `quicketl platform init -w` for another. |
+| `--pipeline` | `-p` | Create pipeline file only (requires name; not with `--kind platform`) |
 | `--output` | `-o` | Output directory (default: current) |
 | `--force` | `-f` | Overwrite existing files |
 
 ### Examples
 
 ```bash
-# Initialize in current directory (existing project)
+# Ask what to set up
 quicketl init
+
+# Platform spec in ./acme, no questions
+quicketl init acme --kind platform
+
+# Pipeline structure in the current directory (existing project)
+quicketl init --kind pipeline
 
 # Create new project in subdirectory
 quicketl init my_project
@@ -446,6 +470,70 @@ The sample pipeline is immediately runnable:
 ```bash
 quicketl run pipelines/sample.yml
 ```
+
+---
+
+## platform {#platform}
+
+Work with platform specs. A platform spec (`platform.yml`) describes the data platform you want. See [Platform Spec](../platform/spec.md). These commands are part of the core install and do not need the `pipelines` extra.
+
+### platform init
+
+Write a commented starter `platform.yml` to edit.
+
+```bash
+quicketl platform init [directory] [options]
+```
+
+`directory` defaults to the current folder and is created if missing.
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--name` | `-n` | Platform name. Default: the folder name, lowercased, with other characters turned into `_` (`acme-data` becomes `acme_data`). |
+| `--warehouse` | `-w` | `snowflake` (default), `databricks` or `redshift_serverless` |
+| `--force` | `-f` | Overwrite an existing `platform.yml`. Without it, the command stops with exit code 1 and leaves the file alone. |
+
+```bash
+quicketl platform init
+quicketl platform init acme-data --warehouse databricks
+```
+
+The starter spec has one domain (`core`), three roles (`loader`, `transformer`, `analyst`), no SSO, no network rules and no sources. Each section has a comment saying what to change.
+
+### platform validate
+
+Check a platform spec and print a short summary.
+
+```bash
+quicketl platform validate [spec_file]
+```
+
+`spec_file` defaults to `platform.yml` in the current folder.
+
+```bash
+quicketl platform validate
+quicketl platform validate examples/06-platform-spec/platform.yml
+```
+
+On success it prints the warehouse, environments, layers, and how many domains, roles and sources the spec defines. On failure it lists each problem and exits with code 1. A problem in one field shows where it is, for example `roles -> 1 -> access -> marts: Input should be 'read' or 'write'`. Problems with references between sections, such as a role naming a layer that does not exist, are checked after every field is valid.
+
+### platform scaffold
+
+Generate a project from a spec. Needs `git`.
+
+```bash
+quicketl platform scaffold [spec_file] [--dest DIR] [--ref TAG] [--template URL_OR_PATH]
+```
+
+### platform update
+
+Apply `platform.yml` and template changes to a generated project. The project must be in git with everything committed.
+
+```bash
+quicketl platform update [project] [--ref TAG]
+```
+
+Both commands are explained, with every option and common errors, in [Scaffold and Update a Platform](../platform/scaffold.md).
 
 ---
 

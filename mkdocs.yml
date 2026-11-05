@@ -143,9 +143,16 @@ nav:
   - Getting Started:
     - getting-started/index.md
     - Installation: getting-started/installation.md
+    - Upgrading to 2.0: getting-started/upgrading.md
     - Quick Start: getting-started/quickstart.md
     - Your First Pipeline: getting-started/first-pipeline.md
     - Project Structure: getting-started/project-structure.md
+
+  - Platform:
+    - Platform Spec: platform/spec.md
+    - Scaffold and Update: platform/scaffold.md
+    - Snowflake and Airflow Template: platform/snowflake-airflow.md
+    - Terraform Modules: platform/terraform-modules.md
 
   - Guides:
     - guides/index.md
@@ -216,6 +223,13 @@ nav:
       - "0007 Assets pulled from git tags": adr/0007-assets-pulled-from-git-tags.md
       - "0008 Project-root relative paths": adr/0008-config-relative-paths.md
       - "0009 Release plan": adr/0009-release-plan.md
+      - "0010 Platform spec": adr/0010-platform-spec.md
+      - "0011 Copier template layout": adr/0011-copier-template-layout.md
+      - "0012 Snowflake template design": adr/0012-snowflake-template-design.md
+      - "0013 dbt project layout": adr/0013-dbt-project-layout.md
+      - "0014 Airflow on MWAA template": adr/0014-airflow-on-mwaa-template.md
+      - "0015 Terraform modules": adr/0015-terraform-modules.md
+      - "0016 Generated CI/CD": adr/0016-generated-cicd.md
 
   - Examples:
     - examples/index.md

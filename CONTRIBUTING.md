@@ -41,12 +41,10 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 git clone https://github.com/YOUR_USERNAME/quicketl.git
 cd quicketl
 
-# Create virtual environment and install dependencies
-uv venv
+# Create the virtual environment and install the dev tools
+# and the pipelines extra (the tests need it)
+uv sync --group dev --extra pipelines
 source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
-
-# Install in development mode with all extras
-uv pip install -e ".[dev,docs]"
 
 # Install pre-commit hooks (if available)
 pre-commit install
@@ -310,6 +308,16 @@ def test_string_without_vars_unchanged(text):
   - Integration modules (generators, airflow): coverage may be lower
 - Tests must pass on all supported Python versions (3.12, 3.13)
 
+### Platform Templates
+
+If you change `copier.yml`, anything in `templates/`, or a module in `terraform/modules/`, also run:
+
+```bash
+uv run python scripts/check_templates.py
+```
+
+It validates each module's `examples/basic/`, then renders each template (pointing its module sources at your checkout) and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It also runs `dbt parse` and `dbt ls` (through `uvx`, with placeholder credentials) and checks that every generated model builds in a domain schema. Then it installs Airflow 3.3.1 from the generated `requirements.txt` into a scratch virtual environment and loads the DAGs with `DagBag`. It needs `git`, `terraform` and `uv` installed and downloads the Snowflake provider and dbt. It never connects to Snowflake. CI runs it in the `templates` job.
+
 ### Test Structure
 
 ```
@@ -365,7 +373,7 @@ class TestFilterTransform:
 
 ```bash
 # Install docs dependencies
-uv pip install -e ".[docs]"
+uv sync --group dev --extra pipelines --extra docs
 
 # Serve docs locally with hot reload
 mkdocs serve
@@ -426,6 +434,8 @@ def aggregate(
 3. Ensure all tests pass locally
 4. Submit the pull request
 
+CI runs on every pull request, whatever branch it targets, so a PR stacked on another feature branch is checked too. It also runs on every push to `main` and `dev`.
+
 ### Pull Request Checklist
 
 - [ ] Code follows project style guidelines
@@ -446,6 +456,18 @@ When your PR is merged to `main`, the release workflow automatically:
 5. Publishes the package to PyPI
 
 **No manual release steps required!** Just use proper commit messages.
+
+### Dependency Updates
+
+Dependabot (`.github/dependabot.yml`) opens pull requests into `dev` every week for outdated GitHub Actions and Python dependencies. Minor and patch updates come grouped in one PR per ecosystem; each major update gets its own PR. Merge them once CI passes.
+
+Workflows pin every action to a full commit SHA, with the version as a comment, so a moved or hijacked tag cannot change what runs:
+
+```yaml
+- uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+```
+
+When you add an action, pin it the same way. `git ls-remote --tags https://github.com/<owner>/<repo>.git` lists each tag's SHA; for annotated tags use the line ending in `^{}`.
 
 ## Style Guide
 

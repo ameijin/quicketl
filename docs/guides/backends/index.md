@@ -6,8 +6,8 @@ QuickETL supports multiple compute backends through Ibis. Choose the right backe
 
 | Backend | Type | Install | Best For |
 |---------|------|---------|----------|
-| [DuckDB](local.md#duckdb) | Local | Default | Analytics, small-medium data |
-| [Polars](local.md#polars) | Local | Default | Fast DataFrames |
+| [DuckDB](local.md#duckdb) | Local | `quicketl[pipelines]` | Analytics, small-medium data |
+| [Polars](local.md#polars) | Local | `quicketl[pipelines]` | Fast DataFrames |
 | [DataFusion](local.md#datafusion) | Local | `quicketl[datafusion]` | Arrow-native queries |
 | [Spark](distributed.md) | Distributed | `quicketl[spark]` | Large-scale processing |
 | [pandas](local.md#pandas) | Local | `quicketl[pandas]` | Legacy compatibility |
@@ -92,19 +92,19 @@ Available Backends
 
 ## Installation
 
-Install additional backends:
+Install additional backends. Every backend extra includes the `pipelines` extra, so you do not need to install both. DuckDB and Polars come with `quicketl[pipelines]`.
 
 ```bash
 # Individual backends
-pip install quicketl[spark]
-pip install quicketl[snowflake]
-pip install quicketl[bigquery]
+pip install 'quicketl[spark]'
+pip install 'quicketl[snowflake]'
+pip install 'quicketl[bigquery]'
 
 # Multiple backends
-pip install quicketl[spark,snowflake,bigquery]
+pip install 'quicketl[spark,snowflake,bigquery]'
 
 # All backends
-pip install quicketl[all]
+pip install 'quicketl[all]'
 ```
 
 ## Backend Parity

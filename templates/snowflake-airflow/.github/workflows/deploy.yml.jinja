@@ -1,0 +1,195 @@
+name: Deploy
+
+# On every push to main:
+#   1. plan Terraform and show the plan in the run summary;
+#   2. if the plan changes anything, apply exactly that plan once a reviewer
+#      approves the `terraform` environment;
+#   3. copy the DAGs and the dbt project to each MWAA environment's S3 bucket,
+#      one environment at a time, in the order platform.yml lists them.
+# See README.md, "CI/CD", for the variables, secrets and environments to set.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one halfway through.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  TERRAFORM_VERSION: "1.17.1"
+  TF_IN_AUTOMATION: "1"
+
+jobs:
+  plan:
+    name: terraform plan
+    runs-on: ubuntu-latest
+    environment: terraform-plan
+    permissions:
+      contents: read
+      id-token: write # to assume the AWS role through OIDC
+    outputs:{% raw %}
+      changes: ${{ steps.plan.outputs.changes }}{% endraw %}
+    defaults:
+      run:
+        working-directory: terraform
+    env:{% raw %}
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+      SNOWFLAKE_ORGANIZATION_NAME: ${{ vars.SNOWFLAKE_ORGANIZATION_NAME }}
+      SNOWFLAKE_ACCOUNT_NAME: ${{ vars.SNOWFLAKE_ACCOUNT_NAME }}
+      SNOWFLAKE_USER: ${{ vars.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}{% endraw %}
+{%- if spec.sources %}{% raw %}
+      TF_VAR_storage_aws_role_arn: ${{ vars.STORAGE_AWS_ROLE_ARN }}{% endraw %}
+{%- endif %}
+{%- if spec.sso.provider == "okta" %}{% raw %}
+      TF_VAR_okta_saml_issuer: ${{ vars.OKTA_SAML_ISSUER }}
+      TF_VAR_okta_sso_url: ${{ vars.OKTA_SSO_URL }}
+      TF_VAR_okta_x509_cert: ${{ secrets.OKTA_X509_CERT }}{% endraw %}
+{%- endif %}
+    steps:
+      - name: Check that remote state is set up
+        run: |
+          if [ -z "$TF_STATE_BUCKET" ] || [ -z "$TF_STATE_REGION" ]; then
+            echo "::error::Set the repository variables TF_STATE_BUCKET and TF_STATE_REGION (README.md, CI/CD). Deploying without shared state would try to recreate everything."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:{% raw %}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}{% endraw %}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:{% raw %}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.TF_STATE_REGION }}{% endraw %}
+      - name: terraform init
+        run: >-
+          terraform init -input=false
+          -backend-config="bucket=$TF_STATE_BUCKET"
+          -backend-config="key={{ spec.name }}/terraform.tfstate"
+          -backend-config="region=$TF_STATE_REGION"
+          -backend-config="use_lockfile=true"
+      - name: terraform plan
+        id: plan
+        run: |
+          # -detailed-exitcode: 0 means no changes, 2 means changes, 1 means error.
+          set +e
+          terraform plan -input=false -lock-timeout=5m -no-color -detailed-exitcode -out plan.tfplan
+          code=$?
+          set -e
+          if [ "$code" -eq 1 ]; then exit 1; fi
+          if [ "$code" -eq 2 ]; then changes=true; else changes=false; fi
+          echo "changes=$changes" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Terraform plan"
+            echo '```'
+            terraform show -no-color plan.tfplan
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      # The saved plan holds every value in plain text, including secrets such
+      # as the Okta certificate, so it is kept for one day only.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.plan.outputs.changes == 'true'
+        with:
+          name: terraform-plan
+          path: |
+            terraform/plan.tfplan
+            terraform/.terraform.lock.hcl
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  apply:
+    name: terraform apply
+    needs: plan
+    if: needs.plan.outputs.changes == 'true'
+    runs-on: ubuntu-latest
+    # Add required reviewers to this environment so nothing applies unread.
+    environment: terraform
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: terraform
+    env:{% raw %}
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+      SNOWFLAKE_ORGANIZATION_NAME: ${{ vars.SNOWFLAKE_ORGANIZATION_NAME }}
+      SNOWFLAKE_ACCOUNT_NAME: ${{ vars.SNOWFLAKE_ACCOUNT_NAME }}
+      SNOWFLAKE_USER: ${{ vars.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}{% endraw %}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # The plan and the provider lock file it was made with.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: terraform-plan
+          path: terraform
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:{% raw %}
+          terraform_version: ${{ env.TERRAFORM_VERSION }}{% endraw %}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:{% raw %}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.TF_STATE_REGION }}{% endraw %}
+      - name: terraform init
+        run: >-
+          terraform init -input=false
+          -backend-config="bucket=$TF_STATE_BUCKET"
+          -backend-config="key={{ spec.name }}/terraform.tfstate"
+          -backend-config="region=$TF_STATE_REGION"
+          -backend-config="use_lockfile=true"
+      # Applies the reviewed plan, not a new one. If the state changed since
+      # the plan, Terraform refuses and the run must be started again.
+      - run: terraform apply -input=false -lock-timeout=5m plan.tfplan
+
+  mwaa:
+    name: MWAA
+    needs: [plan, apply]
+    # Runs after apply, or straight after plan when there was nothing to apply.
+    if: {% raw %}${{ !failure() && !cancelled() }}{% endraw %}
+    runs-on: ubuntu-latest
+    strategy:
+      # One environment at a time; a failure stops the ones after it.
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        environment: [{{ spec.environments | map("tojson") | join(", ") }}]
+    environment: {% raw %}${{ matrix.environment }}{% endraw %}
+    permissions:
+      contents: read
+      id-token: write
+    env:{% raw %}
+      MWAA_BUCKET: ${{ vars.MWAA_BUCKET }}{% endraw %}
+    steps:
+      - name: Check that the environment is set up
+        run: |
+          if [ -z "$MWAA_BUCKET" ]; then
+            echo "::error::Set the variable MWAA_BUCKET on this GitHub environment (README.md, CI/CD)."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:{% raw %}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}{% endraw %}
+      # --delete removes DAGs and models deleted from this repository. The
+      # first sync leaves dags/dbt/ alone; the second one owns it.
+      - name: Copy the DAGs and the dbt project
+        run: |
+          aws s3 sync airflow/dags/ "s3://$MWAA_BUCKET/dags/" --delete \
+            --exclude "dbt/*" --exclude "*__pycache__/*"
+          aws s3 sync dbt/ "s3://$MWAA_BUCKET/dags/dbt/" --delete \
+            --exclude "target/*" --exclude "logs/*" --exclude "dbt_packages/*"

@@ -49,7 +49,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install QuickETL
-        run: pip install quicketl[duckdb]
+        run: pip install 'quicketl[pipelines]'
 
       - name: Validate all pipelines
         run: |

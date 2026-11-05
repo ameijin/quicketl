@@ -1,8 +1,8 @@
 # 0002: Platform-first default with a slim core
 
-This record explains the planned 2.0 install layout: a small default install for platform work, with pipelines as an opt-in extra. Read it to learn why `pip install quicketl` will change.
+This record explains the 2.0 install layout: a small default install for platform work, with pipelines as an opt-in extra. Read it to learn why `pip install quicketl` changes in 2.0.
 
-**Status:** Accepted (planned for 2.0, not yet implemented). Date: 2026-10-30.
+**Status:** Accepted. The slim core and the `[pipelines]` extra are implemented on the 2.0 branch (unreleased). Copier and the platform commands are implemented on the same branch. Copier adds about 8 MB, and a core install measures about 33 MB (see [0011](0011-copier-template-layout.md)). sqlglot is not in core yet; it arrives with `migrate convert`. Date: 2026-10-30.
 
 ## Context
 
@@ -20,8 +20,8 @@ The size of Copier (the template tool) has not been measured yet.
 We will make the platform experience the default and move pipelines into an extra.
 
 ```text
-pip install quicketl              # core: CLI, platform scaffolding, migrate convert
-pip install quicketl[pipelines]   # adds Ibis, DuckDB, Polars, pyarrow, fsspec: run, validate, workflow, profile, checks, migrate reconcile
+pip install quicketl              # core: CLI, init, validate, schema, platform scaffolding, migrate convert
+pip install quicketl[pipelines]   # adds Ibis, DuckDB, Polars, pyarrow, fsspec: run, workflow, profile, checks, migrate reconcile
 pip install quicketl[snowflake]   # backend extras include [pipelines]
 pip install quicketl[all]         # everything
 ```

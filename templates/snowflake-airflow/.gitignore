@@ -1,0 +1,16 @@
+# Terraform: provider cache, local state, saved plans and variable files
+# (variable files can hold secrets such as the Okta certificate).
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+crash.log
+
+# dbt: build output, installed packages and logs
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Python caches from running the DAG locally
+__pycache__/

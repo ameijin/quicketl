@@ -2,19 +2,26 @@
 
 An Architecture Decision Record (ADR) is a short page that records one design decision: why we made it, what we chose, and what it costs. Read these pages when you want to know why quicketl is built the way it is.
 
-All nine records below were agreed on 2026-10-30. Records marked "planned for 2.0" describe the target design. The code does not do this yet.
+All records below were agreed on 2026-10-30. Records marked "planned for 2.0" describe the target design. The code does not do this yet.
 
 | ADR | Decision | Status |
 |-----|----------|--------|
-| [0001](0001-single-repo-single-tool.md) | One repo, one tool: "quick data engineering" | Accepted (planned for 2.0, not yet implemented) |
-| [0002](0002-platform-first-slim-core.md) | Platform-first default with a slim core and a `[pipelines]` extra | Accepted (planned for 2.0, not yet implemented) |
-| [0003](0003-init-wizard.md) | `quicketl init` becomes a wizard | Accepted (planned for 2.0, not yet implemented) |
+| [0001](0001-single-repo-single-tool.md) | One repo, one tool: "quick data engineering" | Accepted (slim core, `[pipelines]` and the platform commands implemented on the 2.0 branch) |
+| [0002](0002-platform-first-slim-core.md) | Platform-first default with a slim core and a `[pipelines]` extra | Accepted (implemented on the 2.0 branch) |
+| [0003](0003-init-wizard.md) | `quicketl init` becomes a wizard | Accepted, amended (implemented on the 2.0 branch) |
 | [0004](0004-airflow-on-mwaa.md) | Airflow on MWAA is the default orchestrator | Accepted |
 | [0005](0005-first-reference-stack.md) | First reference stack: Snowflake, Terraform, dbt and Airflow | Accepted |
-| [0006](0006-native-loaders-and-dbt-tests.md) | Generated projects use native loaders and dbt tests | Accepted (planned for 2.0, not yet implemented) |
-| [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (planned for 2.0, not yet implemented) |
+| [0006](0006-native-loaders-and-dbt-tests.md) | Generated projects use native loaders and dbt tests | Accepted (implemented for Snowflake on the 2.0 branch) |
+| [0007](0007-assets-pulled-from-git-tags.md) | Templates, Terraform modules and the dbt package are pulled from git tags | Accepted (templates and Terraform modules implemented on the 2.0 branch; the dbt package planned) |
 | [0008](0008-config-relative-paths.md) | Project-root relative paths with a `--base-dir` override | Accepted (ships in 1.7.0) |
 | [0009](0009-release-plan.md) | Release plan: 1.7.0 and 2.0.0, released through a `dev` branch | Accepted |
+| [0010](0010-platform-spec.md) | A small, strict platform spec (`platform.yml`) | Accepted (implemented on the 2.0 branch) |
+| [0011](0011-copier-template-layout.md) | One Copier configuration picks the template from the spec | Accepted (implemented on the 2.0 branch) |
+| [0012](0012-snowflake-template-design.md) | Snowflake template layout and role model | Accepted, partly superseded by 0015 (not yet planned against a live account) |
+| [0013](0013-dbt-project-layout.md) | dbt project layout in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet built against a live account) |
+| [0014](0014-airflow-on-mwaa-template.md) | Airflow DAG and MWAA setup in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet run on MWAA) |
+| [0015](0015-terraform-modules.md) | Terraform lives in modules that templates call | Accepted (implemented on the 2.0 branch) |
+| [0016](0016-generated-cicd.md) | Generated projects ship GitHub Actions CI/CD and S3 state | Accepted (implemented on the 2.0 branch; not yet run against live accounts) |
 
 ## Record format
 
