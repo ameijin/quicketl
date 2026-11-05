@@ -114,6 +114,12 @@ class TestCoreCommandsWorkWithoutPipelines:
 
         assert result.returncode == 0, result.stdout + result.stderr
 
+    def test_init_kind_platform(self, temp_dir: Path):
+        result = run_slim("init", "acme", "--kind", "platform", "-o", str(temp_dir), cwd=temp_dir)
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert (temp_dir / "acme" / "platform.yml").exists()
+
     def test_init(self, temp_dir: Path):
         result = run_slim("init", "proj", "-o", str(temp_dir), cwd=temp_dir)
 

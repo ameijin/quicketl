@@ -2,7 +2,7 @@
 
 This record explains why quicketl is one repository and one tool, now described as "quick data engineering". Read it to understand why platform features live next to the ETL code.
 
-**Status:** Accepted (planned for 2.0, not yet implemented). Date: 2026-10-30.
+**Status:** Accepted (implemented on the 2.0 branch: one package with the slim core, the `[pipelines]` extra and the platform commands). Date: 2026-10-30.
 
 This record supersedes the earlier idea of a separate `quickplatform` repository.
 

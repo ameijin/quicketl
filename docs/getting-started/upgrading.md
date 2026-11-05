@@ -51,6 +51,18 @@ Any extra that only works inside a pipeline includes `pipelines`. If you already
 
 These extras do not include `pipelines`: `secrets-aws`, `secrets-azure`, `opentelemetry`, `openlineage` and `docs`. If you use only these, add `pipelines` next to them.
 
+## `quicketl init` asks what to set up
+
+In 1.x, a bare `quicketl init` created a pipeline project in the current folder. In 2.0, run in a terminal, it asks what you want to set up, and a new platform is the default.
+
+Nothing changes when you pass an argument or flag. `quicketl init my_project`, `quicketl init -o DIR`, `quicketl init NAME -p` and `--force` work as before, without questions.
+
+A bare `quicketl init` in a script or CI job, where there is no terminal, now stops with exit code 1 and asks for `--kind`. Change it to:
+
+```bash
+quicketl init --kind pipeline
+```
+
 ## Update requirements files and CI
 
 Change the line that names QuickETL:
