@@ -94,6 +94,12 @@ class LineageContext:
             name: Dataset name.
             schema: Optional column schema.
             column_lineage: Optional column lineage {output_col: [input_cols]}.
+                Input columns are attributed to the input dataset, so exactly
+                one must have been added with add_input_dataset() first.
+
+        Raises:
+            ValueError: If column_lineage is given and there is not exactly
+                one input dataset.
         """
         facets: dict[str, Any] = {}
 
@@ -105,24 +111,29 @@ class LineageContext:
             facets["schema"] = schema_dataset.SchemaDatasetFacet(fields=fields)
 
         if column_lineage:
-            col_lineage_fields = []
-            for _output_col, input_cols in column_lineage.items():
-                input_fields = [
-                    column_lineage_dataset.InputField(
-                        namespace=self.namespace,
-                        name=self.job_name,
-                        field=col,
-                    )
-                    for col in input_cols
-                ]
-                col_lineage_fields.append(
-                    column_lineage_dataset.ColumnLineageDatasetFacetFieldsAdditional(
-                        inputFields=input_fields,
-                        transformationType="",
-                        transformationDescription="",
-                    )
+            # Input columns must name the dataset they come from. That is only
+            # unambiguous when exactly one input dataset has been added.
+            if len(self._inputs) != 1:
+                raise ValueError(
+                    "column_lineage needs exactly one input dataset added with "
+                    f"add_input_dataset() first, found {len(self._inputs)}"
                 )
-            # Note: Actual column lineage facet requires more setup
+            source = self._inputs[0]
+            facets["columnLineage"] = column_lineage_dataset.ColumnLineageDatasetFacet(
+                fields={
+                    output_col: column_lineage_dataset.Fields(
+                        inputFields=[
+                            column_lineage_dataset.InputField(
+                                namespace=source.namespace,
+                                name=source.name,
+                                field=col,
+                            )
+                            for col in input_cols
+                        ]
+                    )
+                    for output_col, input_cols in column_lineage.items()
+                }
+            )
 
         dataset = Dataset(namespace=namespace, name=name, facets=facets)
         self._outputs.append(dataset)

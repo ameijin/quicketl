@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pytest
 
 
@@ -25,7 +26,7 @@ class TestEmbedTransform:
         from quicketl.transforms.ai.embed import EmbedTransform
 
         # Mock the OpenAI client
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI") as mock_openai:
+        with patch("openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
 
@@ -55,12 +56,11 @@ class TestEmbedTransform:
 
         from quicketl.transforms.ai.embed import EmbedTransform
 
-        with patch(
-            "quicketl.transforms.ai.providers.huggingface.SentenceTransformer"
-        ) as mock_st:
+        with patch("sentence_transformers.SentenceTransformer") as mock_st:
             mock_model = MagicMock()
             mock_st.return_value = mock_model
-            mock_model.encode.return_value = [[0.1, 0.2, 0.3]]
+            # SentenceTransformer.encode returns a numpy array, not a list
+            mock_model.encode.return_value = np.array([[0.1, 0.2, 0.3]])
 
             transform = EmbedTransform(
                 provider="huggingface",
@@ -79,7 +79,7 @@ class TestEmbedTransform:
 
         from quicketl.transforms.ai.embed import EmbedTransform
 
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI") as mock_openai:
+        with patch("openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
 
@@ -116,7 +116,7 @@ class TestEmbedTransform:
 
         from quicketl.transforms.ai.embed import EmbedTransform
 
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI") as mock_openai:
+        with patch("openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
 
@@ -151,7 +151,7 @@ class TestEmbedTransform:
 
         from quicketl.transforms.ai.embed import EmbedTransform
 
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI") as mock_openai:
+        with patch("openai.OpenAI") as mock_openai:
             mock_client = MagicMock()
             mock_openai.return_value = mock_client
 
@@ -184,7 +184,7 @@ class TestEmbeddingProviders:
 
         from quicketl.transforms.ai.providers.openai import OpenAIEmbeddingProvider
 
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI") as mock_openai:
+        with patch("openai.OpenAI") as mock_openai:
             provider = OpenAIEmbeddingProvider(
                 model="text-embedding-3-small",
                 api_key="test-key",
@@ -199,7 +199,7 @@ class TestEmbeddingProviders:
 
         from quicketl.transforms.ai.providers import get_provider
 
-        with patch("quicketl.transforms.ai.providers.openai.OpenAI"):
+        with patch("openai.OpenAI"):
             provider = get_provider(
                 provider="openai",
                 model="text-embedding-3-small",
@@ -224,9 +224,7 @@ class TestEmbeddingProviders:
             HuggingFaceEmbeddingProvider,
         )
 
-        with patch(
-            "quicketl.transforms.ai.providers.huggingface.SentenceTransformer"
-        ) as mock_st:
+        with patch("sentence_transformers.SentenceTransformer") as mock_st:
             provider = HuggingFaceEmbeddingProvider(model="all-MiniLM-L6-v2")
 
             mock_st.assert_called_once_with("all-MiniLM-L6-v2")

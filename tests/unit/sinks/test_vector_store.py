@@ -69,7 +69,7 @@ class TestPineconeSink:
 
         from quicketl.sinks.vector import PineconeSink
 
-        with patch("quicketl.sinks.vector.pinecone.Pinecone") as mock_pc:
+        with patch("pinecone.Pinecone") as mock_pc:
             mock_index = MagicMock()
             mock_pc.return_value.Index.return_value = mock_index
 
@@ -100,7 +100,7 @@ class TestPineconeSink:
 
         from quicketl.sinks.vector import PineconeSink
 
-        with patch("quicketl.sinks.vector.pinecone.Pinecone") as mock_pc:
+        with patch("pinecone.Pinecone") as mock_pc:
             mock_index = MagicMock()
             mock_pc.return_value.Index.return_value = mock_index
 
@@ -138,10 +138,10 @@ class TestPgVectorSink:
 
         from quicketl.sinks.vector import PgVectorSink
 
-        with patch("quicketl.sinks.vector.pgvector.psycopg2") as mock_psycopg2:
+        with patch("psycopg2.connect") as mock_connect:
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
-            mock_psycopg2.connect.return_value = mock_conn
+            mock_connect.return_value = mock_conn
             mock_conn.cursor.return_value = mock_cursor
 
             sink = PgVectorSink(
@@ -168,10 +168,10 @@ class TestPgVectorSink:
 
         from quicketl.sinks.vector import PgVectorSink
 
-        with patch("quicketl.sinks.vector.pgvector.psycopg2") as mock_psycopg2:
+        with patch("psycopg2.connect") as mock_connect:
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
-            mock_psycopg2.connect.return_value = mock_conn
+            mock_connect.return_value = mock_conn
             mock_conn.cursor.return_value = mock_cursor
 
             sink = PgVectorSink(
@@ -200,7 +200,7 @@ class TestQdrantSink:
 
         from quicketl.sinks.vector import QdrantSink
 
-        with patch("quicketl.sinks.vector.qdrant.QdrantClient") as mock_client_cls:
+        with patch("qdrant_client.QdrantClient") as mock_client_cls:
             mock_client = MagicMock()
             mock_client_cls.return_value = mock_client
 
