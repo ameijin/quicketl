@@ -10,7 +10,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
-import click
 import typer
 from rich.console import Console
 
@@ -289,13 +288,26 @@ def _is_interactive() -> bool:
     return sys.stdin.isatty()
 
 
+def _ask_choice(text: str, choices: list[str], default: str) -> str:
+    """Prompt until the answer is one of `choices`, listing them in the question.
+
+    Validated here rather than with click.Choice: typer 0.27 stopped depending
+    on click, so quicketl must not import it.
+    """
+    question = f"{text} ({', '.join(choices)})"
+    while True:
+        answer = typer.prompt(question, default=default)
+        if answer in choices:
+            return answer
+        console.print(f"[red]Error:[/red] {answer!r} is not one of {', '.join(choices)}.")
+
+
 def _wizard() -> None:
     """Ask what to set up, then create it in the current folder."""
-    choice = typer.prompt(
-        "What do you want to set up? (platform, pipeline)",
-        type=click.Choice([k.value for k in InitKind]),
+    choice = _ask_choice(
+        "What do you want to set up?",
+        [k.value for k in InitKind],
         default=InitKind.platform.value,
-        show_choices=False,
     )
     base_path = Path.cwd()
 
@@ -305,9 +317,9 @@ def _wizard() -> None:
         platform_name = typer.prompt(
             "Platform name", default=default_platform_name(directory.resolve().name)
         )
-        warehouse = typer.prompt(
+        warehouse = _ask_choice(
             "Warehouse",
-            type=click.Choice([w.value for w in WarehouseChoice]),
+            [w.value for w in WarehouseChoice],
             default=WarehouseChoice.snowflake.value,
         )
         write_starter_spec(directory, platform_name, WarehouseChoice(warehouse), force=False)
