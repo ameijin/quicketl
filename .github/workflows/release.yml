@@ -26,27 +26,27 @@ jobs:
     steps:
       - name: Generate release token
         id: generate-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         with:
           app-id: ${{ secrets.RELEASER_APP_ID }}
           private-key: ${{ secrets.RELEASER_APP_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_branch }}
           token: ${{ steps.generate-token.outputs.token }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
 
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Python Semantic Release
         id: release
-        uses: python-semantic-release/python-semantic-release@v10.2.0
+        uses: python-semantic-release/python-semantic-release@2896129e02bb7809d2cf0c1b8e9e795ee27acbcf # v10.2.0
         with:
           github_token: ${{ steps.generate-token.outputs.token }}
           build: "false"
@@ -57,13 +57,13 @@ jobs:
 
       - name: Publish to PyPI
         if: steps.release.outputs.released == 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           packages-dir: dist/
 
       - name: Publish to GitHub Releases
         if: steps.release.outputs.released == 'true'
-        uses: python-semantic-release/publish-action@v10.2.0
+        uses: python-semantic-release/publish-action@b717f67f7e7e9f709357bce5a542846503ce46ec # v10.2.0
         with:
           github_token: ${{ steps.generate-token.outputs.token }}
           tag: ${{ steps.release.outputs.tag }}
