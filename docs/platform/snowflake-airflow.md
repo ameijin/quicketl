@@ -1,9 +1,12 @@
 # Snowflake and Airflow Template
 
-This template turns a [platform spec](spec.md) with `warehouse.type: snowflake` into a project you can apply with Terraform. Read this page to learn what it creates, how the roles fit together, and what you still do by hand.
+This template turns a [platform spec](spec.md) with `warehouse.type: snowflake` into a project you can apply with Terraform and build with dbt. Read this page to learn what it creates, how the roles fit together, and what you still do by hand.
 
 !!! note "What the template generates today"
-    The `terraform/` folder: databases, schemas, warehouses, roles and grants, plus a network policy, S3 storage integration and Okta sign-in when the spec asks for them. dbt and Airflow (MWAA) code arrive in later template versions.
+    - `terraform/`: databases, schemas, warehouses, roles and grants, plus a network policy, S3 storage integration and Okta sign-in when the spec asks for them.
+    - `dbt/`: a dbt project that builds into those databases, with the spec's sources and one example model.
+
+    Airflow (MWAA) code arrives in a later template version.
 
 ## What gets created
 
@@ -63,14 +66,42 @@ The generated `README.md` has the exact steps for your spec. In short:
 - **Okta SCIM token.** Generate it with `SYSTEM$GENERATE_SCIM_ACCESS_TOKEN` and paste it into the Okta app.
 - **Grant functional roles to users**, or let Okta provisioning do it.
 
+## The dbt project
+
+`dbt/` targets dbt Core 1.12 with `dbt-snowflake` 1.12, installed from PyPI. It has one dbt target per environment in `profiles.yml`, with credentials from environment variables only.
+
+**A model's folder decides where it builds.** Two macros, `generate_database_name` and `generate_schema_name`, read the layout from `vars` in `dbt_project.yml`:
+
+| Model file | Builds in |
+|------------|-----------|
+| `models/staging/sales/stg_sales__orders.sql` | `ACME_DATA_<TARGET>_STAGING.SALES` |
+| `models/marts/finance/fct_invoices.sql` | `ACME_DATA_<TARGET>_MARTS.FINANCE` |
+| Anywhere else | The target database's `PUBLIC` schema, which the Terraform roles cannot write to |
+
+So keep every model in `models/<layer>/<domain>/`. The landing layer (the first in `layers`, usually `raw`) is for loaded data only; dbt reads it through sources.
+
+**What is generated:**
+
+- `models/_sources.yml`: one dbt source per domain that has sources, pointing at the landing layer, one table per source.
+- One example model, in `models/<second layer>/<domain>/`, selecting from the first source.
+- `profiles.yml`: each target uses its environment's warehouse and, when the spec has a `transformer` role, defaults to that role. Without one, set `DBT_SNOWFLAKE_ROLE`.
+
+Teams add their own models and tests from there. Loading the landing tables from S3 is not generated yet; it comes with the Airflow part.
+
 ## Provider version and preview features
 
 The template pins the Snowflake provider to `snowflakedb/snowflake ~> 2.22`. In 2.22, network rules and the AWS storage integration are preview features, so the generated `providers.tf` turns them on only when the spec uses them. Preview features can change in minor provider releases.
 
 ## How the template is checked
 
-`scripts/check_templates.py` renders the template for a full spec and a minimal one, then runs `terraform fmt -check`, `terraform init` and `terraform validate`. It also checks every attribute reference against the provider schema, because `terraform validate` does not check references made through `for_each` keys. CI runs it in the `templates` job.
+`scripts/check_templates.py` renders the template for a full spec and a minimal one, then:
 
-It has not been planned or applied against a live Snowflake account yet. Run `terraform plan` against a sandbox account before using it for real.
+- runs `terraform fmt -check`, `terraform init` and `terraform validate`;
+- checks every attribute reference against the provider schema, because `terraform validate` does not check references made through `for_each` keys;
+- runs `dbt parse` and `dbt ls` with placeholder credentials, and fails if any generated model would build in `PUBLIC`.
 
-The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md).
+CI runs it in the `templates` job. None of this connects to Snowflake.
+
+It has not been planned, applied or built against a live Snowflake account yet. Run `terraform plan` and `dbt build` against a sandbox account before using it for real.
+
+The design choices are recorded in [ADR 0012](../adr/0012-snowflake-template-design.md) (Terraform) and [ADR 0013](../adr/0013-dbt-project-layout.md) (dbt).

@@ -18,6 +18,7 @@ All records below were agreed on 2026-10-30. Records marked "planned for 2.0" de
 | [0010](0010-platform-spec.md) | A small, strict platform spec (`platform.yml`) | Accepted (implemented on the 2.0 branch) |
 | [0011](0011-copier-template-layout.md) | One Copier configuration picks the template from the spec | Accepted (implemented on the 2.0 branch) |
 | [0012](0012-snowflake-template-design.md) | Snowflake template layout and role model | Accepted (implemented on the 2.0 branch; not yet planned against a live account) |
+| [0013](0013-dbt-project-layout.md) | dbt project layout in the Snowflake template | Accepted (implemented on the 2.0 branch; not yet built against a live account) |
 
 ## Record format
 
