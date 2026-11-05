@@ -3,7 +3,7 @@
 This template turns a [platform spec](spec.md) with `warehouse.type: snowflake` into a project you can apply with Terraform and build with dbt. Read this page to learn what it creates, how the roles fit together, and what you still do by hand.
 
 !!! note "What the template generates today"
-    - `terraform/`: databases, schemas, warehouses, roles and grants, plus a network policy, S3 storage integration and Okta sign-in when the spec asks for them.
+    - `terraform/`: databases, schemas, warehouses, roles and grants, plus a network policy, S3 storage integration and Okta sign-in when the spec asks for them. The resources come from quicketl's [Terraform modules](terraform-modules.md), pinned to the tag the project was scaffolded from.
     - `dbt/`: a dbt project that builds into those databases, with the spec's sources and one example model.
 
     - `airflow/`: a DAG for Amazon MWAA (Airflow 3.3.1) that loads each source from S3 and then runs `dbt build`, plus `requirements.txt` and a startup script that installs dbt in its own virtual environment.

@@ -300,13 +300,13 @@ def test_string_without_vars_unchanged(text):
 
 ### Platform Templates
 
-If you change `copier.yml` or anything in `templates/`, also run:
+If you change `copier.yml`, anything in `templates/`, or a module in `terraform/modules/`, also run:
 
 ```bash
 uv run python scripts/check_templates.py
 ```
 
-It renders each template and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It also runs `dbt parse` and `dbt ls` (through `uvx`, with placeholder credentials) and checks that every generated model builds in a domain schema. Then it installs Airflow 3.3.1 from the generated `requirements.txt` into a scratch virtual environment and loads the DAGs with `DagBag`. It needs `git`, `terraform` and `uv` installed and downloads the Snowflake provider and dbt. It never connects to Snowflake. CI runs it in the `templates` job.
+It validates each module's `examples/basic/`, then renders each template (pointing its module sources at your checkout) and runs `terraform fmt -check`, `terraform init` and `terraform validate` on the result, then checks attribute references against the provider schema. It also runs `dbt parse` and `dbt ls` (through `uvx`, with placeholder credentials) and checks that every generated model builds in a domain schema. Then it installs Airflow 3.3.1 from the generated `requirements.txt` into a scratch virtual environment and loads the DAGs with `DagBag`. It needs `git`, `terraform` and `uv` installed and downloads the Snowflake provider and dbt. It never connects to Snowflake. CI runs it in the `templates` job.
 
 ### Test Structure
 

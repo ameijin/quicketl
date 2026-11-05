@@ -48,8 +48,10 @@ def _check_template(spec: PlatformSpec) -> None:
         raise ScaffoldError(f"No template yet for {name}. Available templates: {available}")
 
 
-def _answers(spec: PlatformSpec) -> dict[str, Any]:
-    return {"spec": spec.model_dump(mode="json")}
+def _answers(spec: PlatformSpec, ref: str) -> dict[str, Any]:
+    # template_ref lets generated files pin assets, such as Terraform modules,
+    # to the same tag as the template itself.
+    return {"spec": spec.model_dump(mode="json"), "template_ref": ref}
 
 
 def _run(action: str, call: Any) -> None:
@@ -98,14 +100,15 @@ def scaffold(
 
     import copier
 
+    ref = ref or default_ref()
     _run(
         "Scaffold",
         lambda: copier.run_copy(
             template,
             dest,
-            data=_answers(spec),
+            data=_answers(spec, ref),
             defaults=True,
-            vcs_ref=ref or default_ref(),
+            vcs_ref=ref,
             unsafe=False,
             quiet=True,
         ),
@@ -140,14 +143,15 @@ def update(spec: PlatformSpec, dest: Path, *, ref: str | None = None) -> None:
 
     import copier
 
+    ref = ref or default_ref()
     _run(
         "Update",
         lambda: copier.run_update(
             dest,
-            data=_answers(spec),
+            data=_answers(spec, ref),
             defaults=True,
             overwrite=True,
-            vcs_ref=ref or default_ref(),
+            vcs_ref=ref,
             unsafe=False,
             quiet=True,
         ),

@@ -12,3 +12,7 @@ _answers_file: .copier-answers.yml
 spec:
   type: yaml
   help: The validated platform spec (contents of platform.yml)
+
+template_ref:
+  type: str
+  help: The quicketl git tag this project is rendered from; Terraform modules are pinned to it

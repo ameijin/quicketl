@@ -1,35 +1,16 @@
 # Storage integration that lets Snowflake read the S3 landing locations.
-# After apply, add the outputs storage_iam_user_arn and storage_external_id
-# to the trust policy of var.storage_aws_role_arn in AWS.
+# Roles that write the landing layer (such as the loader) get USAGE on it so
+# the Airflow DAG can create stages.
 
-resource "snowflake_storage_integration_aws" "landing" {
+module "s3_integration" {
+  source = "git::https://github.com/ameijin/quicketl.git//terraform/modules/snowflake-s3-integration?ref={{ template_ref }}"
+
   name                 = "${local.prefix}_S3_LANDING"
-  enabled              = true
-  storage_provider     = "S3"
   storage_aws_role_arn = var.storage_aws_role_arn
-  storage_allowed_locations = [
+  allowed_locations = [
 {%- for location in spec.sources | map(attribute="location") | unique %}
     "{{ location }}",
 {%- endfor %}
   ]
-}
-
-# Roles that write the landing layer (such as the loader) create stages on
-# this integration, which needs USAGE on it.
-locals {
-  landing_writers = {
-    for key, functional in local.functional_roles : key => functional
-    if lookup(local.roles[functional.role].access, local.layers[0], "") == "write"
-  }
-}
-
-resource "snowflake_grant_privileges_to_account_role" "landing_integration" {
-  for_each = local.landing_writers
-
-  account_role_name = snowflake_account_role.functional[each.key].name
-  privileges        = ["USAGE"]
-  on_account_object {
-    object_type = "INTEGRATION"
-    object_name = snowflake_storage_integration_aws.landing.name
-  }
+  usage_roles = module.platform.landing_writer_roles
 }
