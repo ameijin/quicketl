@@ -416,6 +416,8 @@ def aggregate(
 3. Ensure all tests pass locally
 4. Submit the pull request
 
+CI runs on every pull request, whatever branch it targets, so a PR stacked on another feature branch is checked too. It also runs on every push to `main` and `dev`.
+
 ### Pull Request Checklist
 
 - [ ] Code follows project style guidelines

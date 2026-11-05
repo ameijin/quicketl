@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main, dev]
+  # Every pull request, whatever its base, so stacked PRs are checked too.
   pull_request:
-    branches: [main, dev]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
