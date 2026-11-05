@@ -15,9 +15,10 @@ For each spec below, this script:
 6. installs Airflow 3.3.1 from the generated airflow/requirements.txt (the file
    MWAA installs, with its constraints) into a scratch virtual environment,
    then loads the generated DAGs with Airflow's DagBag and fails on any import
-   error or missing DAG.
+   error or missing DAG;
+7. lints the generated GitHub Actions workflows with actionlint.
 
-It needs `git`, `terraform`, `uv` and network access to the Terraform
+It needs `git`, `terraform`, `uv`, `actionlint` and network access to the Terraform
 registry and PyPI. It never connects to Snowflake: dbt and Airflow get
 placeholder settings and nothing opens a connection.
 
@@ -225,6 +226,24 @@ def check_airflow(dags_dir: Path, python: Path, work: Path) -> list[str]:
     return problems
 
 
+def check_workflows(project: Path) -> list[str]:
+    """Lint the generated GitHub Actions workflows and return any problems."""
+    workflows = sorted((project / ".github" / "workflows").glob("*.yml"))
+    if not workflows:
+        return [f"{project.name}: no GitHub Actions workflows generated"]
+    print(f"$ actionlint  (in {project.name})", flush=True)
+    result = subprocess.run(
+        ["actionlint", "-no-color", *(str(w) for w in workflows)],
+        cwd=project,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(result.stdout, result.stderr)
+        return [f"{project.name}: actionlint found problems in .github/workflows"]
+    return []
+
+
 def scaffold_spec(spec: Path, repo: Path, work: Path) -> Path:
     project = work / spec.stem
     project.mkdir()
@@ -241,11 +260,19 @@ def check_project(project: Path, airflow_python: Path, work: Path) -> list[str]:
     if use_local_modules(tf_dir) == 0:
         problems.append(f"{project.name}: terraform/ uses no quicketl modules")
     terraform_check(tf_dir)
+    # `terraform providers schema` needs an initialized backend, and generated
+    # projects declare an S3 one. Read the schema from a folder holding only
+    # the project's versions.tf, so the provider constraints are the same.
+    schema_dir = work / f"{project.name}-schema"
+    schema_dir.mkdir()
+    shutil.copy(tf_dir / "versions.tf", schema_dir / "versions.tf")
+    run(["terraform", "init", "-input=false", "-no-color"], cwd=schema_dir)
     return (
         problems
-        + check_references(tf_dir)
+        + check_references(schema_dir, tf_dir)
         + check_dbt(project / "dbt")
         + check_airflow(project / "airflow" / "dags", airflow_python, work)
+        + check_workflows(project)
     )
 
 

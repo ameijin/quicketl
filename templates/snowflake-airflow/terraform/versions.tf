@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.5"
+  required_version = ">= 1.11" # for S3 state lock files (use_lockfile)
 
   required_providers {
     snowflake = {
