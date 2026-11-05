@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from click.exceptions import Exit as ClickExit
+import typer
 from typer.testing import CliRunner
 
 from quicketl.cli.main import app
@@ -48,7 +48,7 @@ class TestResolveProjectConfig:
             "    engine: duckdb\n"
         )
 
-        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(ClickExit):
+        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(typer.Exit):
             _resolve_project_config(env="nonexistent", profile=None, variables={})
 
     def test_profile_injects_variables(self, tmp_path: Path):
@@ -73,7 +73,7 @@ class TestResolveProjectConfig:
         project_yml = tmp_path / "quicketl.yml"
         project_yml.write_text("profiles: {}\n")
 
-        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(ClickExit):
+        with mock.patch(_FIND_PROJECT, return_value=project_yml), pytest.raises(typer.Exit):
             _resolve_project_config(env=None, profile="missing", variables={})
 
     def test_no_project_file_returns_none(self):
